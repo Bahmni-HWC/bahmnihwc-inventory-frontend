@@ -6,8 +6,6 @@ import 'carbon-components/scss/globals/scss/styles.scss';
 const App = () =>{
   const items = ['HWC1','HWC2','HWC3']
   return  <div>
-      <h1>******Inventory*****</h1>
-        {/* <Dropdown>HWC</Dropdown> */}
         <Dropdown
           id="hwc-list-dropdown"
           title="hwc list"
@@ -17,7 +15,7 @@ const App = () =>{
         //   onChange={({selectedItem}) => setDoctor(selectedItem)}
           // selectedItem={"doctor"}
         />
-        {/* <InventoryLandingPage/> */}
+        <InventoryLandingPage/>
     </div>
 }
 
