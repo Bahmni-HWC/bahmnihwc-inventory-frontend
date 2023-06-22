@@ -1,4 +1,6 @@
 const path = require("path");
+const webpack = require('webpack');
+
 
 /*We are basically telling webpack to take index.js from entry. Then check for all file extensions in resolve. 
 After that apply all the rules in module.rules and produce the output and place it in main.js in the public folder.*/
@@ -50,6 +52,14 @@ module.exports = {
 		 * disable live reload on the browser. "hot" must be set to false for this to work
 		 */
 		liveReload: true,
+		proxy: {
+            '/openmrs': {
+              target: 'http://localhost:8009/openmrs/ws/rest/v2/inventory/item', // Replace with your backend URL and port
+              secure: false,
+              changeOrigin: true,
+              proxyTimeout: 60000,
+            }
+          }
 	},
 	resolve: {
 		/** "extensions"
@@ -85,4 +95,10 @@ module.exports = {
               },
 		],
 	},
+	plugins: [
+        new webpack.DefinePlugin({
+          BACKEND_PORT: JSON.stringify(8009) // Replace 8080 with your actual backend port number
+        })
+      ]
+
 };
