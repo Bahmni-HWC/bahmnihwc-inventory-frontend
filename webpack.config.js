@@ -54,7 +54,7 @@ module.exports = {
 		liveReload: true,
 		proxy: {
             '/openmrs': {
-              target: 'http://localhost:8009/openmrs/ws/rest/v2/inventory/item', // Replace with your backend URL and port
+              target: 'http://localhost:8080', // Replace with your backend URL and port
               secure: false,
               changeOrigin: true,
               proxyTimeout: 60000,
@@ -95,10 +95,4 @@ module.exports = {
               },
 		],
 	},
-	plugins: [
-        new webpack.DefinePlugin({
-          BACKEND_PORT: JSON.stringify(8009) // Replace 8080 with your actual backend port number
-        })
-      ]
-
 };
