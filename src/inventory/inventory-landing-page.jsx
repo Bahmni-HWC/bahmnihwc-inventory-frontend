@@ -43,7 +43,7 @@ export const InventoryLandingPage = () => {
 	if (items?.results?.length > 0) {
 		for (let index = 0; index < items.results.length; index++) {
 			const newObj = {
-				id: index,
+				id: `${index}`,
 				productName: items.results[index].name,
 				actualQuantity: items.results[index].minimumQuantity,
 			};
