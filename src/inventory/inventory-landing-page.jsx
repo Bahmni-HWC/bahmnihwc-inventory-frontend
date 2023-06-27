@@ -66,14 +66,13 @@ export const InventoryLandingPage = () => {
 
 	return (
 		<div>
-			<h1>Inside</h1>
 			<DataTable rows={filteredRows} headers={headers}>
 				{({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
 					<>
 						<TableToolbar>
-							<TableToolbarContent>
+							<TableToolbarContent  style={{ justifyContent: "flex-start" }} >
 								<TableToolbarSearch
-									value={searchText}
+									value={searchText}  style={{ width: "200px" }}
 									onChange={handleSearch}
 								/>
 							</TableToolbarContent>
