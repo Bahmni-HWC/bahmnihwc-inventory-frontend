@@ -13,9 +13,10 @@ import {
 } from "carbon-components-react";
 import useSWR from "swr";
 import { fetcher, invItemURL } from "../utils/api-utils";
+import styles from "./inventory.module.scss";
 
 export const InventoryLandingPage = () => {
-	const rows = [];
+	let rows = [];
 
 	const headers = [
 		{
@@ -49,6 +50,7 @@ export const InventoryLandingPage = () => {
 			};
 			rows.push(newObj);
 		}
+		rows= [...rows, ...rows, ...rows];
 	}
 	const filteredRows = rows.filter((row) => {
 		console.log(
@@ -65,19 +67,19 @@ export const InventoryLandingPage = () => {
 	const isSortable = (key) => key === "productName";
 
 	return (
-		<div>
-			<DataTable rows={filteredRows} headers={headers}>
+		<div className={styles.table}>
+			<DataTable rows={filteredRows} headers={headers} stickyHeader="true">
 				{({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
 					<>
-						<TableToolbar>
-							<TableToolbarContent  style={{ justifyContent: "flex-start" }} >
+						<TableToolbar style={{ width: "200px"}}  >
+							<TableToolbarContent >
 								<TableToolbarSearch
-									value={searchText}  style={{ width: "200px" }}
+									value={searchText}
 									onChange={handleSearch}
 								/>
 							</TableToolbarContent>
 						</TableToolbar>
-						<Table {...getTableProps()}>
+						<Table {...getTableProps()} >
 							<TableHead>
 								<TableRow>
 									{headers.map((header) => (

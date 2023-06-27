@@ -3,13 +3,13 @@ import "carbon-components/scss/globals/scss/styles.scss";
 import InventoryMenu from "./inventory/inventory-menu";
 import { CookiesProvider } from "react-cookie";
 import InventoryHeader from "./components/header/header";
-import '../index.scss'
+import styles from "./components/header/header.module.scss";
 
 const App = () => {
 	return (
     <CookiesProvider>
       <InventoryHeader />
-      <div style={{marginTop:'2rem'}}>
+      <div style={{padding:'3rem'}}>
 			<InventoryMenu />
       </div>
 		</CookiesProvider>

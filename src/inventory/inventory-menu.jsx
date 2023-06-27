@@ -7,7 +7,7 @@ const InventoryMenu = () => {
   const [cookies] = useCookies();
 	return (
 		<div>
-      <h1>Location: {cookies["bahmni.user.location"].name}</h1>
+      <h4>Location: {cookies["bahmni.user.location"].name}</h4>
 			<Tabs >
 				<Tab label="Inventory" >
 					<InventoryLandingPage />
