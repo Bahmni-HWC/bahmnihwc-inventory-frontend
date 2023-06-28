@@ -3,7 +3,6 @@ import "carbon-components/scss/globals/scss/styles.scss";
 import InventoryMenu from "./inventory/inventory-menu";
 import { CookiesProvider } from "react-cookie";
 import InventoryHeader from "./components/header/header";
-import styles from "./components/header/header.module.scss";
 
 const App = () => {
 	return (

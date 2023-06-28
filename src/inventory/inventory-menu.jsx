@@ -1,21 +1,19 @@
 import React from "react";
 import { Tabs, Tab } from "carbon-components-react";
 import { InventoryLandingPage } from "./inventory-landing-page";
-import { useCookies } from 'react-cookie';
+import { useCookies } from "react-cookie";
+import { getLocationName, inventoryMenu, locationCookieName } from "../../constants";
 
 const InventoryMenu = () => {
-  const [cookies] = useCookies();
+	const [cookies] = useCookies();
 	return (
-		<div>
-      <h4>Location: {cookies["bahmni.user.location"].name}</h4>
-			<Tabs >
-				<Tab label="Inventory" >
+		<div style={{ padding: "2rem" }}>
+			<h4>{getLocationName(cookies[locationCookieName]?.name)} </h4>
+			<Tabs>
+				<Tab label={inventoryMenu[0]}>
 					<InventoryLandingPage />
 				</Tab>
-				<Tab label="StockReceipt">
-					<div>Content for StockReceipt tab</div>
-				</Tab>
-				<Tab label="Dispense">
+				<Tab label={inventoryMenu[1]}>
 					<div>Content for Dispense tab</div>
 				</Tab>
 			</Tabs>
