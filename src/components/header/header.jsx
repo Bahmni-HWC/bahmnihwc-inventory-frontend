@@ -5,7 +5,7 @@ import { inventoryHeaderText } from "../../../constants";
 
 const InventoryHeader = () => {
 	return (
-		<Header className={styles.header}>
+		<Header className={styles.header} aria-label="inventory-header">
 			<div className={styles.headerText}>{inventoryHeaderText}</div>
 		</Header>
 	);

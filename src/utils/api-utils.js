@@ -1,4 +1,4 @@
-export const invItemURL = "openmrs/ws/rest/v2/inventory/item";
+export const invItemURL = "/openmrs/ws/rest/v2/inventory/item";
 
 export const fetcher = (url) =>
 	fetch(url).then((response) => {

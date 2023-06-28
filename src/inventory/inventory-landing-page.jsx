@@ -34,7 +34,7 @@ export const InventoryLandingPage = () => {
 			const newObj = {
 				id: `${index}`,
 				productName: items.results[index].name,
-				actualQuantity: items.results[index].minimumQuantity,
+				actualQuantity: items.results[index].minimumQuantity ?? 0,
 			};
 			rows.push(newObj);
 		}
