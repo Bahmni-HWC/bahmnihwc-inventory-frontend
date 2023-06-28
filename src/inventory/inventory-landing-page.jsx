@@ -38,7 +38,6 @@ export const InventoryLandingPage = () => {
 			};
 			rows.push(newObj);
 		}
-		rows= [...rows, ...rows, ...rows];
 	}
 	const filteredRows = rows.filter((row) =>
 		searchText !== ""

@@ -1,11 +1,10 @@
 import React from "react";
 import "carbon-components/scss/globals/scss/styles.scss";
-import InventoryMenu from "./inventory/inventory-menu";
 import { CookiesProvider } from "react-cookie";
-import InventoryHeader from "./components/header/header";
+import InventoryMenu from "./inventory/inventory-menu.jsx";
+import InventoryHeader from "./components/header/header.jsx";
 
-const App = () => {
-	return (
+const App = () => (
     <CookiesProvider>
       <InventoryHeader />
       <div style={{padding:'3rem'}}>
@@ -13,6 +12,5 @@ const App = () => {
       </div>
 		</CookiesProvider>
 	);
-};
 
 export default App;

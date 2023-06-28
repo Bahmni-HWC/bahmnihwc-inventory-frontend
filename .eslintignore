@@ -1,0 +1,4 @@
+src/**/*.test.jsx
+src/**/*.spec.jsx
+**/node_modules/**/*
+**/.github/**/*
