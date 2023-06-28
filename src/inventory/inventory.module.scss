@@ -3,3 +3,19 @@
   max-height:500px;
   overflow-y:scroll;
 }
+.modalRoot {
+  font-size: 12px;
+  
+  
+}
+.modalList {
+  display: grid;
+  grid-template-columns: 90% 10%;
+  border-bottom: 1px solid #ccc;
+  padding: 5px 0;
+  align-items: center;
+
+  > div:last-child {
+    text-align: center;
+  }
+} 
