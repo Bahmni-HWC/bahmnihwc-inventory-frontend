@@ -13,11 +13,10 @@ import {
 	TableToolbarSearch,
 } from "carbon-components-react";
 import useSWR from "swr";
-import { fetcher, invItemURL } from "../utils/api-utils";
-import styles from "./inventory.module.scss";
-import { headers } from "../../constants";
+import { fetcher, invItemURL } from "../../utils/api-utils";
+import { headers } from "./dispense-page-datamodel"
 
-export const InventoryLandingPage = () => {
+export const DispensePage = () => {
 	let rows = [];
 
 	const { data: items, error: inventoryItemError } = useSWR(
@@ -30,23 +29,34 @@ export const InventoryLandingPage = () => {
 		setSearchText(event.target.value);
 	};
 
-	if (items?.results?.length > 0) {
-		for (let index = 0; index < items.results.length; index++) {
-			const newObj = {
-				id: `${index}`,
-				productName: items.results[index].name,
-				actualQuantity: items.results[index].minimumQuantity ?? 0,
-			};
-			rows.push(newObj);
-		}
-	}
-	const filteredRows = rows.filter((row) =>
-		searchText !== ""
+    if(Array.isArray(items?.results)) {
+        rows = items?.results.map((item) => {
+            return {
+                item,
+                id:item.uuid,
+                productName: item.name,
+                actualQuantity: item.minimumQuantity
+            }
+        })
+
+    }
+	const filteredRows = rows.filter((row) => {
+		console.log(
+			"first",
+			row?.productName,
+			searchText,
+			row?.productName?.toLowerCase().includes(searchText?.toLowerCase())
+		);
+		return searchText !== ""
 			? row?.productName?.toLowerCase().includes(searchText?.toLowerCase())
-			: row
-	);
+			: row;
+	});
 
 	const isSortable = (key) => key === "productName";
+
+    const handleRowClick = (row) => {
+        console.log("row ", row);
+    }
 
 	if (items == undefined && inventoryItemError == undefined)
 		return <div>Loading...</div>;
@@ -58,22 +68,18 @@ export const InventoryLandingPage = () => {
 			<DataTable rows={filteredRows} headers={headers} stickyHeader={true}>
 				{({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
 					<>
-					<TableContainer >
-						<TableToolbar style={{ width: "15rem" }}>
-							<TableToolbarContent style={{ justifyContent: "flex-start" }}>
+						<TableContainer >
+						<TableToolbar style={{ width: "200px"}}  >
+							<TableToolbarContent >
 								<TableToolbarSearch
 									value={searchText}
 									onChange={handleSearch}
 								/>
 							</TableToolbarContent>
 						</TableToolbar>
-						<Table
-							{...getTableProps()}
-							useZebraStyles={true}
-							className={styles.table}
-						>
+						<Table {...getTableProps()} >
 							<TableHead>
-								<TableRow>
+								<TableRow >
 									{headers.map((header) => (
 										<TableHeader
 											{...getHeaderProps({
@@ -88,7 +94,7 @@ export const InventoryLandingPage = () => {
 							</TableHead>
 							<TableBody>
 								{rows.map((row) => (
-									<TableRow {...getRowProps({ row })}>
+									<TableRow {...getRowProps({ row })} onClick={()=>handleRowClick(row)}>
 										{row.cells.map((cell) => (
 											<TableCell key={cell.id}>{cell.value}</TableCell>
 										))}
