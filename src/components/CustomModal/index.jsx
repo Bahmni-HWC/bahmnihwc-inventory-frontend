@@ -28,10 +28,10 @@ const CustomModal = (props) => {
     */
 
     const submitDespense = async (payload) => {
-        const items = await postRequest(invItemURL, payload)
-        const responseData = await items.json();
-        if(error) {
-            setPostError(error.message);
+        const res = await postRequest(invItemURL, payload)
+        const responseData = await res.json();
+        if(res.error) {
+            setPostError(res.error.message);
           } else {
             handleSubmit(responseData);
             closeModal(false)
@@ -94,6 +94,7 @@ const CustomModal = (props) => {
                 <h3>{data?.name}</h3>
             </ModalHeader>
             <ModalBody hasForm>
+                <div className={styles.error}>{postError}</div>
                 <div className={modalListClass}>
                     {tabs && tabs.map((item) => <div>{item}</div>)}
                 </div>
