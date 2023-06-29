@@ -35,7 +35,7 @@ export const InventoryLandingPage = () => {
 			const newObj = {
 				id: `${index}`,
 				productName: items.results[index].name,
-				actualQuantity: items.results[index].minimumQuantity ?? 0,
+				currentQuantity: items.results[index].minimumQuantity ?? 0,
 			};
 			rows.push(newObj);
 		}
@@ -54,48 +54,64 @@ export const InventoryLandingPage = () => {
 	return inventoryItemError ? (
 		<div>Something went wrong while fetching items</div>
 	) : (
-		<div className="inv-datatable">
+		<div className="inv-datatable" 
+		style={{width:'50%'}}
+		>
 			<DataTable rows={filteredRows} headers={headers} stickyHeader={true}>
 				{({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
 					<>
-					<TableContainer >
-						<TableToolbar style={{ width: "15rem" }}>
-							<TableToolbarContent style={{ justifyContent: "flex-start" }}>
-								<TableToolbarSearch
-									value={searchText}
-									onChange={handleSearch}
-								/>
-							</TableToolbarContent>
-						</TableToolbar>
-						<Table
-							{...getTableProps()}
-							useZebraStyles={true}
-							className={styles.table}
-						>
-							<TableHead>
-								<TableRow>
-									{headers.map((header) => (
-										<TableHeader
-											{...getHeaderProps({
-												header,
-												isSortable: isSortable(header.key),
-											})}
-										>
-											{header.header}
-										</TableHeader>
-									))}
-								</TableRow>
-							</TableHead>
-							<TableBody>
-								{rows.map((row) => (
-									<TableRow {...getRowProps({ row })}>
-										{row.cells.map((cell) => (
-											<TableCell key={cell.id}>{cell.value}</TableCell>
+						<TableContainer>
+							<TableToolbar style={{ width: "15rem" }}>
+								<TableToolbarContent style={{ justifyContent: "flex-start" }}>
+									<TableToolbarSearch
+										value={searchText}
+										onChange={handleSearch}
+									/>
+								</TableToolbarContent>
+							</TableToolbar>
+							<Table
+								{...getTableProps()}
+								useZebraStyles={true}
+								className={styles.table}
+							>
+								<TableHead>
+									<TableRow>
+										{headers.map((header) => (
+											<TableHeader
+												{...getHeaderProps({
+													header,
+													isSortable: isSortable(header.key),
+												})}
+												style={
+													header.key === "currentQuantity"
+														? { justifyContent: "flex-end" }
+														: {}
+												}
+											>
+												{header.header}
+											</TableHeader>
 										))}
 									</TableRow>
-								))}
-							</TableBody>
-						</Table>
+								</TableHead>
+								<TableBody>
+									{rows.map((row) => (
+										<TableRow {...getRowProps({ row })}>
+											{row.cells.map((cell) => (
+												<TableCell
+													key={cell.id}
+													style={
+														cell.info.header === "currentQuantity"
+															? { justifyContent: "flex-end" }
+															: {}
+													}
+												>
+													{cell.value}
+												</TableCell>
+											))}
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
 						</TableContainer>
 					</>
 				)}

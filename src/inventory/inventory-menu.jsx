@@ -15,7 +15,7 @@ const InventoryMenu = () => {
 					<InventoryLandingPage />
 				</Tab>
 				<Tab label={inventoryMenu[1]}>
-					<DispensePage />
+					{/* <DispensePage /> */}
 				</Tab>
 			</Tabs>
 		</div>
