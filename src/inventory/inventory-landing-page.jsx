@@ -93,6 +93,21 @@ export const InventoryLandingPage = () => {
 			"id":"d5",
 			"name": 'P (Tab(s)) 10 Tabs, twice/Day, 5 day(s)',
 			"quantity": 10
+		},
+		{
+			"id":"d3",
+			"name": 'R (Tab(s)) 251 Capsule, Once/Day, 10 day(s)',
+			"quantity": 251
+		},
+		{
+			"id":"d4",
+			"name": 'Z (Tab(s)) 250mg, twice/Day, 4 day(s)',
+			"quantity": 8
+		},
+		{
+			"id":"d5",
+			"name": 'P (Tab(s)) 10 Tabs, twice/Day, 5 day(s)',
+			"quantity": 10
 		}]
 	}
 	const tabs = ['', 'Qty.']

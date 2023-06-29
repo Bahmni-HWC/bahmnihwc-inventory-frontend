@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ComposedModal, ModalHeader, ModalBody, TextInput, Button, ModalFooter } from "carbon-components-react";
 import { postRequest, invItemURL } from "../../utils/api-utils";
+import styles from "./customModal.module.scss";
 
 const CustomModal = (props) => {
     
@@ -96,25 +97,29 @@ const CustomModal = (props) => {
                 <div className={modalListClass}>
                     {tabs && tabs.map((item) => <div>{item}</div>)}
                 </div>
-                {modifiedData?.dispense_drugs?.map((item, index) => <div className={modalListClass}>
-                    <h5>{item.name}</h5>
-                    <TextInput
-                        title="number only"
-                        value={
-                            editMode.id === index
-                            ? editMode.value
-                            : item.quantity} id={item.id}
-                        onChangeCapture={(e) => handleEditMode(e, index)}
-                    />
-                </div>)}
+                <section className={styles.modalListSection}>
+                    {modifiedData?.dispense_drugs?.map((item, index) => <div className={modalListClass}>
+                        <h5>{item.name}</h5>
+                        <TextInput
+                            title="number only"
+                            value={
+                                editMode.id === index
+                                ? editMode.value
+                                : item.quantity} id={item.id}
+                            onChangeCapture={(e) => handleEditMode(e, index)}
+                        />
+                    </div>)}
+                </section>
             </ModalBody>
             <ModalFooter>
                 <Button
+                    className={styles.modaButton}
                     kind="secondary"
                     onClick={() => closeModal(false) }>
                         {secondaryButton}
                 </Button>
                 <Button
+                    className={styles.modaButton}
                     kind="primary"
                     disabled={!isUpdate(data?.dispense_drugs, modifiedData?.dispense_drugs)}
                     onClick={() => submitDespense(modifiedData)}>
