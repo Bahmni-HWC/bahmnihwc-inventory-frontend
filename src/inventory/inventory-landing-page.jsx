@@ -95,20 +95,24 @@ export const InventoryLandingPage = () => {
 			"quantity": 10
 		}]
 	}
+	const tabs = ['', 'Qty.']
 	console.log('parent')
 
 	return (
 		<div className={styles.table}>
 			{/* {Init Inventory modal with dummy data by default it is open status for testing purpose only} */}
 			<CustomModal
-				showModal={true}
 				data={patientObj}
+				showModal={true}
 				rootClass={styles.modal}
 				modalListClass={styles.modalList}
-				tabTwo="Qty."
-				closeModal={() => console.log('closer')}
+				subTitle="Dispense drug for"
 				primaryButton="Dispense"
-				secondaryButton='Cancel'/>
+				secondaryButton='Cancel'
+				tabs={tabs}
+				handleSubmit={(val) => console.log(val)}
+				closeModal={() => console.log('closer')}
+				/>
 
 			<DataTable rows={filteredRows} headers={headers} stickyHeader="true">
 				{({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (

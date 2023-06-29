@@ -9,10 +9,10 @@ const CustomModal = (props) => {
         showModal,
         rootClass,
         modalListClass,
+        subTitle,
         primaryButton,
         secondaryButton,
-        tabOne,
-        tabTwo,
+        tabs,
         handleSubmit,
         closeModal } = props;
     const [ modifiedData, setModifiedData ] = useState(data);
@@ -48,8 +48,12 @@ const CustomModal = (props) => {
     const handleEditMode = (e, id) => {
         e.preventDefault();
         const targetValue = e && e.target && e.target.value;
-        handleChange(targetValue, id);
-        setEditMode({ "id": id, "value": targetValue });   
+        if (targetValue && !/^[1-9]\d*(\.\d+)?$/.test(targetValue)) {
+            return false;
+        } else {
+            handleChange(targetValue, id);
+            setEditMode({ "id": id, "value": targetValue });
+        }  
     }
 
     /**
@@ -85,30 +89,36 @@ const CustomModal = (props) => {
             open={showModal}
           >
             <ModalHeader onRequestClose={() => typeof closeModal === 'function' && closeModal(false)}>
-                <h4>Dispense drug for</h4>
+                <h4>{subTitle}</h4>
                 <h3>{data?.name}</h3>
             </ModalHeader>
             <ModalBody hasForm>
                 <div className={modalListClass}>
-                    <div>{tabOne}</div>
-                    <div>{tabTwo}</div>
+                    {tabs && tabs.map((item) => <div>{item}</div>)}
                 </div>
                 {modifiedData?.dispense_drugs?.map((item, index) => <div className={modalListClass}>
                     <h5>{item.name}</h5>
-                    <TextInput value={editMode.id === index ? editMode.value : item.quantity} id={item.id} onChangeCapture={(e) => handleEditMode(e, index)}/>
+                    <TextInput
+                        title="number only"
+                        value={
+                            editMode.id === index
+                            ? editMode.value
+                            : item.quantity} id={item.id}
+                        onChangeCapture={(e) => handleEditMode(e, index)}
+                    />
                 </div>)}
             </ModalBody>
             <ModalFooter>
                 <Button
-                kind="secondary"
-                onClick={() => closeModal(false) }>
-                    {secondaryButton}
+                    kind="secondary"
+                    onClick={() => closeModal(false) }>
+                        {secondaryButton}
                 </Button>
                 <Button
-                kind="primary"
-                disabled={!isUpdate(data?.dispense_drugs, modifiedData?.dispense_drugs)}
-                onClick={() => submitDespense(modifiedData)}>
-                    {primaryButton}
+                    kind="primary"
+                    disabled={!isUpdate(data?.dispense_drugs, modifiedData?.dispense_drugs)}
+                    onClick={() => submitDespense(modifiedData)}>
+                        {primaryButton}
                 </Button>
             </ModalFooter>
           </ComposedModal>

@@ -1,12 +1,14 @@
-.table{
-  height:100%;
-  max-height:500px;
-  overflow-y:scroll;
+@import "~carbon-components/src/globals/scss/vars";
+@import "carbon-components/scss/globals/scss/typography.scss";
+@import "~carbon-components/scss/globals/scss/styles.scss";
+
+.table {
+	:global(.bx--data-table--sticky-header) {
+		max-height: 40rem;
+	}
 }
 .modalRoot {
   font-size: 12px;
-  
-  
 }
 .modalList {
   display: grid;
@@ -18,4 +20,4 @@
   > div:last-child {
     text-align: center;
   }
-} 
+}
