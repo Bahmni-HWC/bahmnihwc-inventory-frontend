@@ -13,49 +13,55 @@ import {
 	TableToolbarSearch,
 } from "carbon-components-react";
 import useSWR from "swr";
-import { fetcher, invItemURL } from "../../utils/api-utils";
-import { headers } from "./dispense-page-datamodel"
+import { fetcher, invItemURL, activePatientWithDrugOrders } from "../../utils/api-utils";
+import { headers } from "./dispense-page-datamodel";
+import {locationCookieName } from "../../../constants";
+import { useCookies } from "react-cookie";
+
 
 export const DispensePage = () => {
 	let rows = [];
-
+    const [cookies] = useCookies();
 	const { data: items, error: inventoryItemError } = useSWR(
-		invItemURL,
+		activePatientWithDrugOrders(cookies[locationCookieName]?.uuid),
 		fetcher
 	);
+
 	const [searchText, setSearchText] = useState("");
 
 	const handleSearch = (event) => {
 		setSearchText(event.target.value);
 	};
 
-    if(Array.isArray(items?.results)) {
-        rows = items?.results.map((item) => {
+    if(Array.isArray(items)) {
+        rows = items.map((item) => {
             return {
                 item,
                 id:item.uuid,
-                productName: item.name,
-                actualQuantity: item.minimumQuantity
+                patientName: item.name,
+
             }
         })
 
     }
+
 	const filteredRows = rows.filter((row) => {
 		console.log(
 			"first",
-			row?.productName,
+			row?.patientName,
 			searchText,
-			row?.productName?.toLowerCase().includes(searchText?.toLowerCase())
+			row?.patientName?.toLowerCase().includes(searchText?.toLowerCase())
 		);
 		return searchText !== ""
-			? row?.productName?.toLowerCase().includes(searchText?.toLowerCase())
+			? row?.patientName?.toLowerCase().includes(searchText?.toLowerCase())
 			: row;
 	});
 
-	const isSortable = (key) => key === "productName";
+
+	const isSortable = (key) => key === "patientName";
 
     const handleRowClick = (row) => {
-        console.log("row ", row);
+        console.log("row click ", row);
     }
 
 	if (items == undefined && inventoryItemError == undefined)
@@ -96,7 +102,7 @@ export const DispensePage = () => {
 								{rows.map((row) => (
 									<TableRow {...getRowProps({ row })} onClick={()=>handleRowClick(row)}>
 										{row.cells.map((cell) => (
-											<TableCell key={cell.id}>{cell.value}</TableCell>
+											<TableCell key={cell.id}> <a href="#">{cell.value}</a></TableCell>
 										))}
 									</TableRow>
 								))}

@@ -1,5 +1,5 @@
 export const invItemURL = "/openmrs/ws/rest/v2/inventory/item";
-
+export const activePatientWithDrugOrders = (location_uuid) =>`/openmrs/ws/rest/v1/bahmnicore/sql?location_uuid=${location_uuid}&q=emrapi.sqlSearch.activePatientsWithDrugOrders&v=full`
 export const fetcher = (url) =>
 	fetch(url).then((response) => {
 		if (!response.ok) {
