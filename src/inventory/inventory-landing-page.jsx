@@ -45,9 +45,9 @@ export const InventoryLandingPage = () => {
 	if (items?.results?.length > 0) {
 		for (let index = 0; index < items.results.length; index++) {
 			const newObj = {
-				id: `${index}`,
-				productName: items.results[index].name,
-				actualQuantity: items.results[index].minimumQuantity,
+				'id': `${index}`,
+				'productName': items.results[index].name,
+				'actualQuantity': items.results[index].minimumQuantity,
 			};
 			rows.push(newObj);
 		}
@@ -95,6 +95,7 @@ export const InventoryLandingPage = () => {
 			"quantity": 10
 		}]
 	}
+	console.log('parent')
 
 	return (
 		<div className={styles.table}>
@@ -105,6 +106,7 @@ export const InventoryLandingPage = () => {
 				rootClass={styles.modal}
 				modalListClass={styles.modalList}
 				tabTwo="Qty."
+				closeModal={() => console.log('closer')}
 				primaryButton="Dispense"
 				secondaryButton='Cancel'/>
 

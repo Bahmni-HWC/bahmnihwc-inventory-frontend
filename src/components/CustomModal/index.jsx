@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ComposedModal, ModalHeader, ModalBody, TextInput, Button, ModalFooter } from "carbon-components-react";
+import { postRequest, invItemURL } from "../../utils/api-utils";
 
 const CustomModal = (props) => {
     
@@ -12,16 +13,71 @@ const CustomModal = (props) => {
         secondaryButton,
         tabOne,
         tabTwo,
-        handleSubmit, 
+        handleSubmit,
         closeModal } = props;
-
     const [ modifiedData, setModifiedData ] = useState(data);
-    const [ editMode, setEditMode ] = useState(false);
+    const [ postError, setPostError ] = useState('');
+    const [ editMode, setEditMode ] = useState({ "id": -1, "value": 0 });
 
-    const handleChange = (e) => {
-        const targetValue = e && e.target && e.target.value;
-        console.log('targetValue', targetValue)
+    /**
+     * description. send the post request with updated dispense as payload
+     * @namespace submitDespense
+     * @memberof  CustomModal
+     * @property {array} payload modified dispense data.
+    */
+
+    const submitDespense = async (payload) => {
+        const items = await postRequest(invItemURL, payload)
+        const responseData = await items.json();
+        if(error) {
+            setPostError(error.message);
+          } else {
+            handleSubmit(responseData);
+            closeModal(false)
+          }
     }
+
+    /**
+     * description. handle the editable input field and update the dispense data obj
+     * @namespace handleEditMode
+     * @memberof  CustomModal
+     * @property {object} e current click event.
+     * @property {number} id index of modified dispense data.
+    */
+
+    const handleEditMode = (e, id) => {
+        e.preventDefault();
+        const targetValue = e && e.target && e.target.value;
+        handleChange(targetValue, id);
+        setEditMode({ "id": id, "value": targetValue });   
+    }
+
+    /**
+     * description. check if data is modified or not
+     * @namespace isUpdate
+     * @memberof  CustomModal
+     * @property {object} obj orginal dispense data.
+     * @property {object} modifiedObj modified dispense data.
+    */
+    const isUpdate = (obj, modifiedObj) => {
+        return modifiedObj.find((item, index) => parseInt(item.quantity) !== parseInt(obj[index].quantity))
+    }
+    
+    /**
+     * description. Modified the dispense data with updated quantity
+     * @namespace handleChange
+     * @memberof  CustomModal
+     * @property {number} targetValue modified dispense quantity.
+     * @property {number} index index of edit object.
+    */
+    const handleChange = (targetValue, index) => {
+        modifiedData.dispense_drugs = modifiedData?.dispense_drugs?.map((item, i) => (index === i ? { ...item, ['quantity']: parseInt(targetValue) } : item ));
+        setModifiedData(modifiedData) 
+    }
+
+    useEffect(() => {
+        console.log('load modal')
+    }, [modifiedData])
 
     return (
         <ComposedModal
@@ -37,9 +93,9 @@ const CustomModal = (props) => {
                     <div>{tabOne}</div>
                     <div>{tabTwo}</div>
                 </div>
-                {modifiedData?.dispense_drugs?.map((item) => <div className={modalListClass}>
+                {modifiedData?.dispense_drugs?.map((item, index) => <div className={modalListClass}>
                     <h5>{item.name}</h5>
-                    <TextInput value={item.quantity} id={item.id} onChange={(e) => handleChange(e)}/>
+                    <TextInput value={editMode.id === index ? editMode.value : item.quantity} id={item.id} onChangeCapture={(e) => handleEditMode(e, index)}/>
                 </div>)}
             </ModalBody>
             <ModalFooter>
@@ -50,8 +106,8 @@ const CustomModal = (props) => {
                 </Button>
                 <Button
                 kind="primary"
-                disabled={!editMode}
-                onClick={() => handleSubmit(false)}>
+                disabled={!isUpdate(data?.dispense_drugs, modifiedData?.dispense_drugs)}
+                onClick={() => submitDespense(modifiedData)}>
                     {primaryButton}
                 </Button>
             </ModalFooter>
