@@ -8,7 +8,7 @@ export const headers = [
     header: "Product Name",
   },
   {
-    key: "actualQuantity",
-    header: "Actual Quantity",
+    key: "currentQuantity",
+    header: "Current Quantity",
   },
 ];

@@ -1,6 +1,4 @@
 const path = require("path");
-const webpack = require('webpack');
-
 
 /*We are basically telling webpack to take index.js from entry. Then check for all file extensions in resolve. 
 After that apply all the rules in module.rules and produce the output and place it in main.js in the public folder.*/
@@ -53,13 +51,13 @@ module.exports = {
 		 */
 		liveReload: true,
 		proxy: {
-            '/openmrs': {
-              target: 'http://localhost:8080', // Replace with your backend URL and port
-              secure: false,
-              changeOrigin: true,
-              proxyTimeout: 60000,
-            }
-          }
+			"/openmrs": {
+				target: "http://localhost:8080", // Replace with your backend URL and port
+				secure: false,
+				changeOrigin: true,
+				proxyTimeout: 60000,
+			},
+		},
 	},
 	resolve: {
 		/** "extensions"
@@ -83,16 +81,16 @@ module.exports = {
 				use: "babel-loader", //loader which we are going to use
 			},
 			{
-                test: /\.s[ac]ss$/i,
-                use: [
-                  // Creates `style` nodes from JS strings
-                  "style-loader",
-                  // Translates CSS into CommonJS
-                  "css-loader",
-                  // Compiles Sass to CSS
-                  "sass-loader",
-                ],
-              },
+				test: /\.s[ac]ss$/i,
+				use: [
+					// Creates `style` nodes from JS strings
+					"style-loader",
+					// Translates CSS into CommonJS
+					"css-loader",
+					// Compiles Sass to CSS
+					"sass-loader",
+				],
+			},
 		],
 	},
 };
