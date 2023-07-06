@@ -13,49 +13,55 @@ import {
 	TableToolbarSearch,
 } from "carbon-components-react";
 import useSWR from "swr";
-import { fetcher, invItemURL } from "../../utils/api-utils";
-import { headers } from "./dispense-page-datamodel"
+import { fetcher, invItemURL, activePatientWithDrugOrders } from "../../utils/api-utils";
+import {locationCookieName, dispenseHeaders, activePatients } from "../../../constants";
+import { useCookies } from "react-cookie";
+
 
 export const DispensePage = () => {
 	let rows = [];
-
+    const [cookies] = useCookies();
 	const { data: items, error: inventoryItemError } = useSWR(
-		invItemURL,
+		activePatientWithDrugOrders(cookies[locationCookieName]?.uuid),
 		fetcher
 	);
+
 	const [searchText, setSearchText] = useState("");
 
 	const handleSearch = (event) => {
 		setSearchText(event.target.value);
 	};
 
-    if(Array.isArray(items?.results)) {
-        rows = items?.results.map((item) => {
+    if(Array.isArray(items)) {
+        rows = items.map((item) => {
             return {
                 item,
                 id:item.uuid,
-                productName: item.name,
-                actualQuantity: item.minimumQuantity
+                patientName: item.name,
+                patientId: item.identifier,
+
             }
         })
 
     }
+    console.log("item...", items);
 	const filteredRows = rows.filter((row) => {
 		console.log(
 			"first",
-			row?.productName,
+			row?.patientName,
 			searchText,
-			row?.productName?.toLowerCase().includes(searchText?.toLowerCase())
+			row?.patientName?.toLowerCase().includes(searchText?.toLowerCase())
 		);
 		return searchText !== ""
-			? row?.productName?.toLowerCase().includes(searchText?.toLowerCase())
+			? row?.patientName?.toLowerCase().includes(searchText?.toLowerCase())
 			: row;
 	});
 
-	const isSortable = (key) => key === "productName";
+
+	const isSortable = (key) => key === "patientName";
 
     const handleRowClick = (row) => {
-        console.log("row ", row);
+        console.log("row click ", row);
     }
 
 	if (items == undefined && inventoryItemError == undefined)
@@ -64,13 +70,15 @@ export const DispensePage = () => {
 	return inventoryItemError ? (
 		<div>Something went wrong while fetching items</div>
 	) : (
-		<div className="inv-datatable">
-			<DataTable rows={filteredRows} headers={headers} stickyHeader={true}>
+
+		<div className="inv-datatable" style={{width:'50%'}}>
+		<h5 style={{paddingBottom:'1rem'}}>{activePatients}</h5>
+			<DataTable rows={filteredRows} headers={dispenseHeaders} stickyHeader={true}>
 				{({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
 					<>
 						<TableContainer >
-						<TableToolbar style={{ width: "200px"}}  >
-							<TableToolbarContent >
+						<TableToolbar style={{ width: "15rem"}}  >
+							<TableToolbarContent style={{ justifyContent: "flex-start" }}>
 								<TableToolbarSearch
 									value={searchText}
 									onChange={handleSearch}
@@ -96,8 +104,11 @@ export const DispensePage = () => {
 								{rows.map((row) => (
 									<TableRow {...getRowProps({ row })} onClick={()=>handleRowClick(row)}>
 										{row.cells.map((cell) => (
-											<TableCell key={cell.id}>{cell.value}</TableCell>
+											<TableCell key={cell.id}> {
+											cell.info.header === "patientName" ?
+											<a href="#">{cell.value}</a>:cell.value}</TableCell>
 										))}
+
 									</TableRow>
 								))}
 							</TableBody>
