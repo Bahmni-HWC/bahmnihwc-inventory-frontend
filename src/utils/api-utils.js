@@ -1,5 +1,6 @@
 export const invItemURL = "/openmrs/ws/rest/v2/inventory/item";
-export const activePatientWithDrugOrders = (locationUuid) =>`/openmrs/ws/rest/v1/bahmnicore/sql?location_uuid=${locationUuid}&q=emrapi.sqlSearch.activePatientsWithDrugOrders&v=full`
+export const activePatientWithDrugOrders = (locationUuid) =>
+	`/openmrs/ws/rest/v1/bahmnicore/sql?location_uuid=${locationUuid}&q=emrapi.sqlSearch.activePatientsWithDrugOrders&v=full`;
 export const fetcher = (url) =>
 	fetch(url).then((response) => {
 		if (!response.ok) {
@@ -8,8 +9,22 @@ export const fetcher = (url) =>
 		return response.json();
 	});
 
+export const postRequest = async (url, data) => {
+	return await fetch(`${url}`, {
+		method: "post",
+		headers: {
+			"Content-Type": "application/json",
+			"x-access-token": "token-value",
+		},
+		body: JSON.stringify(data),
+	});
+};
+
 export const swrOptions = {
 	revalidateIfStale: false,
 	revalidateOnFocus: false,
 	revalidateOnReconnect: false,
 };
+
+export const prescribedDrugOrders = (patientUuid) =>
+	`/openmrs/ws/rest/v1/bahmnicore/drugOrders/prescribedAndActive?getEffectiveOrdersOnly=false&getOtherActive=true&numberOfVisits=5&patientUuid=${patientUuid}&preferredLocale=en`;
