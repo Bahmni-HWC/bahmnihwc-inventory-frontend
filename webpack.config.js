@@ -55,7 +55,7 @@ module.exports = {
 				target: "http://localhost:8080", // Replace with your backend URL and port
 				secure: false,
 				changeOrigin: true,
-				proxyTimeout: 60000,
+				proxyTimeout: 130000,
 			},
 		},
 	},

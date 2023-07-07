@@ -9,6 +9,29 @@ export const fetcher = (url) =>
 		return response.json();
 	});
 
+const controller = new AbortController();
+const timeout = 150000;
+
+const timeoutId = setTimeout(() => {
+	controller.abort(); // Abort the request if timeout is reached
+}, timeout);
+
+export const fetcherPost = (url) => {
+	return fetch(url, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({ month: "7", year: "2023" }),
+		signal: controller.signal,
+	})
+		.then((response) => response.json())
+		.then((data) => {
+			clearTimeout(timeoutId); // Clear the timeout if the request succeeds
+			return data;
+		});
+};
+
 export const postRequest = async (url, data) => {
 	return await fetch(`${url}`, {
 		method: "post",

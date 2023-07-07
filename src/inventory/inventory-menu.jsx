@@ -2,8 +2,13 @@ import React from "react";
 import { Tabs, Tab } from "carbon-components-react";
 import { InventoryLandingPage } from "./inventory-landing-page";
 import { useCookies } from "react-cookie";
-import { getLocationName, inventoryMenu, locationCookieName } from "../../constants";
-import { DispensePage } from "./dispense/dispense-page"
+import {
+	getLocationName,
+	inventoryMenu,
+	locationCookieName,
+} from "../../constants";
+import { DispensePage } from "./dispense/dispense-page";
+import StockReceipt from "../stock-receipt/stock-receipt";
 
 const InventoryMenu = () => {
 	const [cookies] = useCookies();
@@ -14,8 +19,11 @@ const InventoryMenu = () => {
 				<Tab label={inventoryMenu[0]}>
 					<InventoryLandingPage />
 				</Tab>
+				<Tab label="Stock Receipt">
+					<StockReceipt />
+				</Tab>
 				<Tab label={inventoryMenu[1]}>
-					 <DispensePage />
+					<DispensePage />
 				</Tab>
 			</Tabs>
 		</div>
