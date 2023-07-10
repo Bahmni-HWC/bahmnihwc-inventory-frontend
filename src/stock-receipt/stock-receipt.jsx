@@ -30,13 +30,15 @@ const StockReceipt = () => {
 	useEffect(() => {
 		if (eaushdhaResponse && eaushdhaResponse.length > 0) {
 			const stockReceiptArray = [];
-			for (let i = 0; i < 10; i++) {
+			for (let i = 0; i < eaushdhaResponse.length; i++) {
 				const rowObj = {
-					id: `${i}`,
-					item: eaushdhaResponse[i].Drug_name,
-					expiration: eaushdhaResponse[i].Exp_date,
-					batchNumber: eaushdhaResponse[i].Batch_number,
-					quantity: eaushdhaResponse[i].Batch_quantity,
+					id: `${eaushdhaResponse[i].drug_id}-${i}}`,
+					itemId: eaushdhaResponse[i].drug_id,
+					item: eaushdhaResponse[i].drug_name,
+					batchNumber: eaushdhaResponse[i].batch_number,
+					expiration: eaushdhaResponse[i].exp_date,
+					quantity: eaushdhaResponse[i].quantity,
+					actualQuantity: eaushdhaResponse[i].actual_quantity
 				};
 				stockReceiptArray.push(rowObj);
 			}
@@ -60,9 +62,10 @@ const StockReceipt = () => {
 	// };
 	console.log("value", value);
 	const headers = [
+		{ key: "itemId", header: "Item Id"},
 		{ key: "item", header: "Item" },
-		{ key: "expiration", header: "Expiration" },
 		{ key: "batchNumber", header: "Batch Number" },
+		{ key: "expiration", header: "Expiration" },
 		{ key: "quantity", header: "Quantity" },
 		{ key: "actualQuantity", header: "Actual Quantity" },
 	];
@@ -121,6 +124,7 @@ const StockReceipt = () => {
 										{rows.map((row) => (
 											<TableRow {...getRowProps({ row })}>
 												{row.cells.map((cell) => {
+													console.log('row', row)
 													if (cell.id.includes("actualQuantity"))
 														return (
 															<TableCell key={cell.id}>
@@ -128,6 +132,7 @@ const StockReceipt = () => {
 																	size="sm"
 																	id={cell.id}
 																	labelText={cell.value}
+																	value={cell.value}
 																/>
 															</TableCell>
 														);

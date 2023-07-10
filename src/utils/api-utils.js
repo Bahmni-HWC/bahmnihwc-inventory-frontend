@@ -22,7 +22,7 @@ export const fetcherPost = (url) => {
 		headers: {
 			"Content-Type": "application/json",
 		},
-		body: JSON.stringify({ month: "7", year: "2023" }),
+		body: JSON.stringify({ ouid: "ISS/NR/2021-22/2935231" }),
 		signal: controller.signal,
 	})
 		.then((response) => response.json())
