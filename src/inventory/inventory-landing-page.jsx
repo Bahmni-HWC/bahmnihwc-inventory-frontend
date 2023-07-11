@@ -11,20 +11,29 @@ import {
 	TableToolbar,
 	TableToolbarContent,
 	TableToolbarSearch,
+	Loading,
 } from "carbon-components-react";
 import useSWR from "swr";
-import { fetcher, invItemURL } from "../utils/api-utils";
+import { fetcher, invItemURL, stockRoomURL } from "../utils/api-utils";
 import styles from "./inventory.module.scss";
-import { headers } from "../../constants";
+import { headers, locationCookieName } from "../../constants";
+import { useCookies } from "react-cookie";
 
 export const InventoryLandingPage = () => {
 	let rows = [];
+	const [cookies] = useCookies();
 
-	const { data: items, error: inventoryItemError } = useSWR(
-		invItemURL,
+	const { data: stockRoom, error: stockRoomError } = useSWR(
+		stockRoomURL(cookies[locationCookieName]?.name.trim()),
 		fetcher
 	);
-	const [searchText, setSearchText] = useState("");
+
+	const { data: items, error: inventoryItemError } = useSWR(
+		stockRoom ? invItemURL(stockRoom.results[0].uuid) : '',
+		fetcher
+	);
+
+	const [searchText, setSearchText] = useState('');
 
 	const handleSearch = (event) => {
 		setSearchText(event.target.value);
@@ -34,29 +43,30 @@ export const InventoryLandingPage = () => {
 		for (let index = 0; index < items.results.length; index++) {
 			const newObj = {
 				id: `${index}`,
-				productName: items.results[index].name,
-				currentQuantity: items.results[index].minimumQuantity ?? 0,
+				productName: items.results[index].item.name,
+				currentQuantity: items.results[index].quantity ?? 0,
 			};
 			rows.push(newObj);
 		}
 	}
 	const filteredRows = rows.filter((row) =>
-		searchText !== ""
+		searchText !== ''
 			? row?.productName?.toLowerCase().includes(searchText?.toLowerCase())
 			: row
 	);
 
 	const isSortable = (key) => key === "productName";
 
-	if (items == undefined && inventoryItemError == undefined)
-		return <div>Loading...</div>;
+	if (
+		(items == undefined && inventoryItemError == undefined) ||
+		(!stockRoom && !stockRoomError)
+	)
+		return <Loading />;
 
 	return inventoryItemError ? (
 		<div>Something went wrong while fetching items</div>
 	) : (
-		<div className="inv-datatable" 
-		style={{width:'50%'}}
-		>
+		<div className="inv-datatable" style={{ width: "50%" }}>
 			<DataTable rows={filteredRows} headers={headers} stickyHeader={true}>
 				{({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
 					<>

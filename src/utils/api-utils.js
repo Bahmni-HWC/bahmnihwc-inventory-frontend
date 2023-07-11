@@ -1,5 +1,7 @@
-export const invItemURL = "/openmrs/ws/rest/v2/inventory/item";
-export const activePatientWithDrugOrders = (locationUuid) =>`/openmrs/ws/rest/v1/bahmnicore/sql?location_uuid=${locationUuid}&q=emrapi.sqlSearch.activePatientsWithDrugOrders&v=full`
+export const invItemURL = (locationName) =>
+	`/openmrs/ws/rest/v2/inventory/itemStock?stockroom_uuid=${locationName}`;
+export const activePatientWithDrugOrders = (locationUuid) =>
+	`/openmrs/ws/rest/v1/bahmnicore/sql?location_uuid=${locationUuid}&q=emrapi.sqlSearch.activePatientsWithDrugOrders&v=full`;
 export const fetcher = (url) =>
 	fetch(url).then((response) => {
 		if (!response.ok) {
@@ -13,3 +15,4 @@ export const swrOptions = {
 	revalidateOnFocus: false,
 	revalidateOnReconnect: false,
 };
+export const stockRoomURL = (locationName) => `/openmrs/ws/rest/v2/inventory/stockroom?q=${locationName}`;
