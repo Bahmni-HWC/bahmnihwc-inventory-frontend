@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import useSWR from "swr";
 import { fetcherPost } from "../utils/api-utils";
+import { saveReceipt } from "../service/save-receipt";
 import {
 	DataTable,
 	TextInput,
@@ -13,12 +14,15 @@ import {
 	Button,
 	NumberInput,
 	Loading,
+	ButtonSet,
 } from "carbon-components-react";
+
 
 const StockReceipt = () => {
 	const [value, setValue] = useState([]);
 	const [outwardNumber, setOutwardNumber] = useState("");
 	const [stockIntakeButtonClick, setStockIntakeButtonClick] = useState(false);
+
 
 	const { data: eaushdhaResponse, error } = useSWR(
 		stockIntakeButtonClick ? "/openmrs/ws/rest/v1/eaushadha/stock-receipt" : "",
@@ -30,13 +34,19 @@ const StockReceipt = () => {
 	useEffect(() => {
 		if (eaushdhaResponse && eaushdhaResponse.length > 0) {
 			const stockReceiptArray = [];
+
+
 			for (let i = 0; i < eaushdhaResponse.length; i++) {
+			var dateString = eaushdhaResponse[i].exp_date;
+			var convertedDate = new Date(dateString.split('/').reverse().join('-'));
+			console.log("convertedDate", convertedDate);
+
 				const rowObj = {
 					id: `${eaushdhaResponse[i].drug_id}-${i}}`,
 					itemId: eaushdhaResponse[i].drug_id,
 					item: eaushdhaResponse[i].drug_name,
 					batchNumber: eaushdhaResponse[i].batch_number,
-					expiration: eaushdhaResponse[i].exp_date,
+					expiration: convertedDate.toLocaleDateString('en-GB').split('/').join('-'),
 					quantity: eaushdhaResponse[i].quantity,
 					actualQuantity: eaushdhaResponse[i].actual_quantity
 				};
@@ -45,6 +55,50 @@ const StockReceipt = () => {
 			setValue(stockReceiptArray);
 		}
 	}, [eaushdhaResponse]);
+
+	const handleCancel = () => {
+	console.log("cancel");
+	const stockReceiptArray = [];
+    	for (let i = 0; i < eaushdhaResponse.length; i++) {
+    			var dateString = eaushdhaResponse[i].exp_date;
+    			var convertedDate = new Date(dateString.split('/').reverse().join('-'));
+    			console.log("convertedDate", convertedDate);
+
+    				const rowObj = {
+    					id: `${eaushdhaResponse[i].drug_id}-${i}}`,
+    					itemId: eaushdhaResponse[i].drug_id,
+    					item: eaushdhaResponse[i].drug_name,
+    					batchNumber: eaushdhaResponse[i].batch_number,
+    					expiration: convertedDate.toLocaleDateString('en-GB').split('/').join('-'),
+    					quantity: eaushdhaResponse[i].quantity,
+    					actualQuantity: eaushdhaResponse[i].actual_quantity
+    				};
+    				stockReceiptArray.push(rowObj);
+    			}
+    			setValue(stockReceiptArray);
+
+
+    };
+
+    const updateActualQuantity = (updatedQuantity, row) => {
+        console.log("updatedQuantity", updatedQuantity, row);
+        const updatedValue = value.map((item) => {
+            if (item.id === row.id) {
+            console.log("row...", row.id);
+                return {
+                    ...item,
+                    actualQuantity: updatedQuantity,
+                };
+            }
+            return item
+        });
+        setValue(updatedValue);
+        }
+        const handleSave = async () => {
+        console.log("save");
+       const reponse = await saveReceipt(value);
+
+        }
 
 	// const handleOnChange = () => {
 	// 	const stockReceiptArray = [];
@@ -70,6 +124,7 @@ const StockReceipt = () => {
 		{ key: "actualQuantity", header: "Actual Quantity" },
 	];
 	return (
+		<>
 		<div>
 			<div style={{ display: "flex", width: "50%" }}>
 				<TextInput
@@ -132,7 +187,7 @@ const StockReceipt = () => {
 																	size="sm"
 																	id={cell.id}
 																	labelText={cell.value}
-																	value={cell.value}
+																	value={cell.value} onChange={(e) => updateActualQuantity(e.target.value, row)}
 																/>
 															</TableCell>
 														);
@@ -152,7 +207,20 @@ const StockReceipt = () => {
 				)
 			)}
 		</div>
+        { value && value.length > 0 && (
+		<ButtonSet>
+          <Button kind="secondary" onClick={handleCancel}>
+            Cancel
+          </Button>
+          <Button kind="primary" onClick={handleSave}>
+            Save
+          </Button>
+        </ButtonSet>
+        )}
+		</>
 	);
+
+
 };
 
 export default StockReceipt;
