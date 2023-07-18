@@ -17,38 +17,60 @@ import {
 	ButtonSet,
 } from "carbon-components-react";
 
-
 const StockReceipt = () => {
 	const [value, setValue] = useState([]);
 	const [outwardNumber, setOutwardNumber] = useState("");
 	const [stockIntakeButtonClick, setStockIntakeButtonClick] = useState(false);
-
+	const [isDisabled, setIsDisabled] = useState(true);
 
 	const { data: eaushdhaResponse, error } = useSWR(
 		stockIntakeButtonClick ? "/openmrs/ws/rest/v1/eaushadha/stock-receipt" : "",
-		fetcherPost
+		(url) => fetcherPost(url, { ouid: outwardNumber })
 	);
 
-	console.log("eaushdhaResponse", eaushdhaResponse, error);
+	console.log(
+		"eaushdhaResponse",
+		eaushdhaResponse,
+		error,
+		stockIntakeButtonClick
+	);
+
+	useEffect(() => {
+		if (eaushdhaResponse || error) setStockIntakeButtonClick(false);
+	}, [eaushdhaResponse, error]);
+
+	useEffect(() => {
+		if (stockIntakeButtonClick) {
+			setIsDisabled(true);
+		}
+	}, [stockIntakeButtonClick]);
+
+	useEffect(() => {
+		console.log("outwardNumber", outwardNumber);
+		if (outwardNumber.length > 0) setIsDisabled(false);
+	}, [outwardNumber]);
 
 	useEffect(() => {
 		if (eaushdhaResponse && eaushdhaResponse.length > 0) {
 			const stockReceiptArray = [];
 
-
 			for (let i = 0; i < eaushdhaResponse.length; i++) {
-			var dateString = eaushdhaResponse[i].exp_date;
-			var convertedDate = new Date(dateString.split('/').reverse().join('-'));
-			console.log("convertedDate", convertedDate);
+				var dateString = eaushdhaResponse[i].exp_date;
+				var convertedDate = new Date(dateString.split("/").reverse().join("-"));
+				console.log("convertedDate", convertedDate);
 
 				const rowObj = {
 					id: `${eaushdhaResponse[i].drug_id}-${i}}`,
 					itemId: eaushdhaResponse[i].drug_id,
 					item: eaushdhaResponse[i].drug_name,
+					supplierName: eaushdhaResponse[i].supplier,
 					batchNumber: eaushdhaResponse[i].batch_number,
-					expiration: convertedDate.toLocaleDateString('en-GB').split('/').join('-'),
-					quantity: eaushdhaResponse[i].quantity,
-					actualQuantity: eaushdhaResponse[i].actual_quantity
+					expiration: convertedDate
+						.toLocaleDateString("en-GB")
+						.split("/")
+						.join("-"),
+					quantity: eaushdhaResponse[i].quantity_In_Pack,
+					actualQuantity: eaushdhaResponse[i].quantity_In_Units,
 				};
 				stockReceiptArray.push(rowObj);
 			}
@@ -57,48 +79,49 @@ const StockReceipt = () => {
 	}, [eaushdhaResponse]);
 
 	const handleCancel = () => {
-	console.log("cancel");
-	const stockReceiptArray = [];
-    	for (let i = 0; i < eaushdhaResponse.length; i++) {
-    			var dateString = eaushdhaResponse[i].exp_date;
-    			var convertedDate = new Date(dateString.split('/').reverse().join('-'));
-    			console.log("convertedDate", convertedDate);
+		console.log("cancel");
+		const stockReceiptArray = [];
+		for (let i = 0; i < eaushdhaResponse.length; i++) {
+			var dateString = eaushdhaResponse[i].exp_date;
+			var convertedDate = new Date(dateString.split("/").reverse().join("-"));
+			console.log("convertedDate", convertedDate);
 
-    				const rowObj = {
-    					id: `${eaushdhaResponse[i].drug_id}-${i}}`,
-    					itemId: eaushdhaResponse[i].drug_id,
-    					item: eaushdhaResponse[i].drug_name,
-    					batchNumber: eaushdhaResponse[i].batch_number,
-    					expiration: convertedDate.toLocaleDateString('en-GB').split('/').join('-'),
-    					quantity: eaushdhaResponse[i].quantity,
-    					actualQuantity: eaushdhaResponse[i].actual_quantity
-    				};
-    				stockReceiptArray.push(rowObj);
-    			}
-    			setValue(stockReceiptArray);
+			const rowObj = {
+				id: `${eaushdhaResponse[i].drug_id}-${i}}`,
+				itemId: eaushdhaResponse[i].drug_id,
+				item: eaushdhaResponse[i].drug_name,
+				supplierName: eaushdhaResponse[i].supplier,
+				batchNumber: eaushdhaResponse[i].batch_number,
+				expiration: convertedDate
+					.toLocaleDateString("en-GB")
+					.split("/")
+					.join("-"),
+				quantity: eaushdhaResponse[i].quantity_In_Pack,
+				actualQuantity: eaushdhaResponse[i].quantity_In_Units,
+			};
+			stockReceiptArray.push(rowObj);
+		}
+		setValue(stockReceiptArray);
+	};
 
-
-    };
-
-    const updateActualQuantity = (updatedQuantity, row) => {
-        console.log("updatedQuantity", updatedQuantity, row);
-        const updatedValue = value.map((item) => {
-            if (item.id === row.id) {
-            console.log("row...", row.id);
-                return {
-                    ...item,
-                    actualQuantity: updatedQuantity,
-                };
-            }
-            return item
-        });
-        setValue(updatedValue);
-        }
-        const handleSave = async () => {
-        console.log("save");
-       const reponse = await saveReceipt(value);
-
-        }
+	const updateActualQuantity = (updatedQuantity, row) => {
+		console.log("updatedQuantity", updatedQuantity, row);
+		const updatedValue = value.map((item) => {
+			if (item.id === row.id) {
+				console.log("row...", row.id);
+				return {
+					...item,
+					actualQuantity: updatedQuantity,
+				};
+			}
+			return item;
+		});
+		setValue(updatedValue);
+	};
+	const handleSave = async () => {
+		console.log("save");
+		const reponse = await saveReceipt(value);
+	};
 
 	// const handleOnChange = () => {
 	// 	const stockReceiptArray = [];
@@ -116,42 +139,50 @@ const StockReceipt = () => {
 	// };
 	console.log("value", value);
 	const headers = [
-		{ key: "itemId", header: "Item Id"},
+		{ key: "itemId", header: "Item Id" },
 		{ key: "item", header: "Item" },
+		{ key: "supplierName", header: "Supplier Name" },
 		{ key: "batchNumber", header: "Batch Number" },
 		{ key: "expiration", header: "Expiration" },
-		{ key: "quantity", header: "Quantity" },
-		{ key: "actualQuantity", header: "Actual Quantity" },
+		{ key: "quantity", header: "Batch Quantity" },
+		{ key: "actualQuantity", header: "Total Quantity" },
 	];
+	console.log("isDisabled", isDisabled);
 	return (
 		<>
-		<div>
-			<div style={{ display: "flex", width: "50%" }}>
-				<TextInput
-					id="stock-receipt"
-					labelText="Outward Number"
-					style={{ width: "80%" }}
-					onChange={(e) => setOutwardNumber(e.target.value)}
-				/>
-				<Button onClick={() => setStockIntakeButtonClick(true)} kind="primary">
-					Stock Intake
-				</Button>
-			</div>
-			{stockIntakeButtonClick && !eaushdhaResponse && !error ? (
-				<Loading />
-			) : (
-				value &&
-				value.length > 0 && (
-					<DataTable rows={value} headers={headers}>
-						{({
-							rows,
-							headers,
-							getTableProps,
-							getHeaderProps,
-							getRowProps,
-						}) => (
-							<>
-								{/* <TableContainer>
+			<div>
+				<div style={{ display: "flex", width: "50%", maxHeight: "3rem" }}>
+					<TextInput
+						id="stock-receipt"
+						labelText="Outward Number"
+						style={{ width: "80%" }}
+						onChange={(e) => setOutwardNumber(e.target.value)}
+						readOnly={outwardNumber.length == 0 ? false : isDisabled}
+					/>
+					<Button
+						onClick={() => setStockIntakeButtonClick(true)}
+						size={"sm"}
+						kind="primary"
+						disabled={isDisabled}
+					>
+						Stock Intake
+					</Button>
+				</div>
+				{stockIntakeButtonClick && !eaushdhaResponse && !error ? (
+					<Loading />
+				) : (
+					value &&
+					value.length > 0 && (
+						<DataTable rows={value} headers={headers}>
+							{({
+								rows,
+								headers,
+								getTableProps,
+								getHeaderProps,
+								getRowProps,
+							}) => (
+								<>
+									{/* <TableContainer>
 							<TableToolbar style={{ width: "15rem" }}>
 								<TableToolbarContent style={{ justifyContent: "flex-start" }}>
 									<TableToolbarSearch
@@ -160,67 +191,73 @@ const StockReceipt = () => {
 									/>
 								</TableToolbarContent>
 							</TableToolbar> */}
-								{console.log("rows", rows)}
-								<Table {...getTableProps()} useZebraStyles={true}>
-									<TableHead>
-										<TableRow>
-											{headers.map((header) => (
-												<TableHeader
-													{...getHeaderProps({
-														header,
-													})}
-												>
-													{header.header}
-												</TableHeader>
-											))}
-										</TableRow>
-									</TableHead>
-									<TableBody>
-										{rows.map((row) => (
-											<TableRow {...getRowProps({ row })}>
-												{row.cells.map((cell) => {
-													console.log('row', row)
-													if (cell.id.includes("actualQuantity"))
-														return (
-															<TableCell key={cell.id}>
-																<NumberInput
-																	size="sm"
-																	id={cell.id}
-																	labelText={cell.value}
-																	value={cell.value} onChange={(e) => updateActualQuantity(e.target.value, row)}
-																/>
-															</TableCell>
-														);
-													else
-														return (
-															<TableCell key={cell.id}>{cell.value}</TableCell>
-														);
-												})}
+									{console.log("rows", rows)}
+									<Table {...getTableProps()} useZebraStyles={true}>
+										<TableHead>
+											<TableRow>
+												{headers.map((header) => (
+													<TableHeader
+														{...getHeaderProps({
+															header,
+														})}
+													>
+														{header.header}
+													</TableHeader>
+												))}
 											</TableRow>
-										))}
-									</TableBody>
-								</Table>
-								{/* </TableContainer> */}
-							</>
-						)}
-					</DataTable>
-				)
+										</TableHead>
+										<TableBody>
+											{rows.map((row) => (
+												<TableRow {...getRowProps({ row })}>
+													{row.cells.map((cell) => {
+														console.log("row", row);
+														if (
+															cell.id.includes("actualQuantity") ||
+															cell.id.includes("quantity")
+														)
+															return (
+																<TableCell key={cell.id}>
+																	<NumberInput
+																		size="sm"
+																		id={cell.id}
+																		labelText={cell.value}
+																		value={cell.value}
+																		onChange={(e) =>
+																			updateActualQuantity(e.target.value, row)
+																		}
+																	/>
+																</TableCell>
+															);
+														else
+															return (
+																<TableCell key={cell.id}>
+																	{cell.value}
+																</TableCell>
+															);
+													})}
+												</TableRow>
+											))}
+										</TableBody>
+									</Table>
+									{/* </TableContainer> */}
+								</>
+							)}
+						</DataTable>
+					)
+				)}
+			</div>
+			{value && value.length > 0 && (
+				<ButtonSet>
+					<Button kind="secondary" onClick={handleCancel}>
+						Cancel
+					</Button>
+					<Button kind="primary" onClick={handleSave}>
+						Save
+					</Button>
+				</ButtonSet>
 			)}
-		</div>
-        { value && value.length > 0 && (
-		<ButtonSet>
-          <Button kind="secondary" onClick={handleCancel}>
-            Cancel
-          </Button>
-          <Button kind="primary" onClick={handleSave}>
-            Save
-          </Button>
-        </ButtonSet>
-        )}
 		</>
 	);
-
-
 };
 
 export default StockReceipt;

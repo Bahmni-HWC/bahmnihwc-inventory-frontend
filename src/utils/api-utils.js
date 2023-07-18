@@ -17,13 +17,13 @@ const timeoutId = setTimeout(() => {
 	controller.abort(); // Abort the request if timeout is reached
 }, timeout);
 
-export const fetcherPost = (url) => {
+export const fetcherPost = (url, data) => {
 	return fetch(url, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
 		},
-		body: JSON.stringify({ ouid: "ISS/NR/2021-22/2935231" }),
+		body: JSON.stringify(data),
 		signal: controller.signal,
 	})
 		.then((response) => response.json())
