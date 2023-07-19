@@ -143,14 +143,17 @@ const StockReceipt = () => {
 				lowContrast={true}
 				title={title}
 				timeout={5000}
-				onClose={() => {setOnSuccesful(false); setOnFailure(false)}}
+				onClose={() => {
+					setOnSuccesful(false);
+					setOnFailure(false);
+				}}
 			/>
 		);
 	};
 
 	return (
 		<>
-			<Grid style={{ paddingLeft: "0", marginBottom: "3rem" }}>
+			<Grid style={{ paddingLeft: "0", margin: "0" }}>
 				<Column lg={16}>
 					<Column lg={3}>
 						{onSuccesful &&
@@ -165,15 +168,16 @@ const StockReceipt = () => {
 								value={outwardNumber}
 								style={{ width: "80%" }}
 								onChange={(e) => setOutwardNumber(e.target.value)}
-								readOnly={outwardNumber.length == 0 ? false : isDisabled}
+								disabled={outwardNumber.length == 0 ? false : isDisabled}
 							/>
 						</Column>
-						<Column sm={8} lg={4} style={{ paddingTop: "1rem" }}>
+						<Column sm={8} lg={4} style={{ paddingTop: "1.5rem" }}>
 							<Button
 								onClick={() => setStockIntakeButtonClick(true)}
-								size={"sm"}
+								size={"md"}
 								kind="primary"
 								disabled={isDisabled}
+								className={!isDisabled ? styles.buttonColor : ""}
 							>
 								Stock Fetch
 							</Button>
@@ -204,6 +208,11 @@ const StockReceipt = () => {
 																	{...getHeaderProps({
 																		header,
 																	})}
+																	className={
+																		header.key === "item"
+																			? styles.stickyColumn
+																			: ""
+																	}
 																>
 																	{header.header}
 																</TableHeader>
@@ -239,7 +248,14 @@ const StockReceipt = () => {
 																		);
 																	} else
 																		return (
-																			<TableCell key={cell.id}>
+																			<TableCell
+																				key={cell.id}
+																				className={
+																					cell.id.includes("item")
+																						? styles.stickyColumn
+																						: ""
+																				}
+																			>
 																				{cell.value}
 																			</TableCell>
 																		);
@@ -261,7 +277,11 @@ const StockReceipt = () => {
 							<Button kind="secondary" onClick={handleCancel}>
 								Cancel
 							</Button>
-							<Button kind="primary" onClick={handleSave}>
+							<Button
+								kind="primary"
+								onClick={handleSave}
+								className={styles.buttonColor}
+							>
 								Save
 							</Button>
 						</ButtonSet>
