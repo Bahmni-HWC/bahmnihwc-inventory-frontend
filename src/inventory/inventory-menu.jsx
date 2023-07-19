@@ -13,7 +13,7 @@ import StockReceipt from "../stock-receipt/stock-receipt";
 const InventoryMenu = () => {
 	const [cookies] = useCookies();
 	return (
-		<div style={{ padding: "2rem" }}>
+		<div style={{ paddingTop: "2rem" }}>
 			<h4>{getLocationName(cookies[locationCookieName]?.name)} </h4>
 			<Tabs>
 				<Tab label={inventoryMenu[0]}>

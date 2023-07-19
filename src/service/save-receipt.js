@@ -5,7 +5,7 @@ export const saveReceipt = async (data) => {
      "attributes": [],
      "items": [
        {
-         "item": "6e71e78d-a220-49ab-bee3-83227a1053fe",
+         "item": "b8252de7-81f6-4379-bdc2-27b3c29b0399",
          "quantity": 200,
          "expiration": "26-07-2023",
          "calculatedExpiration": false,
@@ -16,7 +16,7 @@ export const saveReceipt = async (data) => {
      "instanceType": "fce0b4fc-9402-424a-aacb-f99599e51a9f",
      "operationDate": "12-07-2023 23:38:05",
      "source": "",
-     "destination": "5edf18b7-1ae2-11ee-9aca-0242ac17000f",
+     "destination": "53d12a8a-2475-11ee-8006-0242ac13000b",
      "institution": "",
      "department": ""
    }

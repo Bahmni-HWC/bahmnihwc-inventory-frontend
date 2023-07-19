@@ -1,0 +1,11 @@
+.stockReceiptTable {
+	max-height: calc(100vh - 500px);
+	overflow-y: scroll;
+}
+
+.buttonSet {
+	float: right;
+	justify-content: end;
+	width: 30%;
+	padding-top: 1rem;
+}

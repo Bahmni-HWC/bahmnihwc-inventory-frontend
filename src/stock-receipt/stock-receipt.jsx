@@ -12,11 +12,15 @@ import {
 	TableCell,
 	TableBody,
 	Button,
-	NumberInput,
 	Loading,
 	ButtonSet,
+	Grid,
+	Column,
+	Row,
+	ToastNotification,
 } from "carbon-components-react";
 import { stockReceiptHeaders } from "../../constants";
+import styles from "./stock-receipt.module.scss";
 
 const StockReceipt = () => {
 	const [items, setItems] = useState([]);
@@ -24,6 +28,10 @@ const StockReceipt = () => {
 	const [stockIntakeButtonClick, setStockIntakeButtonClick] = useState(false);
 	const [isDisabled, setIsDisabled] = useState(true);
 	const [receivedResponse, setReceivedResponse] = useState();
+	const [onSuccesful, setOnSuccesful] = useState(false);
+	const [onFailure, setOnFailure] = useState(false);
+	const successMessage = "Stock Receipt Saved Successfully";
+	const failureMessage = "Stock Receipt Failed to Save";
 
 	const { data: eaushdhaResponse, error } = useSWR(
 		stockIntakeButtonClick ? "/openmrs/ws/rest/v1/eaushadha/stock-receipt" : "",
@@ -50,6 +58,16 @@ const StockReceipt = () => {
 			setReceivedResponse(eaushdhaResponse);
 		}
 	}, [eaushdhaResponse]);
+
+	useEffect(() => {
+		if (onSuccesful) {
+			setItems([]);
+			setReceivedResponse([]);
+			setStockIntakeButtonClick(false);
+			setIsDisabled(true);
+			setOutwardNumber("");
+		}
+	}, [onSuccesful]);
 
 	const getRowObj = (response) => {
 		const stockReceiptArray = [];
@@ -110,111 +128,146 @@ const StockReceipt = () => {
 	};
 
 	const handleSave = async () => {
-		const reponse = await saveReceipt(items);
+		const response = await saveReceipt(items);
+		if (response) {
+			console.log("ok.....", response.ok);
+			response.ok ? setOnSuccesful(true) : setOnFailure(true);
+		}
+	};
+
+	const renderNotificationMessage = (kind, title) => {
+		console.log("Inside toast");
+		return (
+			<ToastNotification
+				kind={kind}
+				lowContrast={true}
+				title={title}
+				timeout={5000}
+				onClose={() => {setOnSuccesful(false); setOnFailure(false)}}
+			/>
+		);
 	};
 
 	return (
 		<>
-			<div>
-				<div style={{ display: "flex", width: "50%" }}>
-					<TextInput
-						id="stock-receipt"
-						labelText="Outward Number"
-						style={{ width: "80%" }}
-						onChange={(e) => setOutwardNumber(e.target.value)}
-						readOnly={outwardNumber.length == 0 ? false : isDisabled}
-					/>
-					<Button
-						onClick={() => setStockIntakeButtonClick(true)}
-						size={"sm"}
-						kind="primary"
-						disabled={isDisabled}
-					>
-						Stock Fetch
-					</Button>
-				</div>
-				{stockIntakeButtonClick && !eaushdhaResponse && !error ? (
-					<Loading />
-				) : (
-					items &&
-					items.length > 0 && (
-						<DataTable rows={items} headers={stockReceiptHeaders}>
-							{({
-								rows,
-								headers,
-								getTableProps,
-								getHeaderProps,
-								getRowProps,
-							}) => (
-								<>
-									<Table {...getTableProps()} useZebraStyles={true}>
-										<TableHead>
-											<TableRow>
-												{headers.map((header) => (
-													<TableHeader
-														{...getHeaderProps({
-															header,
-														})}
-													>
-														{header.header}
-													</TableHeader>
-												))}
-											</TableRow>
-										</TableHead>
-										<TableBody>
-											{rows.map((row) => (
-												<TableRow {...getRowProps({ row })}>
-													{row.cells.map((cell) => {
-														if (
-															cell.id.includes("totalQuantity") ||
-															cell.id.includes("quantity")
-														) {
-															return (
-																<TableCell key={cell.id}>
-																	<TextInput
-																		size="sm"
-																		id={cell.id}
-																		value={cell.value}
-																		invalid={isNaN(cell.value)}
-																		invalidText="Please enter a valid number"
-																		labelText={''}
-																		onChange={(e) =>
-																			updateActualQuantity(
-																				e.target.value,
-																				row,
-																				cell.id
-																			)
-																		}
-																	/>
-																</TableCell>
-															);
-														} else
-															return (
-																<TableCell key={cell.id}>
-																	{cell.value}
-																</TableCell>
-															);
-													})}
-												</TableRow>
-											))}
-										</TableBody>
-									</Table>
-								</>
-							)}
-						</DataTable>
-					)
-				)}
-			</div>
-			{items && items.length > 0 && (
-				<ButtonSet>
-					<Button kind="secondary" onClick={handleCancel}>
-						Cancel
-					</Button>
-					<Button kind="primary" onClick={handleSave}>
-						Save
-					</Button>
-				</ButtonSet>
-			)}
+			<Grid style={{ paddingLeft: "0", marginBottom: "3rem" }}>
+				<Column lg={16}>
+					<Column lg={3}>
+						{onSuccesful &&
+							renderNotificationMessage("success", successMessage)}
+						{onFailure && renderNotificationMessage("error", failureMessage)}
+					</Column>
+					<Row>
+						<Column sm={8} lg={4}>
+							<TextInput
+								id="stock-receipt"
+								labelText="Outward Number"
+								value={outwardNumber}
+								style={{ width: "80%" }}
+								onChange={(e) => setOutwardNumber(e.target.value)}
+								readOnly={outwardNumber.length == 0 ? false : isDisabled}
+							/>
+						</Column>
+						<Column sm={8} lg={4} style={{ paddingTop: "1rem" }}>
+							<Button
+								onClick={() => setStockIntakeButtonClick(true)}
+								size={"sm"}
+								kind="primary"
+								disabled={isDisabled}
+							>
+								Stock Fetch
+							</Button>
+						</Column>
+					</Row>
+					{/* </div> */}
+					{stockIntakeButtonClick && !eaushdhaResponse && !error ? (
+						<Loading />
+					) : (
+						items &&
+						items.length > 0 && (
+							<Column sm={16} style={{ paddingTop: "1rem" }}>
+								<div className={styles.stockReceiptTable}>
+									<DataTable rows={items} headers={stockReceiptHeaders}>
+										{({
+											rows,
+											headers,
+											getTableProps,
+											getHeaderProps,
+											getRowProps,
+										}) => (
+											<>
+												<Table {...getTableProps()} useZebraStyles={true}>
+													<TableHead>
+														<TableRow>
+															{headers.map((header) => (
+																<TableHeader
+																	{...getHeaderProps({
+																		header,
+																	})}
+																>
+																	{header.header}
+																</TableHeader>
+															))}
+														</TableRow>
+													</TableHead>
+													<TableBody>
+														{rows.map((row) => (
+															<TableRow {...getRowProps({ row })}>
+																{row.cells.map((cell) => {
+																	if (
+																		cell.id.includes("totalQuantity") ||
+																		cell.id.includes("quantity")
+																	) {
+																		return (
+																			<TableCell key={cell.id}>
+																				<TextInput
+																					size="sm"
+																					id={cell.id}
+																					value={cell.value}
+																					invalid={isNaN(cell.value)}
+																					invalidText="Please enter a valid number"
+																					labelText={""}
+																					onChange={(e) =>
+																						updateActualQuantity(
+																							e.target.value,
+																							row,
+																							cell.id
+																						)
+																					}
+																				/>
+																			</TableCell>
+																		);
+																	} else
+																		return (
+																			<TableCell key={cell.id}>
+																				{cell.value}
+																			</TableCell>
+																		);
+																})}
+															</TableRow>
+														))}
+													</TableBody>
+												</Table>
+											</>
+										)}
+									</DataTable>
+								</div>
+							</Column>
+						)
+					)}
+
+					{items && items.length > 0 && (
+						<ButtonSet className={styles.buttonSet}>
+							<Button kind="secondary" onClick={handleCancel}>
+								Cancel
+							</Button>
+							<Button kind="primary" onClick={handleSave}>
+								Save
+							</Button>
+						</ButtonSet>
+					)}
+				</Column>
+			</Grid>
 		</>
 	);
 };
