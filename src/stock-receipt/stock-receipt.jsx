@@ -130,13 +130,11 @@ const StockReceipt = () => {
 	const handleSave = async () => {
 		const response = await saveReceipt(items);
 		if (response) {
-			console.log("ok.....", response.ok);
 			response.ok ? setOnSuccesful(true) : setOnFailure(true);
 		}
 	};
 
 	const renderNotificationMessage = (kind, title) => {
-		console.log("Inside toast");
 		return (
 			<ToastNotification
 				kind={kind}
