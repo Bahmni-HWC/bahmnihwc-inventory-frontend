@@ -54,4 +54,4 @@ export const stockRoomURL = (locationName) =>
 export const prescribedDrugOrders = (patientUuid) =>
 	`/openmrs/ws/rest/v1/bahmnicore/drugOrders/prescribedAndActive?getEffectiveOrdersOnly=false&getOtherActive=true&numberOfVisits=5&patientUuid=${patientUuid}&preferredLocale=en`;
 export const stockReceiptURL = () =>
-	"/openmrs/ws/rest/v1/eaushadha/stock-receip";
+	"/openmrs/ws/rest/v1/eaushadha/stock-receipt";

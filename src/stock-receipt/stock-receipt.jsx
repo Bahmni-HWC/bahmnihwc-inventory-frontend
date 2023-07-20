@@ -152,8 +152,8 @@ const StockReceipt = () => {
 								Stock Fetch
 							</Button>
 						</Column>
-						{stockReceiptError && <div>Something went wrong</div>}
 					</Row>
+					{stockReceiptError && <div style={{paddingTop:'1rem'}}>Something went wrong</div>}
 					{stockIntakeButtonClick && !eaushdhaResponse && !error ? (
 						<Loading />
 					) : (
