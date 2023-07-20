@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import useSWR from "swr";
-import { fetcherPost } from "../utils/api-utils";
+import { fetcherPost, stockReceiptURL } from "../utils/api-utils";
 import { saveReceipt } from "../service/save-receipt";
 import {
 	DataTable,
@@ -19,8 +19,13 @@ import {
 	Row,
 	ToastNotification,
 } from "carbon-components-react";
-import { stockReceiptHeaders } from "../../constants";
+import {
+	failureMessage,
+	stockReceiptHeaders,
+	successMessage,
+} from "../../constants";
 import styles from "./stock-receipt.module.scss";
+import { getCalculatedQuantity, getRowObj } from "../utils/helper";
 
 const StockReceipt = () => {
 	const [items, setItems] = useState([]);
@@ -30,11 +35,10 @@ const StockReceipt = () => {
 	const [receivedResponse, setReceivedResponse] = useState();
 	const [onSuccesful, setOnSuccesful] = useState(false);
 	const [onFailure, setOnFailure] = useState(false);
-	const successMessage = "Stock Receipt Saved Successfully";
-	const failureMessage = "Stock Receipt Failed to Save";
+	const [stockReceiptError, setStockReceiptError] = useState();
 
 	const { data: eaushdhaResponse, error } = useSWR(
-		stockIntakeButtonClick ? "/openmrs/ws/rest/v1/eaushadha/stock-receipt" : "",
+		stockIntakeButtonClick ? stockReceiptURL : "",
 		(url) => fetcherPost(url, { ouid: outwardNumber })
 	);
 
@@ -57,7 +61,8 @@ const StockReceipt = () => {
 			setItems(getRowObj(eaushdhaResponse));
 			setReceivedResponse(eaushdhaResponse);
 		}
-	}, [eaushdhaResponse]);
+		if (error) setStockReceiptError(error);
+	}, [eaushdhaResponse, error]);
 
 	useEffect(() => {
 		if (onSuccesful) {
@@ -68,30 +73,6 @@ const StockReceipt = () => {
 			setOutwardNumber("");
 		}
 	}, [onSuccesful]);
-
-	const getRowObj = (response) => {
-		const stockReceiptArray = [];
-		for (let i = 0; i < response.length; i++) {
-			const dateString = response[i].exp_date;
-			const convertedDate = new Date(dateString.split("/").reverse().join("-"));
-			const rowObj = {
-				id: `${response[i].drug_id}-${i}}`,
-				itemId: response[i].drug_id,
-				item: response[i].drug_name,
-				supplierName: response[i].supplier,
-				batchNumber: response[i].batch_number,
-				expiration: convertedDate
-					.toLocaleDateString("en-GB")
-					.split("/")
-					.join("-"),
-				quantity: response[i].quantity_In_Pack,
-				totalQuantity: response[i].quantity_In_Units,
-				unitPack: response[i].unitPack,
-			};
-			stockReceiptArray.push(rowObj);
-		}
-		return stockReceiptArray;
-	};
 
 	const handleCancel = () => {
 		setItems(getRowObj(receivedResponse));
@@ -116,15 +97,6 @@ const StockReceipt = () => {
 			return item;
 		});
 		setItems(updatedValue);
-	};
-
-	const getCalculatedQuantity = (quantity, unitPack) => {
-		const unitPackValue = unitPack?.split("x");
-		let unitPackQuantity = 1;
-		unitPackValue.forEach((element) => {
-			unitPackQuantity = unitPackQuantity * element;
-		});
-		return unitPackQuantity * quantity;
 	};
 
 	const handleSave = async () => {
@@ -180,8 +152,8 @@ const StockReceipt = () => {
 								Stock Fetch
 							</Button>
 						</Column>
+						{stockReceiptError && <div>Something went wrong</div>}
 					</Row>
-					{/* </div> */}
 					{stockIntakeButtonClick && !eaushdhaResponse && !error ? (
 						<Loading />
 					) : (
