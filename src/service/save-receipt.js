@@ -1,5 +1,8 @@
 import { postRequest } from '../utils/api-utils';
+
+// eslint-disable-next-line import/prefer-default-export
 export const saveReceipt = async (data) => {
+  console.log('data', data)
    const requestBody = {
    "status": "NEW",
      "attributes": [],
@@ -20,7 +23,7 @@ export const saveReceipt = async (data) => {
      "institution": "",
      "department": ""
    }
-    return await postRequest('/openmrs/ws/rest/v2/inventory/stockOperation',
+    return postRequest('/openmrs/ws/rest/v2/inventory/stockOperation',
         requestBody
     );
 }

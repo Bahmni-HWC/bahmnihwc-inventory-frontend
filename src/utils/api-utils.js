@@ -17,8 +17,8 @@ const timeoutId = setTimeout(() => {
 	controller.abort(); // Abort the request if timeout is reached
 }, timeout);
 
-export const fetcherPost = (url, data) => {
-	return fetch(url, {
+export const fetcherPost = (url, data) =>
+	fetch(url, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
@@ -27,14 +27,13 @@ export const fetcherPost = (url, data) => {
 		signal: controller.signal,
 	})
 		.then((response) => response.json())
-		.then((data) => {
+		.then((response) => {
 			clearTimeout(timeoutId); // Clear the timeout if the request succeeds
-			return data;
+			return response;
 		});
-};
 
-export const postRequest = async (url, data) => {
-	return await fetch(`${url}`, {
+export const postRequest = (url, data) =>
+	fetch(`${url}`, {
 		method: "post",
 		headers: {
 			"Content-Type": "application/json",
@@ -42,14 +41,14 @@ export const postRequest = async (url, data) => {
 		},
 		body: JSON.stringify(data),
 	});
-};
 
 export const swrOptions = {
 	revalidateIfStale: false,
 	revalidateOnFocus: false,
 	revalidateOnReconnect: false,
 };
-export const stockRoomURL = (locationName) => `/openmrs/ws/rest/v2/inventory/stockroom?q=${locationName}`;
+export const stockRoomURL = (locationName) =>
+	`/openmrs/ws/rest/v2/inventory/stockroom?q=${locationName}`;
 
 export const prescribedDrugOrders = (patientUuid) =>
 	`/openmrs/ws/rest/v1/bahmnicore/drugOrders/prescribedAndActive?getEffectiveOrdersOnly=false&getOtherActive=true&numberOfVisits=5&patientUuid=${patientUuid}&preferredLocale=en`;
