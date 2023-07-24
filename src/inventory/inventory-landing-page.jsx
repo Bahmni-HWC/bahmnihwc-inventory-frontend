@@ -1,77 +1,58 @@
-import React, { useState } from "react";
 import {
 	DataTable,
-	TableContainer,
 	Table,
 	TableBody,
 	TableCell,
+	TableContainer,
 	TableHead,
 	TableHeader,
 	TableRow,
 	TableToolbar,
 	TableToolbarContent,
-	TableToolbarSearch,
-	Loading,
+	TableToolbarSearch
 } from "carbon-components-react";
-import useSWR from "swr";
-import { fetcher, invItemURL, stockRoomURL } from "../utils/api-utils";
+import React, { useState } from "react";
+import { headers } from "../../constants";
+import {
+	useItemStockContext
+} from "../context/item-stock-context";
 import styles from "./inventory.module.scss";
-import { headers, locationCookieName } from "../../constants";
-import { useCookies } from "react-cookie";
 
 export const InventoryLandingPage = () => {
 	let rows = [];
-	const [cookies] = useCookies();
+	const { itemStock } = useItemStockContext();
 
-	const { data: stockRoom, error: stockRoomError } = useSWR(
-		stockRoomURL(cookies[locationCookieName]?.name.trim()),
-		fetcher
-	);
-
-	const { data: items, error: inventoryItemError } = useSWR(
-		stockRoom ? invItemURL(stockRoom.results[0].uuid) : '',
-		fetcher
-	);
-
-	const [searchText, setSearchText] = useState('');
+	const [searchText, setSearchText] = useState("");
 
 	const handleSearch = (event) => {
 		setSearchText(event.target.value);
 	};
 
-	if (items?.results?.length > 0) {
-		for (let index = 0; index < items.results.length; index++) {
+	if (itemStock?.length > 0) {
+		for (let index = 0; index < itemStock.length; index++) {
 			const newObj = {
 				id: `${index}`,
-				productName: items.results[index].item.name,
-				currentQuantity: items.results[index].quantity ?? 0,
+				productName: itemStock[index].item.name,
+				currentQuantity: itemStock[index].quantity ?? 0,
 			};
 			rows.push(newObj);
 		}
 	}
 	const filteredRows = rows.filter((row) =>
-		searchText !== ''
+		searchText !== ""
 			? row?.productName?.toLowerCase().includes(searchText?.toLowerCase())
 			: row
 	);
 
 	const isSortable = (key) => key === "productName";
 
-	if (
-		(items == undefined && inventoryItemError == undefined) ||
-		(!stockRoom && !stockRoomError)
-	)
-		return <Loading />;
-
-	return inventoryItemError ? (
-		<div>Something went wrong while fetching items</div>
-	) : (
-		<div className="inv-datatable" style={{ width: "50%" }}>
+	return (
+		<div className={styles.inventoryContainer}>
 			<DataTable rows={filteredRows} headers={headers} stickyHeader={true}>
 				{({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
 					<>
 						<TableContainer>
-							<TableToolbar style={{ width: "15rem" }}>
+							<TableToolbar style={{ width: "14.5rem" }}>
 								<TableToolbarContent style={{ justifyContent: "flex-start" }}>
 									<TableToolbarSearch
 										value={searchText}

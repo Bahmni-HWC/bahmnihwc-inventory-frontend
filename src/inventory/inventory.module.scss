@@ -12,3 +12,9 @@
 		text-align: center;
 	}
 }
+
+.inventoryContainer {
+	@media all and (min-width: 768px) {
+		width: 50%;
+	}
+}

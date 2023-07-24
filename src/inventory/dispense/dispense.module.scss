@@ -1,3 +1,5 @@
+@import "~carbon-components/scss/globals/scss/styles.scss";
+
 .modalRoot {
 	font-size: 12px;
 }
@@ -6,9 +8,42 @@
 	grid-template-columns: 90% 10%;
 	border-bottom: 1px solid #ccc;
 	padding: 5px 0;
-	align-items: center;
+	align-items: end;
 
 	> div:last-child {
-		text-align: center;
+		text-align: end;
+	}
+}
+
+.modalListSection {
+	max-height: 33vh;
+	overflow: scroll;
+}
+
+.dispenseContainer {
+	@media all and (min-width: 768px) {
+		width: 50%;
+	}
+}
+
+.accordionItem {
+	table {
+		.bx--accordion__content {
+			padding: 0;
+		}
+	}
+}
+
+.accordionItem {
+	div {
+		.bx--accordion__content {
+			padding: 0px;
+		}
+	}
+}
+
+.itemDrugs {
+	@media all and (min-width: 768px) {
+		width: 100%;
 	}
 }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
 	DataTable,
 	TableContainer,
@@ -12,11 +12,11 @@ import {
 	TableToolbarContent,
 	TableToolbarSearch,
 	Link,
+	Column,
 } from "carbon-components-react";
 import useSWR from "swr";
 import {
 	fetcher,
-	invItemURL,
 	activePatientWithDrugOrders,
 	prescribedDrugOrders,
 } from "../../utils/api-utils";
@@ -40,7 +40,7 @@ export const DispensePage = () => {
 	const [searchText, setSearchText] = useState("");
 	const [showModal, setShowModal] = useState(false);
 	const [prescribedDrugs, setPrescribedDrugs] = useState([]);
-	const [patientUuid, setPatientUuid] = useState("");
+	const [patient, setPatient] = useState();
 
 	const handleSearch = (event) => {
 		setSearchText(event.target.value);
@@ -56,32 +56,60 @@ export const DispensePage = () => {
 			};
 		});
 	}
-	console.log("item...", items);
+
 	const filteredRows = rows.filter((row) => {
-		console.log(
-			"first",
-			row?.patientName,
-			searchText,
-			row?.patientName?.toLowerCase().includes(searchText?.toLowerCase())
-		);
 		return searchText !== ""
 			? row?.patientName?.toLowerCase().includes(searchText?.toLowerCase())
 			: row;
 	});
-	console.log("showModal", showModal);
-	const { data: prescibedDrugs, error: prescribedDrugsError } = useSWR(
-		showModal ? prescribedDrugOrders(patientUuid) : [],
-		fetcher
+
+	const { data: drugItems, error: drugItemsError } = useSWR(
+		showModal && prescribedDrugs.length == 0
+			? prescribedDrugOrders(patient.id)
+			: [],
+		fetcher,
+		{
+			revalidateIfStale: false,
+			revalidateOnFocus: false,
+			revalidateOnReconnect: false,
+		}
 	);
-	console.log("prescibedDrugs", prescibedDrugs);
+
+	useEffect(() => {
+		if (drugItems) {
+			console.log("Inside useEffect", drugItems);
+			const visitDrugOrders = drugItems.visitDrugOrders;
+			const drugOrders = [];
+			visitDrugOrders.forEach((visitDrugOrder) => {
+				const obj = {
+					id: visitDrugOrder.uuid,
+					drugName: visitDrugOrder.concept.name,
+					drugUuid: visitDrugOrder.concept.uuid,
+					quantity: visitDrugOrder.dosingInstructions.quantity,
+					dose: visitDrugOrder.dosingInstructions.dose,
+					doseUnits: visitDrugOrder.dosingInstructions.doseUnits,
+					frequency: visitDrugOrder.dosingInstructions.frequency,
+					duration: visitDrugOrder.duration,
+					durationUnits: visitDrugOrder.durationUnits,
+				};
+				drugOrders.push(obj);
+			});
+			if (JSON.stringify(prescribedDrugs) !== JSON.stringify(drugOrders)) {
+				console.log('Inside if')
+				setPrescribedDrugs(drugOrders);
+			}
+		}
+	}, [drugItems]);
 
 	const handleOnLinkClick = (patientDetails) => {
 		setShowModal(true);
-		setPatientUuid(patientDetails.id);
+		setPatient({
+			id: patientDetails.id,
+			name: patientDetails.cells[1].value,
+		});
 	};
-	const isSortable = (key) => key === "patientName";
 
-	const handleRowClick = (row) => {};
+	const isSortable = (key) => key === "patientName";
 
 	if (items == undefined && inventoryItemError == undefined)
 		return <div>Loading...</div>;
@@ -89,7 +117,7 @@ export const DispensePage = () => {
 	return inventoryItemError ? (
 		<div>Something went wrong while fetching items</div>
 	) : (
-		<div className="inv-datatable" style={{ width: "50%" }}>
+		<div className={styles.dispenseContainer}>
 			<h5 style={{ paddingBottom: "1rem" }}>{activePatients}</h5>
 			<DataTable
 				rows={filteredRows}
@@ -99,7 +127,7 @@ export const DispensePage = () => {
 				{({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
 					<>
 						<TableContainer>
-							<TableToolbar style={{ width: "15rem" }}>
+							<TableToolbar style={{ width: "14.5rem" }}>
 								<TableToolbarContent style={{ justifyContent: "flex-start" }}>
 									<TableToolbarSearch
 										value={searchText}
@@ -124,23 +152,12 @@ export const DispensePage = () => {
 								</TableHead>
 								<TableBody>
 									{rows.map((row) => (
-										<TableRow
-											{...getRowProps({ row })}
-											// onClick={() => handleRowClick(row)}
-										>
+										<TableRow {...getRowProps({ row })}>
 											{row.cells.map((cell) => (
 												<TableCell key={cell.id}>
-													{" "}
-													{cell.info.header === "patientName" ? (
-														<Link
-															href="#"
-															onClick={() => handleOnLinkClick(row)}
-														>
-															{cell.value}
-														</Link>
-													) : (
-														cell.value
-													)}
+													<Link href="#" onClick={() => handleOnLinkClick(row)}>
+														{cell.value}
+													</Link>
 												</TableCell>
 											))}
 										</TableRow>
@@ -154,17 +171,11 @@ export const DispensePage = () => {
 			{showModal && (
 				<CustomModal
 					data={{
-						id: 1,
-						name: "Patty O'Furniture",
-						dispense_drugs: [
-							{
-								id: "d1",
-								name: "H (Tab(s)) 750 Tabs, Once/Day, 4 day(s)",
-								quantity: 750,
-							},
-						],
+						id: patient.id,
+						name: patient.name,
+						dispense_drugs: [...prescribedDrugs],
 					}}
-					showModal={true}
+					showModal={showModal}
 					rootClass={styles.modal}
 					modalListClass={styles.modalList}
 					subTitle="Dispense drug for"
@@ -172,7 +183,8 @@ export const DispensePage = () => {
 					secondaryButton="Cancel"
 					tabs={["", "Qty."]}
 					handleSubmit={(val) => console.log(val)}
-					closeModal={() => console.log("closer")}
+					closeModal={setShowModal}
+					patientDetails={patient}
 				/>
 			)}
 		</div>
