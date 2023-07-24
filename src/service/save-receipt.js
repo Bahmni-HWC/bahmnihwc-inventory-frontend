@@ -40,7 +40,7 @@ import { postRequest, getRequest } from '../utils/api-utils';
        });
       })
       );
-  return await postRequest('/openmrs/ws/rest/v2/inventory/stockOperation', requestBody);
+  return  postRequest('/openmrs/ws/rest/v2/inventory/stockOperation', requestBody);
 };
 export default saveReceipt;
 
