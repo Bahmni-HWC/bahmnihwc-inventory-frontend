@@ -28,6 +28,6 @@ export const getCalculatedQuantity = (quantity, unitPack) => {
 	unitPackValue.forEach((element) => {
 		unitPackQuantity *= element;
 	});
-	return parseInt(unitPackQuantity * quantity);
+	return parseInt(unitPackQuantity * quantity, 10);
 };
 
