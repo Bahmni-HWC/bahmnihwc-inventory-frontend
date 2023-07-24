@@ -13,8 +13,8 @@ export const getRowObj = (response) => {
 				.toLocaleDateString("en-GB")
 				.split("/")
 				.join("-"),
-			quantity: element.quantity_In_Pack,
-			totalQuantity: element.quantity_In_Units,
+			quantity: element.quantity_in_pack,
+			totalQuantity: element.quantity_in_units,
 			unitPack: element.unitPack,
 		};
 		stockReceiptArray.push(rowObj);
@@ -28,5 +28,6 @@ export const getCalculatedQuantity = (quantity, unitPack) => {
 	unitPackValue.forEach((element) => {
 		unitPackQuantity *= element;
 	});
-	return unitPackQuantity * quantity;
+	return parseInt(unitPackQuantity * quantity);
 };
+
