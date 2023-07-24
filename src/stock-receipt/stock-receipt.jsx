@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import useSWR from "swr";
 import { fetcherPost, stockReceiptURL, getRequest, fetcher, stockRoomURL } from "../utils/api-utils";
-import { saveReceipt } from "../service/save-receipt";
+import saveReceipt from '../service/save-receipt';
 
 import {
 	DataTable,
