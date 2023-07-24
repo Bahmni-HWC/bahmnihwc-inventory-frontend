@@ -25,7 +25,7 @@ import {
 	successMessage,
 } from "../../constants";
 import styles from "./stock-receipt.module.scss";
-import { getCalculatedQuantity, getRowObj } from "../utils/helper";
+import { getCalculatedQuantity, getStockReceiptObj } from "./eaushadha-response-mapper";
 
 const StockReceipt = () => {
 	const [items, setItems] = useState([]);
@@ -58,7 +58,7 @@ const StockReceipt = () => {
 
 	useEffect(() => {
 		if (eaushdhaResponse && eaushdhaResponse.length > 0) {
-			setItems(getRowObj(eaushdhaResponse));
+			setItems(getStockReceiptObj(eaushdhaResponse));
 			setReceivedResponse(eaushdhaResponse);
 		}
 		if (error) setStockReceiptError(error);
@@ -75,7 +75,7 @@ const StockReceipt = () => {
 	}, [onSuccesful]);
 
 	const handleCancel = () => {
-		setItems(getRowObj(receivedResponse));
+		setItems(getStockReceiptObj(receivedResponse));
 	};
 
 	const updateActualQuantity = (quantity, row, cell) => {

@@ -1,4 +1,4 @@
-export const getRowObj = (response) => {
+export const getStockReceiptObj = (response) => {
 	const stockReceiptArray = [];
 	response?.forEach((element,index) => {
 		const dateString = element.exp_date;
