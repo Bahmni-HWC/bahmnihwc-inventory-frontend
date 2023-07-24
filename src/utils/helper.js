@@ -13,8 +13,8 @@ export const getRowObj = (response) => {
 				.toLocaleDateString("en-GB")
 				.split("/")
 				.join("-"),
-			quantity: element.quantity_in_pack,
-			totalQuantity: element.quantity_in_units,
+			quantity: element.quantity_In_Pack,
+            totalQuantity: element.quantity_In_Units,
 			unitPack: element.unitPack,
 		};
 		stockReceiptArray.push(rowObj);
