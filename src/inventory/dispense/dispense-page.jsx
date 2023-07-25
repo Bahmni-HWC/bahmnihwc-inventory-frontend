@@ -11,16 +11,23 @@ import {
 	TableToolbar,
 	TableToolbarContent,
 	TableToolbarSearch,
-	Loading,
+	Link,
 } from "carbon-components-react";
 import useSWR from "swr";
-import { fetcher, activePatientWithDrugOrders } from "../../utils/api-utils";
+import {
+	fetcher,
+	invItemURL,
+	activePatientWithDrugOrders,
+	prescribedDrugOrders,
+} from "../../utils/api-utils";
 import {
 	locationCookieName,
 	dispenseHeaders,
 	activePatients,
 } from "../../../constants";
 import { useCookies } from "react-cookie";
+import CustomModal from "../../components/CustomModal";
+import styles from "./dispense.module.scss";
 
 export const DispensePage = () => {
 	let rows = [];
@@ -31,6 +38,9 @@ export const DispensePage = () => {
 	);
 
 	const [searchText, setSearchText] = useState("");
+	const [showModal, setShowModal] = useState(false);
+	const [prescribedDrugs, setPrescribedDrugs] = useState([]);
+	const [patientUuid, setPatientUuid] = useState("");
 
 	const handleSearch = (event) => {
 		setSearchText(event.target.value);
@@ -46,19 +56,35 @@ export const DispensePage = () => {
 			};
 		});
 	}
-
+	console.log("item...", items);
 	const filteredRows = rows.filter((row) => {
+		console.log(
+			"first",
+			row?.patientName,
+			searchText,
+			row?.patientName?.toLowerCase().includes(searchText?.toLowerCase())
+		);
 		return searchText !== ""
-			? row?.patientName?.toLowerCase().includes(searchText?.toLowerCase()) ||
-					row?.patientId?.toLowerCase().includes(searchText?.toLowerCase())
+			? row?.patientName?.toLowerCase().includes(searchText?.toLowerCase())
 			: row;
 	});
+	console.log("showModal", showModal);
+	const { data: prescibedDrugs, error: prescribedDrugsError } = useSWR(
+		showModal ? prescribedDrugOrders(patientUuid) : [],
+		fetcher
+	);
+	console.log("prescibedDrugs", prescibedDrugs);
 
-	const handleRowClick = (row) => {
-		console.log("row click ", row);
+	const handleOnLinkClick = (patientDetails) => {
+		setShowModal(true);
+		setPatientUuid(patientDetails.id);
 	};
+	const isSortable = (key) => key === "patientName";
 
-	if (items == undefined && inventoryItemError == undefined) return <Loading />;
+	const handleRowClick = (row) => {};
+
+	if (items == undefined && inventoryItemError == undefined)
+		return <div>Loading...</div>;
 
 	return inventoryItemError ? (
 		<div>Something went wrong while fetching items</div>
@@ -71,53 +97,84 @@ export const DispensePage = () => {
 				stickyHeader={true}
 			>
 				{({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
-					<TableContainer>
-						<TableToolbar style={{ width: "15rem" }}>
-							<TableToolbarContent style={{ justifyContent: "flex-start" }}>
-								<TableToolbarSearch
-									value={searchText}
-									onChange={handleSearch}
-								/>
-							</TableToolbarContent>
-						</TableToolbar>
-						<Table {...getTableProps()}>
-							<TableHead>
-								<TableRow>
-									{headers.map((header) => (
-										<TableHeader
-											{...getHeaderProps({
-												header,
-												isSortable: true,
-											})}
-										>
-											{header.header}
-										</TableHeader>
-									))}
-								</TableRow>
-							</TableHead>
-							<TableBody>
-								{rows.map((row) => (
-									<TableRow
-										{...getRowProps({ row })}
-										onClick={() => handleRowClick(row)}
-									>
-										{row.cells.map((cell) => (
-											<TableCell key={cell.id}>
-												{" "}
-												{cell.info.header === "patientName" ? (
-													<a href="#">{cell.value}</a>
-												) : (
-													cell.value
-												)}
-											</TableCell>
+					<>
+						<TableContainer>
+							<TableToolbar style={{ width: "15rem" }}>
+								<TableToolbarContent style={{ justifyContent: "flex-start" }}>
+									<TableToolbarSearch
+										value={searchText}
+										onChange={handleSearch}
+									/>
+								</TableToolbarContent>
+							</TableToolbar>
+							<Table {...getTableProps()}>
+								<TableHead>
+									<TableRow>
+										{headers.map((header) => (
+											<TableHeader
+												{...getHeaderProps({
+													header,
+													isSortable: isSortable(header.key),
+												})}
+											>
+												{header.header}
+											</TableHeader>
 										))}
 									</TableRow>
-								))}
-							</TableBody>
-						</Table>
-					</TableContainer>
+								</TableHead>
+								<TableBody>
+									{rows.map((row) => (
+										<TableRow
+											{...getRowProps({ row })}
+											// onClick={() => handleRowClick(row)}
+										>
+											{row.cells.map((cell) => (
+												<TableCell key={cell.id}>
+													{" "}
+													{cell.info.header === "patientName" ? (
+														<Link
+															href="#"
+															onClick={() => handleOnLinkClick(row)}
+														>
+															{cell.value}
+														</Link>
+													) : (
+														cell.value
+													)}
+												</TableCell>
+											))}
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
+						</TableContainer>
+					</>
 				)}
 			</DataTable>
+			{showModal && (
+				<CustomModal
+					data={{
+						id: 1,
+						name: "Patty O'Furniture",
+						dispense_drugs: [
+							{
+								id: "d1",
+								name: "H (Tab(s)) 750 Tabs, Once/Day, 4 day(s)",
+								quantity: 750,
+							},
+						],
+					}}
+					showModal={true}
+					rootClass={styles.modal}
+					modalListClass={styles.modalList}
+					subTitle="Dispense drug for"
+					primaryButton="Dispense"
+					secondaryButton="Cancel"
+					tabs={["", "Qty."]}
+					handleSubmit={(val) => console.log(val)}
+					closeModal={() => console.log("closer")}
+				/>
+			)}
 		</div>
 	);
 };

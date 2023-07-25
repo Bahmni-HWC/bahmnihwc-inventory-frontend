@@ -7,7 +7,7 @@ import"../index.scss"
 const App = () => (
     <CookiesProvider>
       <InventoryHeader />
-      <div style={{padding:'3rem'}}>
+      <div style={{paddingTop:'2rem', paddingLeft:'1rem'}}>
 			<InventoryMenu />
       </div>
 		</CookiesProvider>
