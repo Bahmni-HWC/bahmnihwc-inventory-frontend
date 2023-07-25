@@ -26,6 +26,7 @@ import {
 } from "../../constants";
 import styles from "./stock-receipt.module.scss";
 import { getCalculatedQuantity, getStockReceiptObj } from "./eaushadha-response-mapper";
+import { errorNotification } from "../components/notifications/errorNotification";
 
 const StockReceipt = () => {
 	const [items, setItems] = useState([]);
@@ -153,7 +154,7 @@ const StockReceipt = () => {
 							</Button>
 						</Column>
 					</Row>
-					{stockReceiptError && <div style={{paddingTop:'1rem'}}>Something went wrong</div>}
+					{stockReceiptError && <h3 style={{paddingTop:'1rem'}}>{errorNotification("Something went wrong while fetching URL")}</h3>}
 					{stockIntakeButtonClick && !eaushdhaResponse && !error ? (
 						<Loading />
 					) : (
