@@ -12,7 +12,6 @@ import {
 	TableToolbarContent,
 	TableToolbarSearch,
 	Link,
-	Column,
 } from "carbon-components-react";
 import useSWR from "swr";
 import {
@@ -28,6 +27,8 @@ import {
 import { useCookies } from "react-cookie";
 import CustomModal from "../../components/CustomModal";
 import styles from "./dispense.module.scss";
+import { saveDispense } from "../../service/save-dispense";
+import DrugItemDetails from "./drug-item-details";
 
 export const DispensePage = () => {
 	let rows = [];
@@ -41,6 +42,15 @@ export const DispensePage = () => {
 	const [showModal, setShowModal] = useState(false);
 	const [prescribedDrugs, setPrescribedDrugs] = useState([]);
 	const [patient, setPatient] = useState();
+	const [modifiedData, setModifiedData] = useState([]);
+	const [isInvalid, setIsInvalid] = useState(false);
+
+	useEffect(() => {
+		if (!showModal) {
+			setIsInvalid(false);
+			setModifiedData([]);
+		}
+	}, [showModal]);
 
 	const handleSearch = (event) => {
 		setSearchText(event.target.value);
@@ -95,7 +105,6 @@ export const DispensePage = () => {
 				drugOrders.push(obj);
 			});
 			if (JSON.stringify(prescribedDrugs) !== JSON.stringify(drugOrders)) {
-				console.log('Inside if')
 				setPrescribedDrugs(drugOrders);
 			}
 		}
@@ -110,6 +119,19 @@ export const DispensePage = () => {
 	};
 
 	const isSortable = (key) => key === "patientName";
+
+	const handleSave = async () => {
+		const data = {
+			patientUuid: patient.id,
+			dispense_drugs: modifiedData,
+		};
+		const response = await saveDispense(data);
+		if (response.status === 201) {
+			setShowModal(false);
+			setModifiedData([]);
+			setPrescribedDrugs([]);
+		}
+	};
 
 	if (items == undefined && inventoryItemError == undefined)
 		return <div>Loading...</div>;
@@ -170,22 +192,24 @@ export const DispensePage = () => {
 			</DataTable>
 			{showModal && (
 				<CustomModal
-					data={{
-						id: patient.id,
-						name: patient.name,
-						dispense_drugs: [...prescribedDrugs],
-					}}
 					showModal={showModal}
-					rootClass={styles.modal}
-					modalListClass={styles.modalList}
-					subTitle="Dispense drug for"
+					subTitle={`Dispense drug for ${patient.name}`}
 					primaryButton="Dispense"
 					secondaryButton="Cancel"
-					tabs={["", "Qty."]}
-					handleSubmit={(val) => console.log(val)}
-					closeModal={setShowModal}
-					patientDetails={patient}
-				/>
+					handleSubmit={handleSave}
+					closeModal={() => setShowModal(false)}
+				>
+					<DrugItemDetails
+						data={{
+							id: patient.id,
+							name: patient.name,
+							dispense_drugs: [...prescribedDrugs],
+						}}
+						modifiedData={modifiedData}
+						setModifiedData={setModifiedData}
+						setIsInvalid={setIsInvalid}
+					/>
+				</CustomModal>
 			)}
 		</div>
 	);
