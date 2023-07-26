@@ -3,6 +3,7 @@ import useSWR from "swr";
 import { fetcherPost, stockReceiptURL, getRequest, fetcher, stockRoomURL } from "../utils/api-utils";
 import saveReceipt from '../service/save-receipt';
 
+
 import {
 	DataTable,
 	TextInput,
@@ -26,7 +27,7 @@ import {
 	successMessage,
 } from "../../constants";
 import styles from "./stock-receipt.module.scss";
-import { getCalculatedQuantity, getRowObj } from "../utils/helper";
+import { getCalculatedQuantity, getStockReceiptObj } from "./eaushadha-response-mapper";
 import { headers, locationCookieName } from "../../constants";
 import { useCookies } from "react-cookie";
 
