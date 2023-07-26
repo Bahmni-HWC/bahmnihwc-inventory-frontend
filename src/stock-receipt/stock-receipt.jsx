@@ -20,6 +20,8 @@ import {
 	Column,
 	Row,
 	ToastNotification,
+	TableContainer,
+	Modal,
 } from "carbon-components-react";
 import {
 	failureMessage,
@@ -54,6 +56,7 @@ const StockReceipt = () => {
     		fetcher
     	);
 
+	const [showModal, setShowModal] = useState(false);
 	useEffect(() => {
 		if (eaushdhaResponse || error) setStockIntakeButtonClick(false);
 	}, [eaushdhaResponse, error]);
@@ -140,6 +143,32 @@ const StockReceipt = () => {
 			/>
 		);
 	};
+	const handleCloseModal = () => {
+		setShowModal(false);
+	};
+
+	const [rows, setRows] = useState([
+		{ id: 1, drugName: "", batchNo: "", expiryDate: "", quantity: 0, totalQuantity: 0 },
+	]);
+	
+	const handleAddRow = () => {
+		setRows((prevRows) => [
+		...prevRows,
+		{ id: prevRows.length + 1, drugName: "", batchNo: "", expiryDate: "", quantity: 0, totalQuantity: 0 },
+		]);
+	};
+
+	const handleDeleteRow = (id) => {
+	setRows((prevRows) => prevRows.filter((row) => row.id !== id));
+	};
+	
+	const handleInputChange = (id, field, value) => {
+	setRows((prevRows) =>
+		prevRows.map((row) =>
+		row.id === id ? { ...row, [field]: value } : row
+		)
+	);
+	};
 
 	return (
 		<>
@@ -171,6 +200,116 @@ const StockReceipt = () => {
 							>
 								Stock Fetch
 							</Button>
+						</Column>
+						<Column sm={8} lg={4} style={{ paddingTop: "1.5rem" }}>
+							<Button
+								onClick={() =>{setShowModal(true)}}
+								size={"md"}
+								kind="primary"
+								// disabled={isDisabled}
+								className={!isDisabled ? styles.buttonColor : ""}
+							>
+								Add New Drug
+							</Button>
+							{showModal &&
+							<Modal open={showModal} onRequestClose={handleCloseModal} primaryButtonText="Save" secondaryButtonText="Cancel" > 
+								    <DataTable
+									rows={rows}
+									headers={["ID", "Drug Name", "Batch No", "Expiry Date", "Quantity", "Total Quantity", "Actions"]}
+									render={({ rows, headers, getHeaderProps }) => (
+									<TableContainer title="Add New Drug">
+									<Table>
+										<TableHead>
+										<TableRow>
+											{headers.map((header, index) => (
+											<TableHeader key={index} {...getHeaderProps({ header })}>
+												{header}
+											</TableHeader>
+											))}
+										</TableRow>
+										</TableHead>
+										<TableBody>
+										{rows.map((row) => (
+											<TableRow key={row.id}>
+											<TableCell>{row.id}</TableCell>
+											<TableCell>
+											<TextInput
+												id={`drugName-${row.id}`}
+												value={row.drugName}
+												onChange={(e) =>
+													handleInputChange(row.id, "drugName", e.target.value)
+												}
+												style={{ width: "220px" }} // Set custom width here
+
+												/>
+											</TableCell>
+											<TableCell>
+												<TextInput
+												id={`batchNo-${row.id}`}
+												value={row.batchNo}
+												onChange={(e) =>
+													handleInputChange(row.id, "batchNo", e.target.value)
+												}
+												style={{ width: "100px" }}
+												/>
+											</TableCell>
+											<TableCell>
+											<TextInput
+												id={`expiryDate-${row.id}`}
+												value={row.expiryDate}
+												placeholder="dd/mm/yyyy"
+												onChange={(e) =>
+													handleInputChange(row.id, "expiryDate", e.target.value)
+												}
+												style={{ width: "100px" }}
+												/>
+											</TableCell>
+											<TableCell>
+												<TextInput
+												type="number"
+												id={`quantity-${row.id}`}
+												value={row.quantity}
+												onChange={(e) =>
+													handleInputChange(row.id, "quantity", e.target.valueAsNumber)
+												}
+												/>
+											</TableCell>
+											<TableCell>
+												<TextInput
+												type="number"
+												id={`totalQuantity-${row.id}`}
+												value={row.totalQuantity}
+												onChange={(e) =>
+													handleInputChange(row.id, "totalQuantity", e.target.valueAsNumber)
+												}
+												/>
+											</TableCell>
+											<TableCell>
+												<Button
+												kind="ghost"
+												onClick={() => handleDeleteRow(row.id)}
+												size="small"
+												>
+												-
+												</Button>
+
+											</TableCell>
+											</TableRow>
+										))}
+										</TableBody>
+									</Table>
+									<Button
+										kind="ghost"
+										onClick={handleAddRow}
+										size="small"
+										>
+										+
+										</Button>
+									</TableContainer>
+									)}
+									/>
+							</Modal>
+							}
 						</Column>
 					</Row>
 					{stockReceiptError && <div style={{paddingTop:'1rem'}}>Something went wrong</div>}
