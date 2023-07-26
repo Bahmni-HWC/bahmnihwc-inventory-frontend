@@ -69,7 +69,7 @@ const StockReceipt = () => {
 
 	useEffect(() => {
 		if (eaushdhaResponse && eaushdhaResponse.length > 0) {
-			setItems(getRowObj(eaushdhaResponse));
+			setItems(getStockReceiptObj(eaushdhaResponse));
 			setReceivedResponse(eaushdhaResponse);
 		}
 		if (error) setStockReceiptError(error);
@@ -86,7 +86,7 @@ const StockReceipt = () => {
 	}, [onSuccesful]);
 
 	const handleCancel = () => {
-		setItems(getRowObj(receivedResponse));
+		setItems(getStockReceiptObj(receivedResponse));
 	};
 
 	const updateActualQuantity = (quantity, row, cell) => {
@@ -171,8 +171,8 @@ const StockReceipt = () => {
 								Stock Fetch
 							</Button>
 						</Column>
-						{stockReceiptError && <div>Something went wrong</div>}
 					</Row>
+					{stockReceiptError && <div style={{paddingTop:'1rem'}}>Something went wrong</div>}
 					{stockIntakeButtonClick && !eaushdhaResponse && !error ? (
 						<Loading />
 					) : (

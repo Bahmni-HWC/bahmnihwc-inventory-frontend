@@ -114,13 +114,13 @@ const CustomModal = (props) => {
             </ModalBody>
             <ModalFooter>
                 <Button
-                    className={styles.modaButton}
+                    className={styles.modalButton}
                     kind="secondary"
                     onClick={() => closeModal(false) }>
                         {secondaryButton}
                 </Button>
                 <Button
-                    className={styles.modaButton}
+                    className={styles.modalButton}
                     kind="primary"
                     disabled={!isUpdate(data?.dispense_drugs, modifiedData?.dispense_drugs)}
                     onClick={() => submitDespense(modifiedData)}>
