@@ -1,4 +1,6 @@
 import { postRequest, getRequest } from '../utils/api-utils';
+import { getFormattedDate } from './date-utils';
+
 
 
 // eslint-disable-next-line import/prefer-default-export
@@ -8,9 +10,6 @@ import { postRequest, getRequest } from '../utils/api-utils';
        const instanceTypeResponse = await getRequest(`/openmrs/ws/rest/v2/inventory/stockOperationType?v=full&q=Receipt`);
        const instanceTypeUuids = instanceTypeResponse.results[0].uuid;
        const currentDate = new Date();
-       const formattedDate = `${currentDate.getDate().toString().padStart(2, '0')}-${
-           (currentDate.getMonth() + 1).toString().padStart(2, '0')
-         }-${currentDate.getFullYear()} ${currentDate.getHours()}:${currentDate.getMinutes().toString().padStart(2, '0')}:${currentDate.getSeconds().toString().padStart(2, '0')}`;
 
    const requestBody = {
         "status": "NEW",
@@ -18,7 +17,7 @@ import { postRequest, getRequest } from '../utils/api-utils';
         "items": [],
         "operationNumber": "",
         "instanceType": instanceTypeUuids,
-        "operationDate": formattedDate,
+        "operationDate": getFormattedDate(),
         "source": "",
         "destination": destinationUuid,
         "institution": "",
