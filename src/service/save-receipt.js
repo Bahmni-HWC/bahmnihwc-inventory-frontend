@@ -1,5 +1,5 @@
 import { postRequest, getRequest } from '../utils/api-utils';
-import { getFormattedDate } from './date-utils';
+import getFormattedDate from './date-utils';
 
 
 
@@ -9,7 +9,7 @@ import { getFormattedDate } from './date-utils';
 
        const instanceTypeResponse = await getRequest(`/openmrs/ws/rest/v2/inventory/stockOperationType?v=full&q=Receipt`);
        const instanceTypeUuids = instanceTypeResponse.results[0].uuid;
-       const currentDate = new Date();
+
 
    const requestBody = {
         "status": "NEW",
