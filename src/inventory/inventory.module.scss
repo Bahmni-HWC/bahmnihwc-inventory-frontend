@@ -12,3 +12,8 @@
 		text-align: center;
 	}
 }
+.stickyColumn {
+	position: sticky;
+	left: 0;
+	z-index: 2;
+}

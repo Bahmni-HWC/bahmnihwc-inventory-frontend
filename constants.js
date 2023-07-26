@@ -7,14 +7,22 @@ export const successMessage = "Stock Receipt Saved Successfully";
 export const failureMessage = "Stock Receipt Failed to Save";
 
 export const headers = [
-	{
-		key: "productName",
-		header: "Product Name",
-	},
-	{
-		key: "currentQuantity",
-		header: "Current Quantity",
-	},
+  {
+    key: "productName",
+    header: "Product Name",
+  },
+  {
+    key: "quantity",
+    header: "Quantity",
+  },
+  {
+    key: "expiration",
+    header: "Expiration",
+  },
+  {
+    key: "batchNumber",
+    header: "Batch Number",
+  }
 ];
 export const dispenseHeaders = [
 	{

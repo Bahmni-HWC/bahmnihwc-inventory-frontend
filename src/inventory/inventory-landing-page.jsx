@@ -18,6 +18,7 @@ import { fetcher, invItemURL, stockRoomURL } from "../utils/api-utils";
 import styles from "./inventory.module.scss";
 import { headers, locationCookieName } from "../../constants";
 import { useCookies } from "react-cookie";
+import { utils as XLSXUtils, writeFile as XLSXWriteFile } from "xlsx";
 
 export const InventoryLandingPage = () => {
 	let rows = [];
@@ -39,12 +40,41 @@ export const InventoryLandingPage = () => {
 		setSearchText(event.target.value);
 	};
 
+	const exportToExcel = () => {
+		const currentDate = new Date().toLocaleDateString().replace(/\//g, "-");
+ 		const fileName = `inv_${currentDate}.xlsx`; 
+		const exportData = rows.map(({ id, ...rest }) => ({
+		  "Product Name": rest.productName,
+		  "Quantity": rest.quantity,
+		  "Expiration": rest.expiration,
+		  "Batch Number": rest.batchNumber,
+		}));
+	  
+		const headerRow = {
+		  "Exported Date": currentDate,
+		};
+	  
+		const worksheet = XLSXUtils.json_to_sheet([headerRow, ...exportData]);
+		const workbook = XLSXUtils.book_new();
+		XLSXUtils.book_append_sheet(workbook, worksheet, "Inventory Data");
+	  
+		XLSXWriteFile(workbook, fileName);
+	  };
+	  
 	if (items?.results?.length > 0) {
 		for (let index = 0; index < items.results.length; index++) {
+			const item = items.results[index];
+			const expiration = item.details[0]?.expiration;
+			const expirationDate = new Date(expiration);
+			const formattedExpirationDate = `${expirationDate.getDate().toString().padStart(2, '0')}-${
+				(expirationDate.getMonth() + 1).toString().padStart(2, '0')
+			  }-${expirationDate.getFullYear()}`;
 			const newObj = {
 				id: `${index}`,
 				productName: items.results[index].item.name,
-				currentQuantity: items.results[index].quantity ?? 0,
+				quantity: item.details[0]?.quantity ?? 0,
+        		expiration: expiration ? formattedExpirationDate : "No Expiration Date",
+        		batchNumber: item.details[0]?.batchNumber ?? "No Batch Number",
 			};
 			rows.push(newObj);
 		}
@@ -78,6 +108,11 @@ export const InventoryLandingPage = () => {
 										onChange={handleSearch}
 									/>
 								</TableToolbarContent>
+								<TableToolbarContent style={{ justifyContent: "flex-end" }}>
+        							{rows.length > 0 && (
+          								<button onClick={exportToExcel}>Export to Excel</button>
+        							)}
+      							</TableToolbarContent>
 							</TableToolbar>
 							<Table
 								{...getTableProps()}
@@ -92,11 +127,18 @@ export const InventoryLandingPage = () => {
 													header,
 													isSortable: isSortable(header.key),
 												})}
-												style={
-													header.key === "currentQuantity"
-														? { justifyContent: "flex-end" }
-														: {}
+												className={
+													header.key === "productName"
+														? styles.stickyColumn
+														: ""
 												}
+												style={
+													header.key === "quantity" ||
+													header.key === "expiration" ||
+													header.key === "batchNumber"
+													  ? { justifyContent: "center" }
+													  : {}
+												  }
 											>
 												{header.header}
 											</TableHeader>
@@ -109,11 +151,18 @@ export const InventoryLandingPage = () => {
 											{row.cells.map((cell) => (
 												<TableCell
 													key={cell.id}
-													style={
-														cell.info.header === "currentQuantity"
-															? { justifyContent: "flex-end" }
-															: {}
+													className={
+														cell.id.includes("productName")
+															? styles.stickyColumn
+															: ""
 													}
+													style={
+														cell.info.header === "quantity" ||
+														cell.info.header === "expiration" ||
+														cell.info.header === "batchNumber"
+														  ? { justifyContent: "center" }
+														  : {}
+													  }
 												>
 													{cell.value}
 												</TableCell>
