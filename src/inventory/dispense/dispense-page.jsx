@@ -66,12 +66,23 @@ export const DispensePage = () => {
 			};
 		});
 	}
-
+	console.log("item...", items);
 	const filteredRows = rows.filter((row) => {
+		console.log(
+			"first",
+			row?.patientName,
+			searchText,
+			row?.patientName?.toLowerCase().includes(searchText?.toLowerCase())
+		);
 		return searchText !== ""
 			? row?.patientName?.toLowerCase().includes(searchText?.toLowerCase())
 			: row;
 	});
+	console.log("showModal", showModal);
+	const { data: prescibedDrugs, error: prescribedDrugsError } = useSWR(
+		showModal ? prescribedDrugOrders(patientUuid) : [],
+		fetcher
+	);
 
 	const { data: drugItems, error: drugItemsError } = useSWR(
 		showModal && patient.id ? prescribedDrugOrders(patient.id) : "",
@@ -108,6 +119,7 @@ export const DispensePage = () => {
 		}
 		return false;
 	};
+	const isSortable = (key) => key === "patientName";
 
 	const handleOnLinkClick = (patientDetails) => {
 		setShowModal(true);
@@ -116,8 +128,6 @@ export const DispensePage = () => {
 			name: patientDetails.cells[1].value,
 		});
 	};
-
-	const isSortable = (key) => key === "patientName";
 
 	const handleSave = async () => {
 		const data = {
