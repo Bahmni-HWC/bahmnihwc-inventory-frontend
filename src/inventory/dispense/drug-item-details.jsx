@@ -31,7 +31,14 @@ const DrugItemDetails = (props) => {
 	}, [props.data]);
 
 	useEffect(() => {
-		if (drugInfo && drugInfo.length > 0) props.setModifiedData(drugInfo);
+		if (drugInfo && drugInfo.length > 0) {
+			let invalid = false;
+			drugInfo.forEach((item) => {
+				if (item.invalidQty && invalid === false) invalid = true;
+			});
+			props.setIsInvalid(invalid);
+			props.setModifiedData(drugInfo);
+		}
 	}, [drugInfo]);
 
 	useEffect(() => {
@@ -44,13 +51,15 @@ const DrugItemDetails = (props) => {
 			const rowObj = [];
 			for (let drugItem of drugItems) {
 				for (let item of itemStock) {
-					if (drugItem.drugName === item.item.name) {
+					if (item.item.name.includes(drugItem.drugName)) {
 						rowObj.push({
-							id: item.item.uuid,
+							id: drugItem.id,
 							itemUuid: item.item.uuid,
 							drugName: getTitle(drugItem),
+							name: drugItem.drugName,
 							avlQty: item.quantity,
 							prescribedQty: drugItem.quantity,
+							invalidQty: item.quantity < drugItem.quantity,
 						});
 					}
 				}
@@ -59,26 +68,33 @@ const DrugItemDetails = (props) => {
 		}
 	}, [drugItems, itemStock]);
 
-	console.log("drugInfo", drugInfo);
-
 	const getTitle = (drug) => {
-		return `${drug.drugName}/${drug.quantity}${drug.doseUnits}/${drug.frequency}/${drug.duration}${drug.durationUnits}`;
+		let title = "";
+		const dosingInstructions = drug.dosingInstructions;
+		if (drug.dosingInstructions.frequency !== null) {
+			title = `${drug.drugName} - ${dosingInstructions.dose} ${dosingInstructions.doseUnits} | ${dosingInstructions.frequency} | ${drug.duration} ${drug.durationUnits}`;
+		} else {
+			const administrationInstructions = drug.dosingInstructions.administrationInstructions
+			const parsedobj = JSON.parse(administrationInstructions);
+			title = `${drug.drugName} - ${parsedobj.morningDose}-${parsedobj.afternoonDose}-${parsedobj.eveningDose} ${dosingInstructions.doseUnits} | ${drug.duration} ${drug.durationUnits}`
+		}
+
+		return title;
 	};
 
 	const handleOnchange = (value, row) => {
 		const updatedRow = drugInfo.map((item) => {
-			if (item.itemUuid === row.id) {
+			if (item.id === row.id) {
 				return {
 					...item,
 					prescribedQty: parseInt(value),
+					invalidQty: !isSufficient(value, row),
 				};
 			}
 			return item;
 		});
 		setDrugInfo(updatedRow);
 	};
-
-	console.log('va')
 
 	const isInvalid = (value) => {
 		if (value !== "") {
@@ -87,13 +103,12 @@ const DrugItemDetails = (props) => {
 		return false;
 	};
 
-	console.log("props.isInvalid", props.isInvalid);
-
 	const isSufficient = (value, row) => {
-		const item = drugInfo.find((item) => item.itemUuid === row.id);
+		const item = drugInfo.find((item) => item.id === row.id);
 		if (item) {
 			return item.avlQty >= parseInt(value);
 		}
+		return false;
 	};
 
 	const drugItemheader = [

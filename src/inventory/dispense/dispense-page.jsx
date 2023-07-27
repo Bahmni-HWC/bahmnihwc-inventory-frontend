@@ -41,7 +41,7 @@ export const DispensePage = () => {
 	const [searchText, setSearchText] = useState("");
 	const [showModal, setShowModal] = useState(false);
 	const [prescribedDrugs, setPrescribedDrugs] = useState([]);
-	const [patient, setPatient] = useState();
+	const [patient, setPatient] = useState([]);
 	const [modifiedData, setModifiedData] = useState([]);
 	const [isInvalid, setIsInvalid] = useState(false);
 
@@ -74,41 +74,40 @@ export const DispensePage = () => {
 	});
 
 	const { data: drugItems, error: drugItemsError } = useSWR(
-		showModal && prescribedDrugs.length == 0
-			? prescribedDrugOrders(patient.id)
-			: [],
-		fetcher,
-		{
-			revalidateIfStale: false,
-			revalidateOnFocus: false,
-			revalidateOnReconnect: false,
-		}
+		showModal && patient.id ? prescribedDrugOrders(patient.id) : "",
+		fetcher
 	);
 
 	useEffect(() => {
 		if (drugItems) {
-			console.log("Inside useEffect", drugItems);
 			const visitDrugOrders = drugItems.visitDrugOrders;
 			const drugOrders = [];
 			visitDrugOrders.forEach((visitDrugOrder) => {
-				const obj = {
-					id: visitDrugOrder.uuid,
-					drugName: visitDrugOrder.concept.name,
-					drugUuid: visitDrugOrder.concept.uuid,
-					quantity: visitDrugOrder.dosingInstructions.quantity,
-					dose: visitDrugOrder.dosingInstructions.dose,
-					doseUnits: visitDrugOrder.dosingInstructions.doseUnits,
-					frequency: visitDrugOrder.dosingInstructions.frequency,
-					duration: visitDrugOrder.duration,
-					durationUnits: visitDrugOrder.durationUnits,
-				};
-				drugOrders.push(obj);
+				if (isValid(visitDrugOrder)) {
+					const obj = {
+						id: visitDrugOrder.uuid,
+						drugName: visitDrugOrder.drug.name,
+						drugUuid: visitDrugOrder.drug.uuid,
+						quantity: visitDrugOrder.dosingInstructions.quantity,
+						dosingInstructions: visitDrugOrder.dosingInstructions,
+						duration: visitDrugOrder.duration,
+						durationUnits: visitDrugOrder.durationUnits,
+					};
+					drugOrders.push(obj);
+				}
 			});
 			if (JSON.stringify(prescribedDrugs) !== JSON.stringify(drugOrders)) {
 				setPrescribedDrugs(drugOrders);
 			}
 		}
 	}, [drugItems]);
+
+	const isValid = (visitDrugOrder) => {
+		if (visitDrugOrder && !visitDrugOrder.dateStopped) {
+			return true;
+		}
+		return false;
+	};
 
 	const handleOnLinkClick = (patientDetails) => {
 		setShowModal(true);
@@ -198,6 +197,7 @@ export const DispensePage = () => {
 					secondaryButton="Cancel"
 					handleSubmit={handleSave}
 					closeModal={() => setShowModal(false)}
+					invalid={isInvalid}
 				>
 					<DrugItemDetails
 						data={{
@@ -207,6 +207,7 @@ export const DispensePage = () => {
 						}}
 						modifiedData={modifiedData}
 						setModifiedData={setModifiedData}
+						isInvalid={isInvalid}
 						setIsInvalid={setIsInvalid}
 					/>
 				</CustomModal>

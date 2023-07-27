@@ -17,13 +17,11 @@ const CustomModal = (props) => {
 		handleSubmit,
 		closeModal,
 		children,
+		invalid,
 	} = props;
 
 	return (
-		<ComposedModal
-			open={showModal}
-			onClose={() => closeModal(false)}
-		>
+		<ComposedModal open={showModal} onClose={() => closeModal(false)}>
 			<ModalHeader>
 				<h3>{subTitle}</h3>
 			</ModalHeader>
@@ -39,9 +37,12 @@ const CustomModal = (props) => {
 					{secondaryButton}
 				</Button>
 				<Button
-					className={`${styles.modaButton} ${styles.primaryButton}`}
+					className={`${styles.modaButton} ${
+						!invalid ? styles.primaryButton : styles.disabledButton
+					}`}
 					kind="primary"
 					onClick={() => handleSubmit()}
+					disabled={invalid}
 				>
 					{primaryButton}
 				</Button>
