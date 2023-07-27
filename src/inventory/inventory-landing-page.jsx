@@ -20,6 +20,8 @@ import { headers, locationCookieName } from "../../constants";
 import { useCookies } from "react-cookie";
 import * as XLSX from "xlsx";
 import {Button } from "carbon-components-react";
+import { utils as XLSXUtils, writeFile as XLSXWriteFile } from "xlsx";
+
 
 
 export const InventoryLandingPage = () => {
@@ -44,20 +46,23 @@ export const InventoryLandingPage = () => {
 
 	const exportToExcel = () => {
 		const currentDate = new Date().toLocaleDateString().replace(/\//g, "-");
-		const fileName = `inv_${currentDate}.xlsx`;
-		
-		const exportData = rows.map(({ productName, quantity, expiration, batchNumber }) => [
-		  productName,
-		  quantity,
-		  expiration,
-		  batchNumber,
-		]);
-	  
-		const worksheet = XLSX.utils.aoa_to_sheet([["Product Name", "Quantity", "Expiration", "Batch Number"], ...exportData]);
-		const workbook = XLSX.utils.book_new();
-		XLSX.utils.book_append_sheet(workbook, worksheet, "Inventory Data");
-	  
-		XLSX.writeFile(workbook, fileName);
+ 		const fileName = `inv_${currentDate}.xlsx`; 
+		const exportData = rows.map(({ id, ...rest }) => ({
+		  "Product Name": rest.productName,
+		  "Quantity": rest.quantity,
+		  "Expiration": rest.expiration,
+		  "Batch Number": rest.batchNumber,
+		}));
+
+		const headerRow = {
+		  "Exported Date": currentDate,
+		};
+
+		const worksheet = XLSXUtils.json_to_sheet([headerRow, ...exportData]);
+		const workbook = XLSXUtils.book_new();
+		XLSXUtils.book_append_sheet(workbook, worksheet, "Inventory Data");
+
+		XLSXWriteFile(workbook, fileName);
 	  };
 
 	  
