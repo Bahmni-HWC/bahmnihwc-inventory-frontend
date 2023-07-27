@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import useSWR from "swr";
-import { fetcherPost, stockReceiptURL, getRequest, fetcher, stockRoomURL } from "../utils/api-utils";
+import { fetcherPost, stockReceiptURL, getRequest,invItemURL, fetcher, stockRoomURL } from "../utils/api-utils";
 import saveReceipt from '../service/save-receipt';
-
 
 import {
 	DataTable,
@@ -22,9 +21,13 @@ import {
 	ToastNotification,
 	TableContainer,
 	Modal,
+	DatePicker,
+	DatePickerInput,
+	ComboBox,
 } from "carbon-components-react";
 import {
 	failureMessage,
+	locationCookieName,
 	stockReceiptHeaders,
 	successMessage,
 } from "../../constants";
@@ -32,8 +35,6 @@ import styles from "./stock-receipt.module.scss";
 import { getCalculatedQuantity, getStockReceiptObj } from "./eaushadha-response-mapper";
 import { headers, locationCookieName } from "../../constants";
 import { useCookies } from "react-cookie";
-
-
 
 const StockReceipt = () => {
 	const [items, setItems] = useState([]);
@@ -49,12 +50,24 @@ const StockReceipt = () => {
 		stockIntakeButtonClick ? stockReceiptURL : "",
 		(url) => fetcherPost(url, { ouid: outwardNumber })
 	);
+
 	const [cookies] = useCookies();
 
-    const { data: stockRoom, error: stockRoomError } = useSWR(
-    		stockRoomURL(cookies[locationCookieName]?.name.trim()),
-    		fetcher
-    	);
+	const { data: stockRoom, error: stockRoomError } = useSWR(
+		stockRoomURL(cookies[locationCookieName]?.name.trim()),
+		fetcher
+	);
+
+	const { data: invItems, error: inventoryItemError } = useSWR(
+		stockRoom ? invItemURL(stockRoom.results[0].uuid) : '',
+		fetcher
+	);
+
+	if (invItems?.results?.length > 0) {
+		for (let index = 0; index < invItems.results.length; index++) {
+			dropdownItems.push(invItems.results[index].item.name)
+		}
+	}
 
 	const [showModal, setShowModal] = useState(false);
 	useEffect(() => {
@@ -113,21 +126,28 @@ const StockReceipt = () => {
 		});
 		setItems(updatedValue);
 	};
-		const handleSave = async () => {
-         try {
-                    const response = await saveReceipt(items, outwardNumber, stockRoom.results[0]?.uuid);
-                      if (response && response.ok) {
-                        setOnSuccesful(true);
-                      } else {
-                        setOnFailure(true);
-                      }
-                    } catch (error) {
-                      setOnFailure(true);
-                    }
+	const handleSave = async () => {
+		try {
+				const response = await saveReceipt(items, outwardNumber, stockRoom.results[0]?.uuid);
+					if (response && response.ok) {
+					setOnSuccesful(true);
+					} else {
+					setOnFailure(true);
+					}
+				} catch (error) {
+					setOnFailure(true);
+				}
 
-            	};
+		};
 
 
+	const handleSaveDrugButtonClick = async () => {
+        setShowModal(false);
+        const response = await saveReceipt(items);
+        if (response) {
+            response.ok ? setOnSuccesful(true) : setOnFailure(true);
+        }
+    };
 
 	const renderNotificationMessage = (kind, title) => {
 		return (
@@ -161,6 +181,17 @@ const StockReceipt = () => {
 	const handleDeleteRow = (id) => {
 	setRows((prevRows) => prevRows.filter((row) => row.id !== id));
 	};
+
+	const handleComboBoxChange = (rowId, selectedValue) => {
+		setRows((prevRows) => {
+		  return prevRows.map((row) => {
+			if (row.id === rowId) {
+			  return { ...row, drugName: selectedValue };
+			}
+			return row;
+		  });
+		});
+	  };
 	
 	const handleInputChange = (id, field, value) => {
 	setRows((prevRows) =>
@@ -169,7 +200,10 @@ const StockReceipt = () => {
 		)
 	);
 	};
-
+	const filterItems = (menu) => {
+		return menu?.item?.toLowerCase().includes(menu?.inputValue?.toLowerCase());
+	};
+	{console.log(rows)}
 	return (
 		<>
 			<Grid style={{ paddingLeft: "0", margin: "0" }}>
@@ -212,7 +246,7 @@ const StockReceipt = () => {
 								Add New Drug
 							</Button>
 							{showModal &&
-							<Modal open={showModal} onRequestClose={handleCloseModal} primaryButtonText="Save" secondaryButtonText="Cancel" > 
+							<Modal open={showModal} onRequestClose={handleCloseModal} primaryButtonText="Save" secondaryButtonText="Cancel" onRequestSubmit={handleSaveDrugButtonClick}> 
 								    <DataTable
 									rows={rows}
 									headers={["ID", "Drug Name", "Batch No", "Expiry Date", "Quantity", "Total Quantity", "Actions"]}
@@ -232,15 +266,13 @@ const StockReceipt = () => {
 										{rows.map((row) => (
 											<TableRow key={row.id}>
 											<TableCell>{row.id}</TableCell>
-											<TableCell>
-											<TextInput
-												id={`drugName-${row.id}`}
-												value={row.drugName}
-												onChange={(e) =>
-													handleInputChange(row.id, "drugName", e.target.value)
-												}
-												style={{ width: "220px" }} // Set custom width here
-
+											<TableCell>  
+												<ComboBox
+													items={dropdownItems}
+													shouldFilterItem={filterItems}
+													selectedItem={row.drugName}
+													onChange={(selectedItem) => handleComboBoxChange(row.id, selectedItem)}
+													style={{ width: "220px" }}
 												/>
 											</TableCell>
 											<TableCell>
@@ -254,15 +286,20 @@ const StockReceipt = () => {
 												/>
 											</TableCell>
 											<TableCell>
-											<TextInput
+											<DatePicker
+												datePickerType="single"
 												id={`expiryDate-${row.id}`}
+												dateFormat="d/m/Y"
 												value={row.expiryDate}
-												placeholder="dd/mm/yyyy"
-												onChange={(e) =>
-													handleInputChange(row.id, "expiryDate", e.target.value)
-												}
-												style={{ width: "100px" }}
+												onChange={(date) => handleInputChange(row.id, 'expiryDate', date)}
+
+											>
+												<DatePickerInput
+												value={row.expiryDate}
+												onChange={(e) => handleInputChange(row.id, 'expiryDate', e.target.value)}
+												pattern="(0[1-9]|[1-2][0-9]|3[0-1])/(0[1-9]|1[0-2])/\\d{4}"
 												/>
+											</DatePicker>
 											</TableCell>
 											<TableCell>
 												<TextInput
