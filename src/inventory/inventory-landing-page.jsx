@@ -18,7 +18,9 @@ import { fetcher, invItemURL, stockRoomURL } from "../utils/api-utils";
 import styles from "./inventory.module.scss";
 import { headers, locationCookieName } from "../../constants";
 import { useCookies } from "react-cookie";
-import { utils as XLSXUtils, writeFile as XLSXWriteFile } from "xlsx";
+import * as XLSX from "xlsx";
+import {Button } from "carbon-components-react";
+
 
 export const InventoryLandingPage = () => {
 	let rows = [];
@@ -42,24 +44,23 @@ export const InventoryLandingPage = () => {
 
 	const exportToExcel = () => {
 		const currentDate = new Date().toLocaleDateString().replace(/\//g, "-");
- 		const fileName = `inv_${currentDate}.xlsx`; 
-		const exportData = rows.map(({ id, ...rest }) => ({
-		  "Product Name": rest.productName,
-		  "Quantity": rest.quantity,
-		  "Expiration": rest.expiration,
-		  "Batch Number": rest.batchNumber,
-		}));
+		const fileName = `inv_${currentDate}.xlsx`;
+		
+		const exportData = rows.map(({ productName, quantity, expiration, batchNumber }) => [
+		  productName,
+		  quantity,
+		  expiration,
+		  batchNumber,
+		]);
 	  
-		const headerRow = {
-		  "Exported Date": currentDate,
-		};
+		const worksheet = XLSX.utils.aoa_to_sheet([["Product Name", "Quantity", "Expiration", "Batch Number"], ...exportData]);
+		const workbook = XLSX.utils.book_new();
+		XLSX.utils.book_append_sheet(workbook, worksheet, "Inventory Data");
 	  
-		const worksheet = XLSXUtils.json_to_sheet([headerRow, ...exportData]);
-		const workbook = XLSXUtils.book_new();
-		XLSXUtils.book_append_sheet(workbook, worksheet, "Inventory Data");
-	  
-		XLSXWriteFile(workbook, fileName);
+		XLSX.writeFile(workbook, fileName);
 	  };
+
+	  
 	  
 	if (items?.results?.length > 0) {
 		for (let index = 0; index < items.results.length; index++) {
@@ -96,28 +97,26 @@ export const InventoryLandingPage = () => {
 	return inventoryItemError ? (
 		<div>Something went wrong while fetching items</div>
 	) : (
-		<div className="inv-datatable" style={{ width: "50%" }}>
-			<DataTable rows={filteredRows} headers={headers} stickyHeader={true}>
+		<div className={styles.inventoryContainer}>
+			<DataTable rows={filteredRows} headers={headers} >
 				{({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
 					<>
 						<TableContainer>
-							<TableToolbar style={{ width: "15rem" }}>
-								<TableToolbarContent style={{ justifyContent: "flex-start" }}>
-									<TableToolbarSearch
-										value={searchText}
-										onChange={handleSearch}
-									/>
-								</TableToolbarContent>
-								<TableToolbarContent style={{ justifyContent: "flex-end" }}>
-        							{rows.length > 0 && (
-          								<button onClick={exportToExcel}>Export to Excel</button>
-        							)}
-      							</TableToolbarContent>
-							</TableToolbar>
+						<TableToolbarContent className={styles.tableToolbarContent}>
+  							<TableToolbarSearch
+    							value={searchText}
+    							onChange={handleSearch}
+  							/>
+  						{rows.length > 0 && (
+							<Button onClick={exportToExcel} kind='tertiary' size='sm'>Export To Excel</Button>
+
+  							)}
+					</TableToolbarContent>
+
 							<Table
 								{...getTableProps()}
 								useZebraStyles={true}
-								className={styles.table}
+								className={styles.table} 
 							>
 								<TableHead>
 									<TableRow>
@@ -132,13 +131,6 @@ export const InventoryLandingPage = () => {
 														? styles.stickyColumn
 														: ""
 												}
-												style={
-													header.key === "quantity" ||
-													header.key === "expiration" ||
-													header.key === "batchNumber"
-													  ? { justifyContent: "center" }
-													  : {}
-												  }
 											>
 												{header.header}
 											</TableHeader>
@@ -150,22 +142,13 @@ export const InventoryLandingPage = () => {
 										<TableRow {...getRowProps({ row })}>
 											{row.cells.map((cell) => (
 												<TableCell
-													key={cell.id}
-													className={
-														cell.id.includes("productName")
-															? styles.stickyColumn
-															: ""
-													}
-													style={
-														cell.info.header === "quantity" ||
-														cell.info.header === "expiration" ||
-														cell.info.header === "batchNumber"
-														  ? { justifyContent: "center" }
-														  : {}
-													  }
-												>
-													{cell.value}
-												</TableCell>
+												key={cell.id}
+												className={`${cell.id.includes("productName") ? styles.stickyColumn : ""} 
+												}`}
+											  >
+												{cell.value}
+											  </TableCell>
+											  
 											))}
 										</TableRow>
 									))}
