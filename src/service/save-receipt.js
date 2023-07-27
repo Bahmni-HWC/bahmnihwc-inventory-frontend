@@ -1,5 +1,5 @@
 import { postRequest, getRequest } from '../utils/api-utils';
-import getFormattedDate from './date-utils';
+import getFormattedDate from '../utils/date-utils';
 
 
 
@@ -17,7 +17,7 @@ import getFormattedDate from './date-utils';
         "items": [],
         "operationNumber": "",
         "instanceType": instanceTypeUuids,
-        "operationDate": getFormattedDate(),
+        "operationDate": getFormattedDate,
         "source": "",
         "destination": destinationUuid,
         "institution": "",
