@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import useSWR from "swr";
-import { fetcherPost, stockReceiptURL } from "../utils/api-utils";
-import { saveReceipt } from "../service/save-receipt";
+import { fetcherPost, stockReceiptURL, getRequest, fetcher, stockRoomURL } from "../utils/api-utils";
+import saveReceipt from '../service/save-receipt';
+
+
 import {
 	DataTable,
 	TextInput,
@@ -26,6 +28,10 @@ import {
 } from "../../constants";
 import styles from "./stock-receipt.module.scss";
 import { getCalculatedQuantity, getStockReceiptObj } from "./eaushadha-response-mapper";
+import { headers, locationCookieName } from "../../constants";
+import { useCookies } from "react-cookie";
+
+
 
 const StockReceipt = () => {
 	const [items, setItems] = useState([]);
@@ -41,6 +47,12 @@ const StockReceipt = () => {
 		stockIntakeButtonClick ? stockReceiptURL : "",
 		(url) => fetcherPost(url, { ouid: outwardNumber })
 	);
+	const [cookies] = useCookies();
+
+    const { data: stockRoom, error: stockRoomError } = useSWR(
+    		stockRoomURL(cookies[locationCookieName]?.name.trim()),
+    		fetcher
+    	);
 
 	useEffect(() => {
 		if (eaushdhaResponse || error) setStockIntakeButtonClick(false);
@@ -84,7 +96,7 @@ const StockReceipt = () => {
 				if (cell.includes("totalQuantity")) {
 					return {
 						...item,
-						totalQuantity: quantity,
+						totalQuantity: parseInt(quantity),
 					};
 				} else {
 					return {
@@ -98,13 +110,21 @@ const StockReceipt = () => {
 		});
 		setItems(updatedValue);
 	};
+		const handleSave = async () => {
+         try {
+                    const response = await saveReceipt(items, outwardNumber, stockRoom.results[0]?.uuid);
+                      if (response && response.ok) {
+                        setOnSuccesful(true);
+                      } else {
+                        setOnFailure(true);
+                      }
+                    } catch (error) {
+                      setOnFailure(true);
+                    }
 
-	const handleSave = async () => {
-		const response = await saveReceipt(items);
-		if (response) {
-			response.ok ? setOnSuccesful(true) : setOnFailure(true);
-		}
-	};
+            	};
+
+
 
 	const renderNotificationMessage = (kind, title) => {
 		return (
