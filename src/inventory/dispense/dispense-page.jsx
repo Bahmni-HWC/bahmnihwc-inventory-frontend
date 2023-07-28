@@ -129,7 +129,7 @@ export const DispensePage = () => {
 								{rows.length === 0 && (
 									<TableRow>
 										<div style={{fontSize: "20px"}}>
-										Currently there are no active drug orders
+										No active patients with drug orders
 										</div>
 									</TableRow>
 								)}
