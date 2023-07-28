@@ -18,17 +18,21 @@ import {
 	fetcher,
 	activePatientWithDrugOrders,
 	prescribedDrugOrders,
+	stockRoomURL,
 } from "../../utils/api-utils";
 import {
 	locationCookieName,
 	dispenseHeaders,
 	activePatients,
+	headers,
 } from "../../../constants";
 import { useCookies } from "react-cookie";
 import CustomModal from "../../components/CustomModal";
 import styles from "./dispense.module.scss";
-import { saveDispense } from "../../service/save-dispense";
+import saveDispense  from "../../service/save-dispense";
 import DrugItemDetails from "./drug-item-details";
+
+
 
 export const DispensePage = () => {
 	let rows = [];
@@ -37,6 +41,12 @@ export const DispensePage = () => {
 		activePatientWithDrugOrders(cookies[locationCookieName]?.uuid),
 		fetcher
 	);
+
+
+           const { data: sourceStockRoom, error: stockRoomError } = useSWR(
+           		stockRoomURL(cookies[locationCookieName]?.name.trim()),
+           		fetcher
+           	);
 
 	const [searchText, setSearchText] = useState("");
 	const [showModal, setShowModal] = useState(false);
@@ -124,12 +134,13 @@ export const DispensePage = () => {
 			patientUuid: patient.id,
 			dispense_drugs: modifiedData,
 		};
-		const response = await saveDispense(data);
+		const response = await saveDispense(data, sourceStockRoom);
 		if (response.status === 201) {
 			setShowModal(false);
 			setModifiedData([]);
 			setPrescribedDrugs([]);
 		}
+
 	};
 
 	if (items == undefined && inventoryItemError == undefined)
