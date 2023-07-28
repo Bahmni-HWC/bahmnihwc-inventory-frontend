@@ -52,10 +52,6 @@ export const InventoryLandingPage = () => {
 		for (let index = 0; index < items.results.length; index++) {
 			const item = items.results[index];
 			const expiration = item.details[0]?.expiration;
-			const expirationDate = new Date(expiration);
-			// const formattedExpirationDate = `${expirationDate.getDate().toString().padStart(2, '0')}-${
-			// 	(expirationDate.getMonth() + 1).toString().padStart(2, '0')
-			//   }-${expirationDate.getFullYear()}`;
 			const formattedExpirationDate = getFormattedDate;
 			const newObj = {
 				id: `${index}`,
