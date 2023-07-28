@@ -18,6 +18,7 @@ import { fetcher, invItemURL, stockRoomURL } from "../utils/api-utils";
 import styles from "./inventory.module.scss";
 import { headers, locationCookieName } from "../../constants";
 import { useCookies } from "react-cookie";
+import { errorNotification } from "../components/notifications/errorNotification";
 
 export const InventoryLandingPage = () => {
 	let rows = [];
@@ -62,9 +63,10 @@ export const InventoryLandingPage = () => {
 		(!stockRoom && !stockRoomError)
 	)
 		return <Loading />;
-
 	return inventoryItemError ? (
-		<div>Something went wrong while fetching items</div>
+		<div>
+			{errorNotification("Something went wrong while fetching URL")}
+	  </div>
 	) : (
 		<div className="inv-datatable" style={{ width: "50%" }}>
 			<DataTable rows={filteredRows} headers={headers} stickyHeader={true}>
@@ -104,6 +106,13 @@ export const InventoryLandingPage = () => {
 									</TableRow>
 								</TableHead>
 								<TableBody>
+									{rows.length === 0 && (
+										<TableRow>
+											<div style={{ fontSize: "20px"}}>
+											Currently there are no stocks available
+											</div>
+										</TableRow>
+									)}
 									{rows.map((row) => (
 										<TableRow {...getRowProps({ row })}>
 											{row.cells.map((cell) => (
