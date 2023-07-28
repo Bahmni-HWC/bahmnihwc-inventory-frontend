@@ -42,7 +42,18 @@ export const postRequest = (url, data) =>
 		},
 		body: JSON.stringify(data),
 	});
-
+export const getRequest = (url) =>
+  fetch(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  }).then((response) => {
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    return response.json();
+  });
 export const swrOptions = {
 	revalidateIfStale: false,
 	revalidateOnFocus: false,
