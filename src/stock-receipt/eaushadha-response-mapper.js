@@ -1,4 +1,4 @@
-export const getRowObj = (response) => {
+export const getStockReceiptObj = (response) => {
 	const stockReceiptArray = [];
 	response?.forEach((element,index) => {
 		const dateString = element.exp_date;
@@ -28,5 +28,5 @@ export const getCalculatedQuantity = (quantity, unitPack) => {
 	unitPackValue.forEach((element) => {
 		unitPackQuantity *= element;
 	});
-	return unitPackQuantity * quantity;
+	return parseInt(unitPackQuantity * quantity, 10);
 };

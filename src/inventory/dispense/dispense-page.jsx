@@ -12,6 +12,7 @@ import {
 	TableToolbarContent,
 	TableToolbarSearch,
 	Link,
+	Loading,
 } from "carbon-components-react";
 import useSWR from "swr";
 import {
@@ -31,6 +32,8 @@ import CustomModal from "../../components/CustomModal";
 import styles from "./dispense.module.scss";
 import saveDispense  from "../../service/save-dispense";
 import DrugItemDetails from "./drug-item-details";
+import { getDrugItems, getMappedDrugs } from "./drug-mapper";
+import { errorNotification } from "../../components/notifications/errorNotification";
 
 
 
@@ -51,7 +54,7 @@ export const DispensePage = () => {
 	const [searchText, setSearchText] = useState("");
 	const [showModal, setShowModal] = useState(false);
 	const [prescribedDrugs, setPrescribedDrugs] = useState([]);
-	const [patient, setPatient] = useState([]);
+	const [patient, setPatient] = useState({});
 	const [modifiedData, setModifiedData] = useState([]);
 	const [isInvalid, setIsInvalid] = useState(false);
 
@@ -59,6 +62,8 @@ export const DispensePage = () => {
 		if (!showModal) {
 			setIsInvalid(false);
 			setModifiedData([]);
+			setPrescribedDrugs([]);
+			setPatient({});
 		}
 	}, [showModal]);
 
@@ -94,16 +99,7 @@ export const DispensePage = () => {
 			const drugOrders = [];
 			visitDrugOrders.forEach((visitDrugOrder) => {
 				if (isValid(visitDrugOrder)) {
-					const obj = {
-						id: visitDrugOrder.uuid,
-						drugName: visitDrugOrder.drug.name,
-						drugUuid: visitDrugOrder.drug.uuid,
-						quantity: visitDrugOrder.dosingInstructions.quantity,
-						dosingInstructions: visitDrugOrder.dosingInstructions,
-						duration: visitDrugOrder.duration,
-						durationUnits: visitDrugOrder.durationUnits,
-					};
-					drugOrders.push(obj);
+					drugOrders.push(getMappedDrugs(visitDrugOrder));
 				}
 			});
 			if (JSON.stringify(prescribedDrugs) !== JSON.stringify(drugOrders)) {
@@ -118,6 +114,7 @@ export const DispensePage = () => {
 		}
 		return false;
 	};
+	const isSortable = (key) => key === "patientName";
 
 	const handleOnLinkClick = (patientDetails) => {
 		setShowModal(true);
@@ -127,8 +124,6 @@ export const DispensePage = () => {
 		});
 	};
 
-	const isSortable = (key) => key === "patientName";
-
 	const handleSave = async () => {
 		const data = {
 			patientUuid: patient.id,
@@ -137,17 +132,17 @@ export const DispensePage = () => {
 		const response = await saveDispense(data, sourceStockRoom);
 		if (response.status === 201) {
 			setShowModal(false);
-			setModifiedData([]);
-			setPrescribedDrugs([]);
 		}
 
 	};
 
 	if (items == undefined && inventoryItemError == undefined)
-		return <div>Loading...</div>;
+		return <Loading/>;
 
 	return inventoryItemError ? (
-		<div>Something went wrong while fetching items</div>
+		<div>
+			{errorNotification("Something went wrong while fetching URL")}
+		</div>
 	) : (
 		<div className={styles.dispenseContainer}>
 			<h5 style={{ paddingBottom: "1rem" }}>{activePatients}</h5>
@@ -183,6 +178,13 @@ export const DispensePage = () => {
 									</TableRow>
 								</TableHead>
 								<TableBody>
+								{rows.length === 0 && (
+									<TableRow>
+										<div style={{fontSize: "20px"}}>
+										No active patients with drug orders
+										</div>
+									</TableRow>
+								)}
 									{rows.map((row) => (
 										<TableRow {...getRowProps({ row })}>
 											{row.cells.map((cell) => (
@@ -211,11 +213,7 @@ export const DispensePage = () => {
 					invalid={isInvalid}
 				>
 					<DrugItemDetails
-						data={{
-							id: patient.id,
-							name: patient.name,
-							dispense_drugs: [...prescribedDrugs],
-						}}
+						data={getDrugItems(patient,prescribedDrugs)}
 						modifiedData={modifiedData}
 						setModifiedData={setModifiedData}
 						isInvalid={isInvalid}

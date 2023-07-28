@@ -17,6 +17,7 @@ import {
 	useItemStockContext
 } from "../context/item-stock-context";
 import styles from "./inventory.module.scss";
+import { errorNotification } from "../components/notifications/errorNotification";
 
 export const InventoryLandingPage = () => {
 	let rows = [];
@@ -85,6 +86,13 @@ export const InventoryLandingPage = () => {
 									</TableRow>
 								</TableHead>
 								<TableBody>
+									{rows.length === 0 && (
+										<TableRow>
+											<div style={{ fontSize: "20px"}}>
+											Currently there are no stocks available
+											</div>
+										</TableRow>
+									)}
 									{rows.map((row) => (
 										<TableRow {...getRowProps({ row })}>
 											{row.cells.map((cell) => (

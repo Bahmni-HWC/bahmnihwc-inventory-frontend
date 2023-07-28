@@ -42,7 +42,6 @@ export const postRequest = (url, data) =>
 		},
 		body: JSON.stringify(data),
 	});
-
 export const getRequest = (url) =>
   fetch(url, {
     method: "GET",
