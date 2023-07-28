@@ -1,29 +1,45 @@
-import { postRequest } from '../utils/api-utils';
+import { postRequest, getRequest } from '../utils/api-utils';
+import getFormattedDate from '../utils/date-utils';
+
+
 
 // eslint-disable-next-line import/prefer-default-export
-export const saveReceipt = async (data) => {
-  console.log('data', data)
+
+   const saveReceipt = async (items,outwardNumber,destinationUuid) => {
+
+       const instanceTypeResponse = await getRequest(`/openmrs/ws/rest/v2/inventory/stockOperationType?v=full&q=Receipt`);
+       const instanceTypeUuids = instanceTypeResponse.results[0].uuid;
+
+
    const requestBody = {
-   "status": "NEW",
-     "attributes": [],
-     "items": [
-       {
-         "item": "b8252de7-81f6-4379-bdc2-27b3c29b0399",
-         "quantity": 200,
-         "expiration": "26-07-2023",
-         "calculatedExpiration": false,
-         "batchNumber":"BDF2002060"
-       }
-     ],
-     "operationNumber": "",
-     "instanceType": "fce0b4fc-9402-424a-aacb-f99599e51a9f",
-     "operationDate": "12-07-2023 23:38:05",
-     "source": "",
-     "destination": "53d12a8a-2475-11ee-8006-0242ac13000b",
-     "institution": "",
-     "department": ""
-   }
-    return postRequest('/openmrs/ws/rest/v2/inventory/stockOperation',
-        requestBody
-    );
-}
+        "status": "NEW",
+        "attributes": [],
+        "items": [],
+        "operationNumber": "",
+        "instanceType": instanceTypeUuids,
+        "operationDate": getFormattedDate,
+        "source": "",
+        "destination": destinationUuid,
+        "institution": "",
+        "department": ""
+    };
+   await Promise.all(
+       items.map(async (item) => {
+         const itemName = item.item;
+         const response = await getRequest(`/openmrs/ws/rest/v2/inventory/item?v=full&q=${itemName}`);
+         const itemUuids = response.results.map((result) => result.uuid);
+  // Add the item to the requestBody.items array with all corresponding properties
+       itemUuids.forEach((itemUuid) => {
+         requestBody.items.push({
+           "item": itemUuid,
+           "quantity": item.totalQuantity,
+           "expiration": item.expiration,
+           "batchNumber": item.batchNumber,
+         });
+       });
+      })
+      );
+  return  postRequest('/openmrs/ws/rest/v2/inventory/stockOperation', requestBody);
+};
+export default saveReceipt;
+
