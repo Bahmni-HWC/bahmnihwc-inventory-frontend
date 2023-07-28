@@ -18,7 +18,11 @@ import { fetcher, invItemURL, stockRoomURL } from "../utils/api-utils";
 import styles from "./inventory.module.scss";
 import { headers, locationCookieName } from "../../constants";
 import { useCookies } from "react-cookie";
+import {Button } from "carbon-components-react";
+import { exportToExcel } from "./export-to-excel";
+
 import { errorNotification } from "../components/notifications/errorNotification";
+import getFormattedDate from '../utils/date-utils';
 
 export const InventoryLandingPage = () => {
 	let rows = [];
@@ -39,13 +43,22 @@ export const InventoryLandingPage = () => {
 	const handleSearch = (event) => {
 		setSearchText(event.target.value);
 	};
+	const handleExportToExcel = () => {
+		exportToExcel(filteredRows);
+	  };
 
+	   
 	if (items?.results?.length > 0) {
 		for (let index = 0; index < items.results.length; index++) {
+			const item = items.results[index];
+			const expiration = item.details[0]?.expiration;
+			const formattedExpirationDate = getFormattedDate;
 			const newObj = {
 				id: `${index}`,
 				productName: items.results[index].item.name,
-				currentQuantity: items.results[index].quantity ?? 0,
+				quantity: item.details[0]?.quantity ?? 0,
+        		expiration: expiration ? formattedExpirationDate : "No Expiration Date",
+        		batchNumber: item.details[0]?.batchNumber ?? "No Batch Number",
 			};
 			rows.push(newObj);
 		}
@@ -68,23 +81,26 @@ export const InventoryLandingPage = () => {
 			{errorNotification("Something went wrong while fetching URL")}
 	  </div>
 	) : (
-		<div className="inv-datatable" style={{ width: "50%" }}>
-			<DataTable rows={filteredRows} headers={headers} stickyHeader={true}>
+		<div className={styles.inventoryContainer}>
+			<DataTable rows={filteredRows} headers={headers} >
 				{({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
 					<>
 						<TableContainer>
-							<TableToolbar style={{ width: "15rem" }}>
-								<TableToolbarContent style={{ justifyContent: "flex-start" }}>
-									<TableToolbarSearch
-										value={searchText}
-										onChange={handleSearch}
-									/>
-								</TableToolbarContent>
-							</TableToolbar>
+						<TableToolbarContent className={styles.tableToolbarContent}>
+  							<TableToolbarSearch
+    							value={searchText}
+    							onChange={handleSearch}
+  							/>
+  						{rows.length > 0 && (
+							<Button onClick={handleExportToExcel} kind='tertiary' size='sm'>Export To Excel</Button>
+
+  							)}
+					</TableToolbarContent>
+
 							<Table
 								{...getTableProps()}
 								useZebraStyles={true}
-								className={styles.table}
+								className={styles.table} 
 							>
 								<TableHead>
 									<TableRow>
@@ -94,10 +110,10 @@ export const InventoryLandingPage = () => {
 													header,
 													isSortable: isSortable(header.key),
 												})}
-												style={
-													header.key === "currentQuantity"
-														? { justifyContent: "flex-end" }
-														: {}
+												className={
+													header.key === "productName"
+														? styles.stickyColumn
+														: ""
 												}
 											>
 												{header.header}
@@ -117,15 +133,13 @@ export const InventoryLandingPage = () => {
 										<TableRow {...getRowProps({ row })}>
 											{row.cells.map((cell) => (
 												<TableCell
-													key={cell.id}
-													style={
-														cell.info.header === "currentQuantity"
-															? { justifyContent: "flex-end" }
-															: {}
-													}
-												>
-													{cell.value}
-												</TableCell>
+												key={cell.id}
+												className={`${cell.id.includes("productName") ? styles.stickyColumn : ""} 
+												}`}
+											  >
+												{cell.value}
+											  </TableCell>
+											  
 											))}
 										</TableRow>
 									))}
@@ -137,4 +151,6 @@ export const InventoryLandingPage = () => {
 			</DataTable>
 		</div>
 	);
+	
 };
+
