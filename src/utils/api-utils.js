@@ -1,5 +1,6 @@
 export const invItemURL = (locationName) =>
 	`/openmrs/ws/rest/v2/inventory/itemStock?stockroom_uuid=${locationName}`;
+export const invventoryItemURL=()=>`/openmrs/ws/rest/v2/inventory/item?v=full`;
 export const activePatientWithDrugOrders = (locationUuid) =>
 	`/openmrs/ws/rest/v1/bahmnicore/sql?location_uuid=${locationUuid}&q=emrapi.sqlSearch.activePatientsWithDrugOrders&v=full`;
 export const fetcher = (url) =>
