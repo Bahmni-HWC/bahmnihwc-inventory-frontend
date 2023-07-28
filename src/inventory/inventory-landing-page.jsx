@@ -18,9 +18,9 @@ import { fetcher, invItemURL, stockRoomURL } from "../utils/api-utils";
 import styles from "./inventory.module.scss";
 import { headers, locationCookieName } from "../../constants";
 import { useCookies } from "react-cookie";
-import * as XLSX from "xlsx";
 import {Button } from "carbon-components-react";
-import { utils as XLSXUtils, writeFile as XLSXWriteFile } from "xlsx";
+import { exportToExcel } from "./export-to-excel"; // Import exportToExcel method
+
 
 
 
@@ -43,30 +43,11 @@ export const InventoryLandingPage = () => {
 	const handleSearch = (event) => {
 		setSearchText(event.target.value);
 	};
-
-	const exportToExcel = () => {
-		const currentDate = new Date().toLocaleDateString().replace(/\//g, "-");
- 		const fileName = `inv_${currentDate}.xlsx`; 
-		const exportData = rows.map(({ id, ...rest }) => ({
-		  "Product Name": rest.productName,
-		  "Quantity": rest.quantity,
-		  "Expiration": rest.expiration,
-		  "Batch Number": rest.batchNumber,
-		}));
-
-		const headerRow = {
-		  "Exported Date": currentDate,
-		};
-
-		const worksheet = XLSXUtils.json_to_sheet([headerRow, ...exportData]);
-		const workbook = XLSXUtils.book_new();
-		XLSXUtils.book_append_sheet(workbook, worksheet, "Inventory Data");
-
-		XLSXWriteFile(workbook, fileName);
+	const handleExportToExcel = () => {
+		exportToExcel(filteredRows);
 	  };
 
-	  
-	  
+	   
 	if (items?.results?.length > 0) {
 		for (let index = 0; index < items.results.length; index++) {
 			const item = items.results[index];
@@ -113,7 +94,7 @@ export const InventoryLandingPage = () => {
     							onChange={handleSearch}
   							/>
   						{rows.length > 0 && (
-							<Button onClick={exportToExcel} kind='tertiary' size='sm'>Export To Excel</Button>
+							<Button onClick={handleExportToExcel} kind='tertiary' size='sm'>Export To Excel</Button>
 
   							)}
 					</TableToolbarContent>
@@ -165,4 +146,6 @@ export const InventoryLandingPage = () => {
 			</DataTable>
 		</div>
 	);
+	
 };
+
