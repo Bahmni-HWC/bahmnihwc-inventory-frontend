@@ -20,7 +20,6 @@ import { headers, locationCookieName } from "../../constants";
 import { useCookies } from "react-cookie";
 import {Button } from "carbon-components-react";
 import { exportToExcel } from "./export-to-excel";
-import { errorNotification } from "../components/notifications/errorNotification";
 
 
 export const InventoryLandingPage = () => {
