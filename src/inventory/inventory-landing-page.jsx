@@ -18,10 +18,11 @@ import { fetcher, invItemURL, stockRoomURL } from "../utils/api-utils";
 import styles from "./inventory.module.scss";
 import { headers, locationCookieName } from "../../constants";
 import { useCookies } from "react-cookie";
-import { errorNotification } from "../components/notifications/errorNotification";
 import {Button } from "carbon-components-react";
 import { exportToExcel } from "./export-to-excel";
 
+import { errorNotification } from "../components/notifications/errorNotification";
+import getFormattedDate from '../utils/date-utils';
 
 export const InventoryLandingPage = () => {
 	let rows = [];
@@ -52,9 +53,10 @@ export const InventoryLandingPage = () => {
 			const item = items.results[index];
 			const expiration = item.details[0]?.expiration;
 			const expirationDate = new Date(expiration);
-			const formattedExpirationDate = `${expirationDate.getDate().toString().padStart(2, '0')}-${
-				(expirationDate.getMonth() + 1).toString().padStart(2, '0')
-			  }-${expirationDate.getFullYear()}`;
+			// const formattedExpirationDate = `${expirationDate.getDate().toString().padStart(2, '0')}-${
+			// 	(expirationDate.getMonth() + 1).toString().padStart(2, '0')
+			//   }-${expirationDate.getFullYear()}`;
+			const formattedExpirationDate = getFormattedDate;
 			const newObj = {
 				id: `${index}`,
 				productName: items.results[index].item.name,
