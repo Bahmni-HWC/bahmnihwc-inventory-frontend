@@ -34,6 +34,7 @@ import styles from "./stock-receipt.module.scss";
 import { getCalculatedQuantity, getStockReceiptObj, getLoadStockObj } from "./eaushadha-response-mapper";
 import { headers, locationCookieName } from "../../constants";
 import { useCookies } from "react-cookie";
+import { Add16, Subtract16 } from "@carbon/icons-react";
 
 const StockReceipt = () => {
 	const [items, setItems] = useState([]);
@@ -234,7 +235,7 @@ const StockReceipt = () => {
 	const filterItems = (menu) => {
 		return menu?.item?.toLowerCase().includes(menu?.inputValue?.toLowerCase());
 	};
-	
+
 	return (
 		<>
 			<Grid style={{ paddingLeft: "0", margin: "0" }}>
@@ -277,13 +278,13 @@ const StockReceipt = () => {
 								Load Stock
 							</Button>
 							{showModal &&
-							<Modal open={showModal} onRequestClose={handleCloseModal} primaryButtonText="Save" secondaryButtonText="Cancel" onRequestSubmit={handleSaveDrugButtonClick}> 
+							<Modal className="addDrugModal" open={showModal} onRequestClose={handleCloseModal} size='lg' primaryButtonText="Save" secondaryButtonText="Cancel" onRequestSubmit={handleSaveDrugButtonClick}> 
 								    <DataTable
 									rows={rows}
-									headers={["Serial Number", "Drug Name", "Batch No", "Expiry Date", "Quantity", "Total Quantity", "Actions"]}
+									headers={["S.No", "Drug Name", "Batch No", "Expiry Date", "Quantity", "Total Quantity", "Actions"]}
 									render={({ rows, headers, getHeaderProps }) => (
 									<TableContainer title="Add New Drug">
-									<Table>
+									<Table className={styles.addStocktable}>
 										<TableHead>
 										<TableRow>
 											{headers.map((header, index) => (
@@ -303,7 +304,7 @@ const StockReceipt = () => {
 													shouldFilterItem={filterItems}
 													selectedItem={row.drugName}
 													onChange={(selectedItem) => handleComboBoxChange(row.id, selectedItem)}
-													style={{ width: "220px" }}
+													style={{ width: "270px" }}
 												/>
 											</TableCell>
 											<TableCell>
@@ -313,7 +314,6 @@ const StockReceipt = () => {
 												onChange={(e) =>
 													handleInputChange(row.id, "batchNo", e.target.value)
 												}
-												style={{ width: "100px" }}
 												/>
 											</TableCell>
 											<TableCell>
@@ -353,26 +353,13 @@ const StockReceipt = () => {
 												/>
 											</TableCell>
 											<TableCell>
-												<Button
-												kind="ghost"
-												onClick={() => handleDeleteRow(row.id)}
-												size="small"
-												>
-												-
-												</Button>
-
+											<Button kind="danger--tertiary" renderIcon={Subtract16} className={styles.iconButton} onClick={() => handleDeleteRow(row.id)}/>
 											</TableCell>
 											</TableRow>
 										))}
 										</TableBody>
 									</Table>
-									<Button
-										kind="ghost"
-										onClick={handleAddRow}
-										size="small"
-										>
-										+
-										</Button>
+									<Button kind="tertiary" renderIcon={Add16} className={`${styles.iconButton} ${styles.plusButton}`}onClick={handleAddRow}/>
 									</TableContainer>
 									)}
 									/>
