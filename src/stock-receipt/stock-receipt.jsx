@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import useSWR from "swr";
-import { fetcherPost, stockReceiptURL, getRequest,invItemURL, fetcher, stockRoomURL, invventoryItemURL } from "../utils/api-utils";
+import { fetcherPost, stockReceiptURL, getRequest, fetcher, stockRoomURL, invventoryItemURL } from "../utils/api-utils";
 import saveReceipt from '../service/save-receipt';
 
 import {
@@ -35,6 +35,7 @@ import { getCalculatedQuantity, getStockReceiptObj, getLoadStockObj } from "./ea
 import { headers, locationCookieName } from "../../constants";
 import { useCookies } from "react-cookie";
 import { Add16, Subtract16 } from "@carbon/icons-react";
+import { errorNotification } from "../components/notifications/errorNotification";
 
 const StockReceipt = () => {
 	const [items, setItems] = useState([]);
@@ -367,7 +368,7 @@ const StockReceipt = () => {
 							}
 						</Column>
 					</Row>
-					{stockReceiptError && <div style={{paddingTop:'1rem'}}>Something went wrong</div>}
+					{stockReceiptError && <h3 style={{paddingTop:'1rem'}}>{errorNotification("Something went wrong while fetching URL")}</h3>}
 					{stockIntakeButtonClick && !eaushdhaResponse && !error ? (
 						<Loading />
 					) : (
