@@ -9,14 +9,19 @@ import {
 	TableRow,
 	TableToolbar,
 	TableToolbarContent,
-	TableToolbarSearch
+	TableToolbarSearch,
 } from "carbon-components-react";
 import React, { useState } from "react";
 import { headers } from "../../constants";
-import {
-	useItemStockContext
-} from "../context/item-stock-context";
+import { useItemStockContext } from "../context/item-stock-context";
 import styles from "./inventory.module.scss";
+import { headers, locationCookieName } from "../../constants";
+import { useCookies } from "react-cookie";
+import { Button } from "carbon-components-react";
+import { exportToExcel } from "./export-to-excel";
+
+import { errorNotification } from "../components/notifications/errorNotification";
+import getFormattedDate from "../utils/date-utils";
 
 export const InventoryLandingPage = () => {
 	let rows = [];
@@ -27,13 +32,21 @@ export const InventoryLandingPage = () => {
 	const handleSearch = (event) => {
 		setSearchText(event.target.value);
 	};
+	const handleExportToExcel = () => {
+		exportToExcel(filteredRows);
+	};
 
 	if (itemStock?.length > 0) {
-		for (let index = 0; index < itemStock.length; index++) {
+		for (let index = 0; index < itemStock?.length; index++) {
+			const item = itemStock?.length;
+			const expiration = item.details[0]?.expiration;
+			const formattedExpirationDate = getFormattedDate;
 			const newObj = {
 				id: `${index}`,
-				productName: itemStock[index].item.name,
-				currentQuantity: itemStock[index].quantity ?? 0,
+				productName: items.results[index].item.name,
+				quantity: item.details[0]?.quantity ?? 0,
+				expiration: expiration ? formattedExpirationDate : "No Expiration Date",
+				batchNumber: item.details[0]?.batchNumber ?? "No Batch Number",
 			};
 			rows.push(newObj);
 		}
@@ -48,18 +61,26 @@ export const InventoryLandingPage = () => {
 
 	return (
 		<div className={styles.inventoryContainer}>
-			<DataTable rows={filteredRows} headers={headers} stickyHeader={true}>
+			<DataTable rows={filteredRows} headers={headers}>
 				{({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
 					<>
 						<TableContainer>
-							<TableToolbar style={{ width: "14.5rem" }}>
-								<TableToolbarContent style={{ justifyContent: "flex-start" }}>
-									<TableToolbarSearch
-										value={searchText}
-										onChange={handleSearch}
-									/>
-								</TableToolbarContent>
-							</TableToolbar>
+							<TableToolbarContent className={styles.tableToolbarContent}>
+								<TableToolbarSearch
+									value={searchText}
+									onChange={handleSearch}
+								/>
+								{rows.length > 0 && (
+									<Button
+										onClick={handleExportToExcel}
+										kind="tertiary"
+										size="sm"
+									>
+										Export To Excel
+									</Button>
+								)}
+							</TableToolbarContent>
+
 							<Table
 								{...getTableProps()}
 								useZebraStyles={true}
@@ -73,10 +94,10 @@ export const InventoryLandingPage = () => {
 													header,
 													isSortable: isSortable(header.key),
 												})}
-												style={
-													header.key === "currentQuantity"
-														? { justifyContent: "flex-end" }
-														: {}
+												className={
+													header.key === "productName"
+														? styles.stickyColumn
+														: ""
 												}
 											>
 												{header.header}
@@ -85,16 +106,24 @@ export const InventoryLandingPage = () => {
 									</TableRow>
 								</TableHead>
 								<TableBody>
+									{rows.length === 0 && (
+										<TableRow>
+											<div style={{ fontSize: "20px" }}>
+												Currently there are no stocks available
+											</div>
+										</TableRow>
+									)}
 									{rows.map((row) => (
 										<TableRow {...getRowProps({ row })}>
 											{row.cells.map((cell) => (
 												<TableCell
 													key={cell.id}
-													style={
-														cell.info.header === "currentQuantity"
-															? { justifyContent: "flex-end" }
-															: {}
-													}
+													className={`${
+														cell.id.includes("productName")
+															? styles.stickyColumn
+															: ""
+													} 
+												}`}
 												>
 													{cell.value}
 												</TableCell>

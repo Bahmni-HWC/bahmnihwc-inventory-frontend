@@ -12,7 +12,17 @@
 		text-align: center;
 	}
 }
-
+.stickyColumn {
+	position: sticky;
+	left: 0;
+	z-index: 2;
+}
+.tableToolbarContent {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	width: 100%;
+}
 .inventoryContainer {
 	@media all and (min-width: 768px) {
 		width: 50%;

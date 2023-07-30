@@ -31,6 +31,7 @@ import styles from "./dispense.module.scss";
 import { saveDispense } from "../../service/save-dispense";
 import DrugItemDetails from "./drug-item-details";
 import { getDrugItems, getMappedDrugs } from "./drug-mapper";
+import { errorNotification } from "../../components/notifications/errorNotification";
 
 export const DispensePage = () => {
 	let rows = [];
@@ -128,7 +129,9 @@ export const DispensePage = () => {
 		return <Loading/>;
 
 	return inventoryItemError ? (
-		<div>Something went wrong while fetching items</div>
+		<div>
+			{errorNotification("Something went wrong while fetching URL")}
+		</div>
 	) : (
 		<div className={styles.dispenseContainer}>
 			<h5 style={{ paddingBottom: "1rem" }}>{activePatients}</h5>
@@ -164,6 +167,13 @@ export const DispensePage = () => {
 									</TableRow>
 								</TableHead>
 								<TableBody>
+								{rows.length === 0 && (
+									<TableRow>
+										<div style={{fontSize: "20px"}}>
+										No active patients with drug orders
+										</div>
+									</TableRow>
+								)}
 									{rows.map((row) => (
 										<TableRow {...getRowProps({ row })}>
 											{row.cells.map((cell) => (
