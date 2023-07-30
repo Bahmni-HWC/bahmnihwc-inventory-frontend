@@ -1,4 +1,5 @@
 import {
+	Button,
 	DataTable,
 	Table,
 	TableBody,
@@ -9,16 +10,13 @@ import {
 	TableRow,
 	TableToolbar,
 	TableToolbarContent,
-	TableToolbarSearch
+	TableToolbarSearch,
 } from "carbon-components-react";
 import React, { useState } from "react";
 import { headers } from "../../constants";
-import {
-	useItemStockContext
-} from "../context/item-stock-context";
+import { useItemStockContext } from "../context/item-stock-context";
 import styles from "./inventory.module.scss";
-import { errorNotification } from "../components/notifications/errorNotification";
-import getFormattedDate from '../utils/date-utils';
+import getFormattedDate from "../utils/date-utils";
 
 export const InventoryLandingPage = () => {
 	let rows = [];
@@ -31,9 +29,8 @@ export const InventoryLandingPage = () => {
 	};
 	const handleExportToExcel = () => {
 		exportToExcel(filteredRows);
-	  };
+	};
 
-	   
 	if (itemStock?.length > 0) {
 		for (let index = 0; index < itemStock.length; index++) {
 			const item = itemStock[index];
@@ -43,8 +40,8 @@ export const InventoryLandingPage = () => {
 				id: `${index}`,
 				productName: itemStock[index].item.name,
 				quantity: item.details[0]?.quantity ?? 0,
-        		expiration: expiration ? formattedExpirationDate : "No Expiration Date",
-        		batchNumber: item.details[0]?.batchNumber ?? "No Batch Number",
+				expiration: expiration ? formattedExpirationDate : "No Expiration Date",
+				batchNumber: item.details[0]?.batchNumber ?? "No Batch Number",
 			};
 			rows.push(newObj);
 		}
@@ -59,25 +56,30 @@ export const InventoryLandingPage = () => {
 
 	return (
 		<div className={styles.inventoryContainer}>
-			<DataTable rows={filteredRows} headers={headers} stickyHeader={true}>
+			<DataTable rows={filteredRows} headers={headers}>
 				{({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
 					<>
 						<TableContainer>
-							<TableToolbar style={{ width: "14.5rem" }}>
-								<TableToolbarContent style={{ justifyContent: "flex-start" }}>
-									<TableToolbarSearch
-										value={searchText}
-										onChange={handleSearch}
-									/>
-									{rows.length > 0 && (
-							<Button onClick={handleExportToExcel} kind='tertiary' size='sm'>Export To Excel</Button>
-  							)}
-								</TableToolbarContent>
-							</TableToolbar>
+							<TableToolbarContent className={styles.tableToolbarContent}>
+								<TableToolbarSearch
+									value={searchText}
+									onChange={handleSearch}
+								/>
+								{rows.length > 0 && (
+									<Button
+										onClick={handleExportToExcel}
+										kind="tertiary"
+										size="sm"
+									>
+										Export To Excel
+									</Button>
+								)}
+							</TableToolbarContent>
+
 							<Table
 								{...getTableProps()}
 								useZebraStyles={true}
-								className={styles.table} 
+								className={styles.table}
 							>
 								<TableHead>
 									<TableRow>
@@ -101,8 +103,8 @@ export const InventoryLandingPage = () => {
 								<TableBody>
 									{rows.length === 0 && (
 										<TableRow>
-											<div style={{ fontSize: "20px"}}>
-											Currently there are no stocks available
+											<div style={{ fontSize: "20px" }}>
+												Currently there are no stocks available
 											</div>
 										</TableRow>
 									)}
@@ -110,13 +112,16 @@ export const InventoryLandingPage = () => {
 										<TableRow {...getRowProps({ row })}>
 											{row.cells.map((cell) => (
 												<TableCell
-												key={cell.id}
-												className={`${cell.id.includes("productName") ? styles.stickyColumn : ""} 
+													key={cell.id}
+													className={`${
+														cell.id.includes("productName")
+															? styles.stickyColumn
+															: ""
+													} 
 												}`}
-											  >
-												{cell.value}
-											  </TableCell>
-											  
+												>
+													{cell.value}
+												</TableCell>
 											))}
 										</TableRow>
 									))}
@@ -128,6 +133,4 @@ export const InventoryLandingPage = () => {
 			</DataTable>
 		</div>
 	);
-	
 };
-

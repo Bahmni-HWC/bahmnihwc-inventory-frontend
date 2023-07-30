@@ -41,7 +41,7 @@ const DrugItemDetails = (props) => {
 				(item) => item.dispensed === false
 			);
 			props.setIsInvalid(invalid || dispensedDrugItem.length === 0);
-			const modifiedData = drugInfo.filter((item) => item.dispensed === false);
+			const modifiedData = drugInfo.filter((item) => item.dispensed === false && item.prescribedQty > 0);
 			props.setModifiedData(modifiedData);
 		}
 	}, [drugInfo]);
@@ -133,7 +133,7 @@ const DrugItemDetails = (props) => {
 
 	const isDispensed = (row) => {
 		const item = drugInfo.find((item) => item.id === row.id);
-		return item.dispensed;
+		return item?.dispensed ?? false;
 	};
 
 	return (

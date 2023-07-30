@@ -57,6 +57,7 @@ export const DispensePage = () => {
 
 	useEffect(() => {
 		if (!showModal) {
+			setSearchText("");
 			setIsInvalid(false);
 			setModifiedData([]);
 			setPrescribedDrugs([]);
@@ -129,7 +130,7 @@ export const DispensePage = () => {
 		const response = await saveDispense(data, stockRoom);
 		if (response.status === 201) {
 			const bahmniEncoutnerResponse = await bahmniEncounterPost(data, location);
-			if (bahmniEncoutnerResponse) setShowModal(false);
+			setShowModal(false);
 		} else {
 			errorNotification("Dispense failed");
 		}
