@@ -14,6 +14,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { useItemStockContext } from "../../context/item-stock-context";
 import styles from "./dispense.module.scss";
+import { drugItemheader } from "../../../constants";
 
 const DrugItemDetails = (props) => {
 	const [drugItems, setDrugItems] = useState([]);
@@ -34,10 +35,14 @@ const DrugItemDetails = (props) => {
 		if (drugInfo && drugInfo.length > 0) {
 			let invalid = false;
 			drugInfo.forEach((item) => {
-				if (item.invalidQty && invalid === false) invalid = true;
+				if (item.invalidQty > 0 && invalid === false) invalid = true;
 			});
-			props.setIsInvalid(invalid);
-			props.setModifiedData(drugInfo);
+			const dispensedDrugItem = drugInfo.filter(
+				(item) => item.dispensed === false
+			);
+			props.setIsInvalid(invalid || dispensedDrugItem.length === 0);
+			const modifiedData = drugInfo.filter((item) => item.dispensed === false);
+			props.setModifiedData(modifiedData);
 		}
 	}, [drugInfo]);
 
@@ -52,14 +57,16 @@ const DrugItemDetails = (props) => {
 			for (let drugItem of drugItems) {
 				for (let item of itemStock) {
 					if (item.item.name.includes(drugItem.drugName)) {
+						const isDispensedDrug = dispensedDrug(drugItem.orderAttributes);
 						rowObj.push({
 							id: drugItem.id,
 							itemUuid: item.item.uuid,
 							drugName: getTitle(drugItem),
 							name: drugItem.drugName,
 							avlQty: item.quantity,
-							prescribedQty: drugItem.quantity,
-							invalidQty: item.quantity < drugItem.quantity,
+							prescribedQty: isDispensedDrug ? 0 : drugItem.quantity,
+							invalidQty: !isDispensedDrug && item.quantity < drugItem.quantity,
+							dispensed: isDispensedDrug,
 						});
 					}
 				}
@@ -74,11 +81,11 @@ const DrugItemDetails = (props) => {
 		if (drug.dosingInstructions.frequency !== null) {
 			title = `${drug.drugName} - ${dosingInstructions.dose} ${dosingInstructions.doseUnits} | ${dosingInstructions.frequency} | ${drug.duration} ${drug.durationUnits}`;
 		} else {
-			const administrationInstructions = drug.dosingInstructions.administrationInstructions
+			const administrationInstructions =
+				drug.dosingInstructions.administrationInstructions;
 			const parsedobj = JSON.parse(administrationInstructions);
-			title = `${drug.drugName} - ${parsedobj.morningDose}-${parsedobj.afternoonDose}-${parsedobj.eveningDose} ${dosingInstructions.doseUnits} | ${drug.duration} ${drug.durationUnits}`
+			title = `${drug.drugName} - ${parsedobj.morningDose}-${parsedobj.afternoonDose}-${parsedobj.eveningDose} ${dosingInstructions.doseUnits} | ${drug.duration} ${drug.durationUnits}`;
 		}
-
 		return title;
 	};
 
@@ -111,11 +118,23 @@ const DrugItemDetails = (props) => {
 		return false;
 	};
 
-	const drugItemheader = [
-		{ key: "drugName", header: "Drug Name" },
-		{ key: "avlQty", header: "Avl.Qty" },
-		{ key: "prescribedQty", header: "Pres.Qty" },
-	];
+	const dispensedDrug = (orderAttributes) => {
+		if (orderAttributes == null) return false;
+
+		for (const orderAttribute of orderAttributes) {
+			if (
+				orderAttribute.name === "Dispensed" &&
+				orderAttribute.value === "true"
+			)
+				return true;
+		}
+		return false;
+	};
+
+	const isDispensed = (row) => {
+		const item = drugInfo.find((item) => item.id === row.id);
+		return item.dispensed;
+	};
 
 	return (
 		<Grid>
@@ -169,10 +188,15 @@ const DrugItemDetails = (props) => {
 																	<TextInput
 																		size="sm"
 																		value={
-																			isInvalid(cell.value) ? "" : cell.value
+																			isDispensed(row)
+																				? "Dispensed"
+																				: isInvalid(cell.value)
+																				? ""
+																				: cell.value
 																		}
 																		id={cell.id}
 																		labelText=""
+																		disabled={isDispensed(row)}
 																		style={
 																			!isSufficient(cell.value, row)
 																				? { color: "red" }

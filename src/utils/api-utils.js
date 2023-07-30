@@ -66,3 +66,9 @@ export const prescribedDrugOrders = (patientUuid) =>
 	`/openmrs/ws/rest/v1/bahmnicore/drugOrders/prescribedAndActive?getEffectiveOrdersOnly=false&getOtherActive=true&numberOfVisits=1&patientUuid=${patientUuid}&preferredLocale=en`;
 export const stockReceiptURL = () =>
 	"/openmrs/ws/rest/v1/eaushadha/stock-receipt";
+
+export const dispenseConceptURL = '/openmrs/ws/rest/v1/concept?q=Dispensed&limit=1'
+export const stockOperationURL = "/openmrs/ws/rest/v2/inventory/stockOperation"
+export const stockOperationTypeURL = (stockOperationType) => `/openmrs/ws/rest/v2/inventory/stockOperationType?v=full&q=${stockOperationType}`
+export const inventoryItemURL = (itemName) => `/openmrs/ws/rest/v2/inventory/item?v=full&q=${itemName}`
+export const sessionURL = '/openmrs/ws/rest/v1/session?v=custom:(uuid)'

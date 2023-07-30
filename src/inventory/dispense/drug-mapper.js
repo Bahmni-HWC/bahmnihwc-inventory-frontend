@@ -6,6 +6,7 @@ export const getMappedDrugs = (visitDrugOrder) => ({
 	dosingInstructions: visitDrugOrder.dosingInstructions,
 	duration: visitDrugOrder.duration,
 	durationUnits: visitDrugOrder.durationUnits,
+	orderAttributes: visitDrugOrder.orderAttributes
 });
 
 export const getDrugItems = (patient, prescribedDrugs) => ({

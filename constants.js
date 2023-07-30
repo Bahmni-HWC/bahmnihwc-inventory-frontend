@@ -36,3 +36,9 @@ export const stockReceiptHeaders = [
 	{ key: "quantity", header: "Batch Quantity" },
 	{ key: "totalQuantity", header: "Total Quantity" },
 ];
+
+export const drugItemheader = [
+	{ key: "drugName", header: "Drug Name" },
+	{ key: "avlQty", header: "Avl.Qty" },
+	{ key: "prescribedQty", header: "Pres.Qty" },
+];

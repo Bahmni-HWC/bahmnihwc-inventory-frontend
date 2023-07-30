@@ -25,31 +25,28 @@ import {
 	locationCookieName,
 	dispenseHeaders,
 	activePatients,
-	headers,
 } from "../../../constants";
 import { useCookies } from "react-cookie";
 import CustomModal from "../../components/CustomModal";
 import styles from "./dispense.module.scss";
-import saveDispense  from "../../service/save-dispense";
+import saveDispense from "../../service/save-dispense";
 import DrugItemDetails from "./drug-item-details";
 import { getDrugItems, getMappedDrugs } from "./drug-mapper";
 import { errorNotification } from "../../components/notifications/errorNotification";
-
-
+import { useStockRoomContext } from "../../context/item-stock-context";
+import { bahmniEncounterPost } from "../../service/bahmni-encounter";
 
 export const DispensePage = () => {
 	let rows = [];
 	const [cookies] = useCookies();
+	const location = cookies[locationCookieName];
+
 	const { data: items, error: inventoryItemError } = useSWR(
-		activePatientWithDrugOrders(cookies[locationCookieName]?.uuid),
+		activePatientWithDrugOrders(location?.uuid),
 		fetcher
 	);
 
-
-           const { data: sourceStockRoom, error: stockRoomError } = useSWR(
-           		stockRoomURL(cookies[locationCookieName]?.name.trim()),
-           		fetcher
-           	);
+	const { stockRoom } = useStockRoomContext();
 
 	const [searchText, setSearchText] = useState("");
 	const [showModal, setShowModal] = useState(false);
@@ -129,20 +126,19 @@ export const DispensePage = () => {
 			patientUuid: patient.id,
 			dispense_drugs: modifiedData,
 		};
-		const response = await saveDispense(data, sourceStockRoom);
+		const response = await saveDispense(data, stockRoom);
 		if (response.status === 201) {
-			setShowModal(false);
+			const bahmniEncoutnerResponse = await bahmniEncounterPost(data, location);
+			if (bahmniEncoutnerResponse) setShowModal(false);
+		} else {
+			errorNotification("Dispense failed");
 		}
-
 	};
 
-	if (items == undefined && inventoryItemError == undefined)
-		return <Loading/>;
+	if (items == undefined && inventoryItemError == undefined) return <Loading />;
 
 	return inventoryItemError ? (
-		<div>
-			{errorNotification("Something went wrong while fetching URL")}
-		</div>
+		<div>{errorNotification("Something went wrong while fetching URL")}</div>
 	) : (
 		<div className={styles.dispenseContainer}>
 			<h5 style={{ paddingBottom: "1rem" }}>{activePatients}</h5>
@@ -178,13 +174,13 @@ export const DispensePage = () => {
 									</TableRow>
 								</TableHead>
 								<TableBody>
-								{rows.length === 0 && (
-									<TableRow>
-										<div style={{fontSize: "20px"}}>
-										No active patients with drug orders
-										</div>
-									</TableRow>
-								)}
+									{rows.length === 0 && (
+										<TableRow>
+											<div style={{ fontSize: "20px" }}>
+												No active patients with drug orders
+											</div>
+										</TableRow>
+									)}
 									{rows.map((row) => (
 										<TableRow {...getRowProps({ row })}>
 											{row.cells.map((cell) => (
@@ -213,7 +209,7 @@ export const DispensePage = () => {
 					invalid={isInvalid}
 				>
 					<DrugItemDetails
-						data={getDrugItems(patient,prescribedDrugs)}
+						data={getDrugItems(patient, prescribedDrugs)}
 						modifiedData={modifiedData}
 						setModifiedData={setModifiedData}
 						isInvalid={isInvalid}
