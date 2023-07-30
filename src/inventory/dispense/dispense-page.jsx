@@ -125,13 +125,10 @@ export const DispensePage = () => {
 		}
 	};
 
-	if (items == undefined && inventoryItemError == undefined)
-		return <Loading/>;
+	if (items == undefined && inventoryItemError == undefined) return <Loading />;
 
 	return inventoryItemError ? (
-		<div>
-			{errorNotification("Something went wrong while fetching URL")}
-		</div>
+		<div>{errorNotification("Something went wrong while fetching URL")}</div>
 	) : (
 		<div className={styles.dispenseContainer}>
 			<h5 style={{ paddingBottom: "1rem" }}>{activePatients}</h5>
@@ -167,13 +164,13 @@ export const DispensePage = () => {
 									</TableRow>
 								</TableHead>
 								<TableBody>
-								{rows.length === 0 && (
-									<TableRow>
-										<div style={{fontSize: "20px"}}>
-										No active patients with drug orders
-										</div>
-									</TableRow>
-								)}
+									{rows.length === 0 && (
+										<TableRow style={{ fontSize: "20px" }}>
+											<TableCell colSpan={headers.length}>
+												No active patients with drug orders
+											</TableCell>
+										</TableRow>
+									)}
 									{rows.map((row) => (
 										<TableRow {...getRowProps({ row })}>
 											{row.cells.map((cell) => (
@@ -202,7 +199,7 @@ export const DispensePage = () => {
 					invalid={isInvalid}
 				>
 					<DrugItemDetails
-						data={getDrugItems(patient,prescribedDrugs)}
+						data={getDrugItems(patient, prescribedDrugs)}
 						modifiedData={modifiedData}
 						setModifiedData={setModifiedData}
 						isInvalid={isInvalid}
