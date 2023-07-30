@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
 	DataTable,
 	TableContainer,
@@ -12,11 +12,11 @@ import {
 	TableToolbarContent,
 	TableToolbarSearch,
 	Link,
+	Loading,
 } from "carbon-components-react";
 import useSWR from "swr";
 import {
 	fetcher,
-	invItemURL,
 	activePatientWithDrugOrders,
 	prescribedDrugOrders,
 } from "../../utils/api-utils";
@@ -28,6 +28,9 @@ import {
 import { useCookies } from "react-cookie";
 import CustomModal from "../../components/CustomModal";
 import styles from "./dispense.module.scss";
+import { saveDispense } from "../../service/save-dispense";
+import DrugItemDetails from "./drug-item-details";
+import { getDrugItems, getMappedDrugs } from "./drug-mapper";
 import { errorNotification } from "../../components/notifications/errorNotification";
 
 export const DispensePage = () => {
@@ -41,7 +44,18 @@ export const DispensePage = () => {
 	const [searchText, setSearchText] = useState("");
 	const [showModal, setShowModal] = useState(false);
 	const [prescribedDrugs, setPrescribedDrugs] = useState([]);
-	const [patientUuid, setPatientUuid] = useState("");
+	const [patient, setPatient] = useState({});
+	const [modifiedData, setModifiedData] = useState([]);
+	const [isInvalid, setIsInvalid] = useState(false);
+
+	useEffect(() => {
+		if (!showModal) {
+			setIsInvalid(false);
+			setModifiedData([]);
+			setPrescribedDrugs([]);
+			setPatient({});
+		}
+	}, [showModal]);
 
 	const handleSearch = (event) => {
 		setSearchText(event.target.value);
@@ -57,42 +71,66 @@ export const DispensePage = () => {
 			};
 		});
 	}
-	console.log("item...", items);
+
 	const filteredRows = rows.filter((row) => {
-		console.log(
-			"first",
-			row?.patientName,
-			searchText,
-			row?.patientName?.toLowerCase().includes(searchText?.toLowerCase())
-		);
 		return searchText !== ""
 			? row?.patientName?.toLowerCase().includes(searchText?.toLowerCase())
 			: row;
 	});
-	console.log("showModal", showModal);
-	const { data: prescibedDrugs, error: prescribedDrugsError } = useSWR(
-		showModal ? prescribedDrugOrders(patientUuid) : [],
+
+	const { data: drugItems, error: drugItemsError } = useSWR(
+		showModal && patient.id ? prescribedDrugOrders(patient.id) : "",
 		fetcher
 	);
-	console.log("prescibedDrugs", prescibedDrugs);
 
-	const handleOnLinkClick = (patientDetails) => {
-		setShowModal(true);
-		setPatientUuid(patientDetails.id);
+	useEffect(() => {
+		if (drugItems) {
+			const visitDrugOrders = drugItems.visitDrugOrders;
+			const drugOrders = [];
+			visitDrugOrders.forEach((visitDrugOrder) => {
+				if (isValid(visitDrugOrder)) {
+					drugOrders.push(getMappedDrugs(visitDrugOrder));
+				}
+			});
+			if (JSON.stringify(prescribedDrugs) !== JSON.stringify(drugOrders)) {
+				setPrescribedDrugs(drugOrders);
+			}
+		}
+	}, [drugItems]);
+
+	const isValid = (visitDrugOrder) => {
+		if (visitDrugOrder && !visitDrugOrder.dateStopped) {
+			return true;
+		}
+		return false;
 	};
 	const isSortable = (key) => key === "patientName";
 
-	const handleRowClick = (row) => {};
+	const handleOnLinkClick = (patientDetails) => {
+		setShowModal(true);
+		setPatient({
+			id: patientDetails.id,
+			name: patientDetails.cells[1].value,
+		});
+	};
 
-	if (items == undefined && inventoryItemError == undefined)
-		return <div>Loading...</div>;
+	const handleSave = async () => {
+		const data = {
+			patientUuid: patient.id,
+			dispense_drugs: modifiedData,
+		};
+		const response = await saveDispense(data);
+		if (response.status === 201) {
+			setShowModal(false);
+		}
+	};
+
+	if (items == undefined && inventoryItemError == undefined) return <Loading />;
 
 	return inventoryItemError ? (
-		<div>
-			{errorNotification("Something went wrong while fetching URL")}
-		</div>
+		<div>{errorNotification("Something went wrong while fetching URL")}</div>
 	) : (
-		<div className="inv-datatable" style={{ width: "50%" }}>
+		<div className={styles.dispenseContainer}>
 			<h5 style={{ paddingBottom: "1rem" }}>{activePatients}</h5>
 			<DataTable
 				rows={filteredRows}
@@ -102,7 +140,7 @@ export const DispensePage = () => {
 				{({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
 					<>
 						<TableContainer>
-							<TableToolbar style={{ width: "15rem" }}>
+							<TableToolbar style={{ width: "14.5rem" }}>
 								<TableToolbarContent style={{ justifyContent: "flex-start" }}>
 									<TableToolbarSearch
 										value={searchText}
@@ -126,31 +164,20 @@ export const DispensePage = () => {
 									</TableRow>
 								</TableHead>
 								<TableBody>
-								{rows.length === 0 && (
-									<TableRow>
-										<div style={{fontSize: "20px"}}>
-										No active patients with drug orders
-										</div>
-									</TableRow>
-								)}
+									{rows.length === 0 && (
+										<TableRow style={{ fontSize: "20px" }}>
+											<TableCell colSpan={headers.length}>
+												No active patients with drug orders
+											</TableCell>
+										</TableRow>
+									)}
 									{rows.map((row) => (
-										<TableRow
-											{...getRowProps({ row })}
-											// onClick={() => handleRowClick(row)}
-										>
+										<TableRow {...getRowProps({ row })}>
 											{row.cells.map((cell) => (
 												<TableCell key={cell.id}>
-													{" "}
-													{cell.info.header === "patientName" ? (
-														<Link
-															href="#"
-															onClick={() => handleOnLinkClick(row)}
-														>
-															{cell.value}
-														</Link>
-													) : (
-														cell.value
-													)}
+													<Link href="#" onClick={() => handleOnLinkClick(row)}>
+														{cell.value}
+													</Link>
 												</TableCell>
 											))}
 										</TableRow>
@@ -163,27 +190,22 @@ export const DispensePage = () => {
 			</DataTable>
 			{showModal && (
 				<CustomModal
-					data={{
-						id: 1,
-						name: "Patty O'Furniture",
-						dispense_drugs: [
-							{
-								id: "d1",
-								name: "H (Tab(s)) 750 Tabs, Once/Day, 4 day(s)",
-								quantity: 750,
-							},
-						],
-					}}
-					showModal={true}
-					rootClass={styles.modal}
-					modalListClass={styles.modalList}
-					subTitle="Dispense drug for"
+					showModal={showModal}
+					subTitle={`Dispense drug for ${patient.name}`}
 					primaryButton="Dispense"
 					secondaryButton="Cancel"
-					tabs={["", "Qty."]}
-					handleSubmit={(val) => console.log(val)}
-					closeModal={() => console.log("closer")}
-				/>
+					handleSubmit={handleSave}
+					closeModal={() => setShowModal(false)}
+					invalid={isInvalid}
+				>
+					<DrugItemDetails
+						data={getDrugItems(patient, prescribedDrugs)}
+						modifiedData={modifiedData}
+						setModifiedData={setModifiedData}
+						isInvalid={isInvalid}
+						setIsInvalid={setIsInvalid}
+					/>
+				</CustomModal>
 			)}
 		</div>
 	);
