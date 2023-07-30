@@ -18,6 +18,7 @@ import {
 } from "../context/item-stock-context";
 import styles from "./inventory.module.scss";
 import { errorNotification } from "../components/notifications/errorNotification";
+import getFormattedDate from '../utils/date-utils';
 
 export const InventoryLandingPage = () => {
 	let rows = [];
@@ -28,13 +29,22 @@ export const InventoryLandingPage = () => {
 	const handleSearch = (event) => {
 		setSearchText(event.target.value);
 	};
+	const handleExportToExcel = () => {
+		exportToExcel(filteredRows);
+	  };
 
+	   
 	if (itemStock?.length > 0) {
 		for (let index = 0; index < itemStock.length; index++) {
+			const item = itemStock[index];
+			const expiration = item.details[0]?.expiration;
+			const formattedExpirationDate = getFormattedDate;
 			const newObj = {
 				id: `${index}`,
 				productName: itemStock[index].item.name,
-				currentQuantity: itemStock[index].quantity ?? 0,
+				quantity: item.details[0]?.quantity ?? 0,
+        		expiration: expiration ? formattedExpirationDate : "No Expiration Date",
+        		batchNumber: item.details[0]?.batchNumber ?? "No Batch Number",
 			};
 			rows.push(newObj);
 		}
@@ -59,12 +69,15 @@ export const InventoryLandingPage = () => {
 										value={searchText}
 										onChange={handleSearch}
 									/>
+									{rows.length > 0 && (
+							<Button onClick={handleExportToExcel} kind='tertiary' size='sm'>Export To Excel</Button>
+  							)}
 								</TableToolbarContent>
 							</TableToolbar>
 							<Table
 								{...getTableProps()}
 								useZebraStyles={true}
-								className={styles.table}
+								className={styles.table} 
 							>
 								<TableHead>
 									<TableRow>
@@ -74,10 +87,10 @@ export const InventoryLandingPage = () => {
 													header,
 													isSortable: isSortable(header.key),
 												})}
-												style={
-													header.key === "currentQuantity"
-														? { justifyContent: "flex-end" }
-														: {}
+												className={
+													header.key === "productName"
+														? styles.stickyColumn
+														: ""
 												}
 											>
 												{header.header}
@@ -97,15 +110,13 @@ export const InventoryLandingPage = () => {
 										<TableRow {...getRowProps({ row })}>
 											{row.cells.map((cell) => (
 												<TableCell
-													key={cell.id}
-													style={
-														cell.info.header === "currentQuantity"
-															? { justifyContent: "flex-end" }
-															: {}
-													}
-												>
-													{cell.value}
-												</TableCell>
+												key={cell.id}
+												className={`${cell.id.includes("productName") ? styles.stickyColumn : ""} 
+												}`}
+											  >
+												{cell.value}
+											  </TableCell>
+											  
 											))}
 										</TableRow>
 									))}
@@ -117,4 +128,6 @@ export const InventoryLandingPage = () => {
 			</DataTable>
 		</div>
 	);
+	
 };
+
