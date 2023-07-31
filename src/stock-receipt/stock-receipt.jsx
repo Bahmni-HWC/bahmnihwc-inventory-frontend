@@ -28,7 +28,7 @@ import {
 } from "../../constants";
 import styles from "./stock-receipt.module.scss";
 import { getCalculatedQuantity, getStockReceiptObj } from "./eaushadha-response-mapper";
-import { errorNotification } from "../components/notifications/errorNotification";
+import { notification } from "../components/notifications/notification";
 import { headers, locationCookieName } from "../../constants";
 import { useCookies } from "react-cookie";
 
@@ -41,6 +41,7 @@ const StockReceipt = () => {
 	const [onSuccesful, setOnSuccesful] = useState(false);
 	const [onFailure, setOnFailure] = useState(false);
 	const [stockReceiptError, setStockReceiptError] = useState();
+	const [stockEmptyResonseMessage, setStockEmptyResonseMessage] = useState(false);
 
 	const { data: eaushdhaResponse, error } = useSWR(
 		stockIntakeButtonClick ? stockReceiptURL : "",
@@ -72,7 +73,11 @@ const StockReceipt = () => {
 			setItems(getStockReceiptObj(eaushdhaResponse));
 			setReceivedResponse(eaushdhaResponse);
 		}
-		if (error) setStockReceiptError(error);
+		if(eaushdhaResponse&& eaushdhaResponse.length===0){
+			setStockEmptyResonseMessage(true);
+		}
+		if (error) 
+			setStockReceiptError(error);
 	}, [eaushdhaResponse, error]);
 
 	useEffect(() => {
@@ -172,7 +177,8 @@ const StockReceipt = () => {
 							</Button>
 						</Column>
 					</Row>
-					{stockReceiptError && <h3 style={{paddingTop:'1rem'}}>{errorNotification("Something went wrong while fetching URL")}</h3>}
+					{stockReceiptError && <h3 style={{paddingTop:'1rem'}}>{notification("error","Error","Something went wrong while fetching URL")}</h3>}
+					{stockEmptyResonseMessage && <div style={{paddingTop:'20px'}}>{notification("info","info","No data is received for the outward number. Could you please retry?")}</div>}
 					{stockIntakeButtonClick && !eaushdhaResponse && !error ? (
 						<Loading />
 					) : (
