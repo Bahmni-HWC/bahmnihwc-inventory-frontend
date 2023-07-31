@@ -16,6 +16,9 @@ import React, { useState } from "react";
 import { headers } from "../../constants";
 import { useItemStockContext } from "../context/item-stock-context";
 import styles from "./inventory.module.scss";
+import { Button } from "carbon-components-react";
+import { exportToExcel } from "./export-to-excel";
+
 import getFormattedDate from "../utils/date-utils";
 
 export const InventoryLandingPage = () => {
@@ -27,9 +30,7 @@ export const InventoryLandingPage = () => {
 	const handleSearch = (event) => {
 		setSearchText(event.target.value);
 	};
-	const handleExportToExcel = () => {
-		exportToExcel(filteredRows);
-	};
+	const handleExportToExcel = () => exportToExcel(filteredRows);
 
 	if (itemStock?.length > 0) {
 		for (let index = 0; index < itemStock.length; index++) {
@@ -75,7 +76,6 @@ export const InventoryLandingPage = () => {
 									</Button>
 								)}
 							</TableToolbarContent>
-
 							<Table
 								{...getTableProps()}
 								useZebraStyles={true}
@@ -101,30 +101,31 @@ export const InventoryLandingPage = () => {
 									</TableRow>
 								</TableHead>
 								<TableBody>
-									{rows.length === 0 && (
-										<TableRow>
-											<div style={{ fontSize: "20px" }}>
+									{rows.length === 0 ? (
+										<TableRow style={{ fontSize: "20px" }}>
+											<TableCell colSpan={headers.length}>
 												Currently there are no stocks available
-											</div>
+											</TableCell>
 										</TableRow>
-									)}
-									{rows.map((row) => (
-										<TableRow {...getRowProps({ row })}>
-											{row.cells.map((cell) => (
-												<TableCell
-													key={cell.id}
-													className={`${
-														cell.id.includes("productName")
-															? styles.stickyColumn
-															: ""
-													} 
+									) : (
+										rows.map((row) => (
+											<TableRow {...getRowProps({ row })}>
+												{row.cells.map((cell) => (
+													<TableCell
+														key={cell.id}
+														className={`${
+															cell.id.includes("productName")
+																? styles.stickyColumn
+																: ""
+														} 
 												}`}
-												>
-													{cell.value}
-												</TableCell>
-											))}
-										</TableRow>
-									))}
+													>
+														{cell.value}
+													</TableCell>
+												))}
+											</TableRow>
+										))
+									)}
 								</TableBody>
 							</Table>
 						</TableContainer>

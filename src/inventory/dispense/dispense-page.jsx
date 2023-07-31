@@ -190,10 +190,10 @@ export const DispensePage = () => {
 								</TableHead>
 								<TableBody>
 									{rows.length === 0 && (
-										<TableRow>
-											<div style={{ fontSize: "20px" }}>
+										<TableRow style={{ fontSize: "20px" }}>
+											<TableCell colSpan={headers.length}>
 												No active patients with drug orders
-											</div>
+											</TableCell>
 										</TableRow>
 									)}
 									{rows.map((row) => (
