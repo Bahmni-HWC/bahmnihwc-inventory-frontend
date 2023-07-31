@@ -16,7 +16,7 @@ import {
 import useSWR from "swr";
 import {
 	fetcher,
-	invItemURL,
+	invItemURLByStockroom,
 	activePatientWithDrugOrders,
 	prescribedDrugOrders,
 } from "../../utils/api-utils";

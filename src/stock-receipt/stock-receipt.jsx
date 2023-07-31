@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import useSWR from "swr";
-import { fetcherPost, stockReceiptURL, getRequest, fetcher, stockRoomURL, invventoryItemURL } from "../utils/api-utils";
+import { fetcherPost, stockReceiptURL, getRequest, fetcher, stockRoomURL, inventoryItemURL } from "../utils/api-utils";
 import saveReceipt from '../service/save-receipt';
 
 import {
@@ -63,7 +63,7 @@ const StockReceipt = () => {
 	let dropdownItems=[];
 
 	const { data: invItems, error: inventoryItemError } = useSWR(
-		invventoryItemURL(),
+		inventoryItemURL(),
 		fetcher
 	);
 
@@ -153,8 +153,6 @@ const StockReceipt = () => {
 	};
 
 	const handleSaveDrugButtonClick = async () => {
-		console.log("rows");
-		console.log(rows);
 		try {
 		  await setAddDrugItems(getLoadStockObj(rows));
 		  setShowModal(false);
@@ -222,8 +220,6 @@ const StockReceipt = () => {
 	  };
 	
 	const handleInputChange = (id, field, value) => {
-		console.log("value");
-		console.log(value);
 	setRows((prevRows) =>
 		prevRows.map((row) =>
 		row.id === id ? { ...row, [field]: value } : row

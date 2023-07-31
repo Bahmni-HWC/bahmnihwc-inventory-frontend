@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ComposedModal, ModalHeader, ModalBody, TextInput, Button, ModalFooter } from "carbon-components-react";
-import { postRequest, invItemURL } from "../../utils/api-utils";
+import { postRequest, invItemURLByStockroom} from "../../utils/api-utils";
 import styles from "./customModal.module.scss";
 
 const CustomModal = (props) => {
@@ -28,7 +28,7 @@ const CustomModal = (props) => {
     */
 
     const submitDespense = async (payload) => {
-        const res = await postRequest(invItemURL, payload)
+        const res = await postRequest(invItemURLByStockroom, payload)
         const responseData = await res.json();
         if(res.error) {
             setPostError(res.error.message);

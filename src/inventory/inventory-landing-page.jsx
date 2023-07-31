@@ -14,7 +14,7 @@ import {
 	Loading,
 } from "carbon-components-react";
 import useSWR from "swr";
-import { fetcher, invItemURL, stockRoomURL } from "../utils/api-utils";
+import { fetcher, invItemURLByStockroom, stockRoomURL } from "../utils/api-utils";
 import styles from "./inventory.module.scss";
 import { headers, locationCookieName } from "../../constants";
 import { useCookies } from "react-cookie";
@@ -34,7 +34,7 @@ export const InventoryLandingPage = () => {
 	);
 
 	const { data: items, error: inventoryItemError } = useSWR(
-		stockRoom ? invItemURL(stockRoom.results[0].uuid) : '',
+		stockRoom ? invItemURLByStockroom(stockRoom.results[0].uuid) : '',
 		fetcher
 	);
 
