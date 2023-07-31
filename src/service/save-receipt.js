@@ -1,5 +1,5 @@
 import { postRequest, getRequest } from '../utils/api-utils';
-import getFormattedDate from '../utils/date-utils';
+import { getFormattedDate } from '../utils/date-utils';
 
 
 

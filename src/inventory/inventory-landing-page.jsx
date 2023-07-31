@@ -22,7 +22,7 @@ import {Button } from "carbon-components-react";
 import { exportToExcel } from "./export-to-excel";
 
 import { errorNotification } from "../components/notifications/errorNotification";
-import getFormattedDate from '../utils/date-utils';
+import { getFormattedDate } from '../utils/date-utils';
 
 export const InventoryLandingPage = () => {
 	let rows = [];

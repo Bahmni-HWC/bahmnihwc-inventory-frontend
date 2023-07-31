@@ -36,6 +36,7 @@ import { headers, locationCookieName } from "../../constants";
 import { useCookies } from "react-cookie";
 import { Add16, Subtract16 } from "@carbon/icons-react";
 import { errorNotification } from "../components/notifications/errorNotification";
+import { getDatePattern } from "../utils/date-utils";
 
 const StockReceipt = () => {
 	const [items, setItems] = useState([]);
@@ -325,7 +326,7 @@ const StockReceipt = () => {
 												<DatePickerInput
 												value={row.expiryDate}
 												onChange={(e) => handleInputChange(row.id, 'expiryDate', e.target.value)}
-												pattern="(0[1-9]|[1-2][0-9]|3[0-1])/(0[1-9]|1[0-2])/\\d{4}"
+												pattern = { getDatePattern }
 												/>
 											</DatePicker>
 											</TableCell>
