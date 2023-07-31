@@ -37,13 +37,16 @@ export const InventoryLandingPage = () => {
                 const item = itemStock[index];
                 const formattedExpirationDate = getFormattedDate;
                 const updatedRows = item.details.map((detail, detailIndex) => {
-                    return {
+                    const expiration = detail.expiration;
+                    const expirationDate = new Date(expiration);
+                    const formattedExpirationDate = `${expirationDate.getDate().toString().padStart(2, "0")}-${(expirationDate.getMonth() + 1)
+                        .toString()
+                        .padStart(2, "0")}-${expirationDate.getFullYear()}`;
+                    const rowDetails = {
                         id: `${index}-${detail.batchNumber}-${detailIndex}`, // Use a unique identifier for each row
                         productName: item.item.name,
                         quantity: detail.quantity ?? 0,
-                        expiration: detail.expiration
-                          ? formattedExpirationDate(detail.expiration)
-                          : "No Expiration Date",
+                        expiration: expiration ? formattedExpirationDate : "No Expiration Date",
                         batchNumber: detail.batchNumber ?? "No Batch Number",
                       };
                 })
