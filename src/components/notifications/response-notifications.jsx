@@ -2,7 +2,7 @@ import { InlineNotification } from "carbon-components-react";
 import React from "react";
 
 export const errorNotification = (message, setError = () =>{}) => {
-	return <InlineNotification kind="error" title="Error" subtitle={message} timeout={5000} onClose={()=>setError(false)}/>;
+	return <InlineNotification kind="error" title="Error" subtitle={message} onClose={()=>setError(false)}/>;
 };
 
 export const successNotification = (message, setSuccess = () => {}) => {

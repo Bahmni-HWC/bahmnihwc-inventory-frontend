@@ -1,10 +1,8 @@
 import { dispenseConceptURL, getRequest, postRequest, sessionURL } from "../utils/api-utils";
 
-export const bahmniEncounterPost = async (data, location) => {
-	console.log('location', location)
+const bahmniEncounterPost = async (data, location) => {
 	const dispenseConceptData = await getRequest(dispenseConceptURL);
 	const session = await getRequest(sessionURL)
-	console.log('session', session)
 	const observations = data.dispense_drugs.map((drug) => ({
 		providers: [
 			{
@@ -44,3 +42,5 @@ export const bahmniEncounterPost = async (data, location) => {
 		requestBody
 	);
 };
+
+export default bahmniEncounterPost;

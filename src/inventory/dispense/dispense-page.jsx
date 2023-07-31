@@ -37,7 +37,7 @@ import {
 	successNotification,
 } from "../../components/notifications/response-notifications";
 import { useStockRoomContext } from "../../context/item-stock-context";
-import { bahmniEncounterPost } from "../../service/bahmni-encounter";
+import bahmniEncounterPost from "../../service/bahmni-encounter";
 
 export const DispensePage = () => {
 	let rows = [];
@@ -133,7 +133,6 @@ export const DispensePage = () => {
 			dispense_drugs: modifiedData,
 		};
 		const response = await saveDispense(data, stockRoom);
-		console.log('response', response)
 		if (response.ok) {
 			setSaveSuccess(true);
 			const bahmniEncoutnerResponse = await bahmniEncounterPost(data, location);
@@ -150,12 +149,8 @@ export const DispensePage = () => {
 	}
 
 	if (saveError) {
-		console.log('Inside save error')
 		return errorNotification("Dispense failed", setSaveError);
 	}
-
-	console.log('setSaveError', saveError)
-	console.log('setSaveSuccess', saveSuccess)
 
 	return inventoryItemError ? (
 		<div>{errorNotification("Something went wrong while fetching URL")}</div>

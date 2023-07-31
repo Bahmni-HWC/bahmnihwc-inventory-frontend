@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from "react";
 import useSWR from "swr";
-import { fetcherPost, stockReceiptURL, getRequest, fetcher, stockRoomURL } from "../utils/api-utils";
-import saveReceipt from '../service/save-receipt';
-
+import {
+	fetcherPost,
+	stockReceiptURL,
+	fetcher,
+	stockRoomURL,
+} from "../utils/api-utils";
+import saveReceipt from "../service/save-receipt";
 
 import {
 	DataTable,
@@ -27,7 +31,10 @@ import {
 	successMessage,
 } from "../../constants";
 import styles from "./stock-receipt.module.scss";
-import { getCalculatedQuantity, getStockReceiptObj } from "./eaushadha-response-mapper";
+import {
+	getCalculatedQuantity,
+	getStockReceiptObj,
+} from "./eaushadha-response-mapper";
 import { locationCookieName } from "../../constants";
 import { useCookies } from "react-cookie";
 import { errorNotification } from "../components/notifications/response-notifications";
@@ -48,10 +55,10 @@ const StockReceipt = () => {
 	);
 	const [cookies] = useCookies();
 
-    const { data: stockRoom, error: stockRoomError } = useSWR(
-    		stockRoomURL(cookies[locationCookieName]?.name.trim()),
-    		fetcher
-    	);
+	const { data: stockRoom, error: stockRoomError } = useSWR(
+		stockRoomURL(cookies[locationCookieName]?.name.trim()),
+		fetcher
+	);
 
 	useEffect(() => {
 		if (eaushdhaResponse || error) setStockIntakeButtonClick(false);
@@ -109,21 +116,22 @@ const StockReceipt = () => {
 		});
 		setItems(updatedValue);
 	};
-		const handleSave = async () => {
-         try {
-                    const response = await saveReceipt(items, outwardNumber, stockRoom.results[0]?.uuid);
-                      if (response && response.ok) {
-                        setOnSuccesful(true);
-                      } else {
-                        setOnFailure(true);
-                      }
-                    } catch (error) {
-                      setOnFailure(true);
-                    }
-
-            	};
-
-
+	const handleSave = async () => {
+		try {
+			const response = await saveReceipt(
+				items,
+				outwardNumber,
+				stockRoom.results[0]?.uuid
+			);
+			if (response && response.ok) {
+				setOnSuccesful(true);
+			} else {
+				setOnFailure(true);
+			}
+		} catch (error) {
+			setOnFailure(true);
+		}
+	};
 
 	const renderNotificationMessage = (kind, title) => {
 		return (
@@ -172,7 +180,11 @@ const StockReceipt = () => {
 							</Button>
 						</Column>
 					</Row>
-					{stockReceiptError && <h3 style={{paddingTop:'1rem'}}>{errorNotification("Something went wrong while fetching URL")}</h3>}
+					{stockReceiptError && (
+						<h3 style={{ paddingTop: "1rem" }}>
+							{errorNotification("Something went wrong while fetching URL")}
+						</h3>
+					)}
 					{stockIntakeButtonClick && !eaushdhaResponse && !error ? (
 						<Loading />
 					) : (
