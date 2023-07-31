@@ -64,6 +64,6 @@ export const stockRoomURL = (locationName) =>
 	`/openmrs/ws/rest/v2/inventory/stockroom?q=${locationName}`;
 
 export const prescribedDrugOrders = (patientUuid) =>
-	`/openmrs/ws/rest/v1/bahmnicore/drugOrders/prescribedAndActive?getEffectiveOrdersOnly=false&getOtherActive=true&numberOfVisits=5&patientUuid=${patientUuid}&preferredLocale=en`;
+	`/openmrs/ws/rest/v1/bahmnicore/drugOrders/prescribedAndActive?getEffectiveOrdersOnly=false&getOtherActive=true&numberOfVisits=1&patientUuid=${patientUuid}&preferredLocale=en`;
 export const stockReceiptURL = () =>
 	"/openmrs/ws/rest/v1/eaushadha/stock-receipt";
