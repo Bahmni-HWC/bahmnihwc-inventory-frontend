@@ -41,7 +41,7 @@ export const InventoryLandingPage = () => {
                         .toString()
                         .padStart(2, "0")}-${expirationDate.getFullYear()}`;
                     return {
-                        id: `${index}-${detail.batchNumber}-${detailIndex}`, // Use a unique identifier for each row
+                        id: `${index}-${detail.batchNumber}-${detailIndex}`,
                         productName: item.item.name,
                         quantity: detail.quantity ?? 0,
                         expiration: expiration ? formattedExpirationDate : "No Expiration Date",
