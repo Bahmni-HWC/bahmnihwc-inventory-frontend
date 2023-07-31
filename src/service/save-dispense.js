@@ -2,7 +2,6 @@ import { postRequest } from "../utils/api-utils";
 
 // eslint-disable-next-line import/prefer-default-export
 export const saveDispense = async (data) => {
-	console.log("data", data);
 	const requestBody = {
 		status: "NEW",
 		attributes: [],
