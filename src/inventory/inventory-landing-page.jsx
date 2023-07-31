@@ -18,7 +18,6 @@ import styles from "./inventory.module.scss";
 import { Button } from "carbon-components-react";
 import { exportToExcel } from "./export-to-excel";
 
-import getFormattedDate from "../utils/date-utils";
 
 export const InventoryLandingPage = () => {
     const [rows, setRows] = useState([]);
@@ -35,14 +34,13 @@ export const InventoryLandingPage = () => {
         if (itemStock?.length > 0) {
             for (let index = 0; index < itemStock.length; index++) {
                 const item = itemStock[index];
-                const formattedExpirationDate = getFormattedDate;
                 const updatedRows = item.details.map((detail, detailIndex) => {
                     const expiration = detail.expiration;
                     const expirationDate = new Date(expiration);
                     const formattedExpirationDate = `${expirationDate.getDate().toString().padStart(2, "0")}-${(expirationDate.getMonth() + 1)
                         .toString()
                         .padStart(2, "0")}-${expirationDate.getFullYear()}`;
-                    const rowDetails = {
+                    return {
                         id: `${index}-${detail.batchNumber}-${detailIndex}`, // Use a unique identifier for each row
                         productName: item.item.name,
                         quantity: detail.quantity ?? 0,
