@@ -21,6 +21,19 @@ export const getStockReceiptObj = (response) => {
 	})
 	return stockReceiptArray;
 }
+export const getLoadStockObj = (response) => 
+  Object.keys(response).map((key) => {
+    const dateString = new Date(response[key].expiryDate).toLocaleDateString();
+    const convertedDate = new Date(dateString.split("/").reverse().join("-"));
+    return {
+      id: response[key].id,
+      item: response[key].drugName.selectedItem,
+      batchNumber: response[key].batchNo,
+      expiration: convertedDate.toLocaleDateString("en-GB").split("/").join("-"),
+      quantity: response[key].quantity,
+      totalQuantity: response[key].totalQuantity,
+    };
+  });
 
 export const getCalculatedQuantity = (quantity, unitPack) => {
 	const unitPackValue = unitPack?.split("x");

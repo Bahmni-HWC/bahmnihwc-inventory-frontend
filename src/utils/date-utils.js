@@ -8,4 +8,9 @@ const getFormattedDate = () => {
 
 };
 
-export default getFormattedDate;
+const getDatePattern = () => {
+  const datePattern = "(0[1-9]|[1-2][0-9]|3[0-1])/(0[1-9]|1[0-2])/\\d{4}"
+  return datePattern;
+};
+
+export { getFormattedDate, getDatePattern };
