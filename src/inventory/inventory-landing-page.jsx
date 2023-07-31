@@ -8,7 +8,6 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-	TableToolbar,
 	TableToolbarContent,
 	TableToolbarSearch,
 } from "carbon-components-react";
@@ -16,7 +15,6 @@ import React, { useState } from "react";
 import { headers } from "../../constants";
 import { useItemStockContext } from "../context/item-stock-context";
 import styles from "./inventory.module.scss";
-import { Button } from "carbon-components-react";
 import { exportToExcel } from "./export-to-excel";
 
 import getFormattedDate from "../utils/date-utils";
