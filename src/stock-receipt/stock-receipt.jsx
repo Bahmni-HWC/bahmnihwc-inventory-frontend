@@ -28,9 +28,9 @@ import {
 } from "../../constants";
 import styles from "./stock-receipt.module.scss";
 import { getCalculatedQuantity, getStockReceiptObj } from "./eaushadha-response-mapper";
-import { errorNotification } from "../components/notifications/errorNotification";
-import { headers, locationCookieName } from "../../constants";
+import { locationCookieName } from "../../constants";
 import { useCookies } from "react-cookie";
+import { errorNotification } from "../components/notifications/response-notifications";
 
 const StockReceipt = () => {
 	const [items, setItems] = useState([]);

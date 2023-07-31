@@ -32,7 +32,10 @@ import styles from "./dispense.module.scss";
 import saveDispense from "../../service/save-dispense";
 import DrugItemDetails from "./drug-item-details";
 import { getDrugItems, getMappedDrugs } from "./drug-mapper";
-import { errorNotification } from "../../components/notifications/errorNotification";
+import {
+	errorNotification,
+	successNotification,
+} from "../../components/notifications/response-notifications";
 import { useStockRoomContext } from "../../context/item-stock-context";
 import { bahmniEncounterPost } from "../../service/bahmni-encounter";
 
@@ -54,6 +57,8 @@ export const DispensePage = () => {
 	const [patient, setPatient] = useState({});
 	const [modifiedData, setModifiedData] = useState([]);
 	const [isInvalid, setIsInvalid] = useState(false);
+	const [saveSuccess, setSaveSuccess] = useState(false);
+	const [saveError, setSaveError] = useState(false);
 
 	useEffect(() => {
 		if (!showModal) {
@@ -128,15 +133,29 @@ export const DispensePage = () => {
 			dispense_drugs: modifiedData,
 		};
 		const response = await saveDispense(data, stockRoom);
-		if (response.status === 201) {
+		console.log('response', response)
+		if (response.ok) {
+			setSaveSuccess(true);
 			const bahmniEncoutnerResponse = await bahmniEncounterPost(data, location);
-			setShowModal(false);
 		} else {
-			errorNotification("Dispense failed");
+			setSaveError(true);
 		}
+		setShowModal(false);
 	};
 
 	if (items == undefined && inventoryItemError == undefined) return <Loading />;
+
+	if (saveSuccess) {
+		return successNotification("Dispense successful", setSaveSuccess);
+	}
+
+	if (saveError) {
+		console.log('Inside save error')
+		return errorNotification("Dispense failed", setSaveError);
+	}
+
+	console.log('setSaveError', saveError)
+	console.log('setSaveSuccess', saveSuccess)
 
 	return inventoryItemError ? (
 		<div>{errorNotification("Something went wrong while fetching URL")}</div>
