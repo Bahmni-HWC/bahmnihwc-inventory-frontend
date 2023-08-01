@@ -1,4 +1,5 @@
 import {
+	Button,
 	DataTable,
 	Table,
 	TableBody,
@@ -7,33 +8,16 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-	TableToolbar,
 	TableToolbarContent,
 	TableToolbarSearch,
 } from "carbon-components-react";
-import useSWR from "swr";
-import { fetcher, invItemURLByStockroom, stockRoomURL } from "../utils/api-utils";
-import React, { useState, useEffect } from "react";
-import { headers, locationCookieName } from "../../constants";
+import React, { useEffect, useState } from "react";
+import { headers } from "../../constants";
 import { useItemStockContext } from "../context/item-stock-context";
-import styles from "./inventory.module.scss";
-import { Button } from "carbon-components-react";
 import { exportToExcel } from "./export-to-excel";
-import { errorNotification } from "../components/notifications/errorNotification";
-import { useCookies } from "react-cookie";
+import styles from "./inventory.module.scss";
 
 export const InventoryLandingPage = () => {
-	const [cookies] = useCookies();
-
-	const { data: stockRoom, error: stockRoomError } = useSWR(
-		stockRoomURL(cookies[locationCookieName]?.name.trim()),
-		fetcher
-	);
-
-	const { data: items, error: inventoryItemError } = useSWR(
-		stockRoom ? invItemURLByStockroom(stockRoom.results[0].uuid) : '',
-		fetcher
-	);
 	const { itemStock } = useItemStockContext();
 
 	const [rows, setRows] = useState([]);

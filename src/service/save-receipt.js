@@ -1,14 +1,16 @@
-import { postRequest, getRequest } from '../utils/api-utils';
-import { getFormattedDate } from '../utils/date-utils';
-
-// eslint-disable-next-line import/prefer-default-export
+import {
+	postRequest,
+	getRequest,
+	stockOperationURL,
+	stockOperationTypeURL,
+} from "../utils/api-utils";
+import {getFormattedDate} from "../utils/date-utils";
 
 const saveReceipt = async (items, outwardNumber, destinationUuid) => {
 	const instanceTypeResponse = await getRequest(
-		`/openmrs/ws/rest/v2/inventory/stockOperationType?v=full&q=Receipt`
+		stockOperationTypeURL("Receipt")
 	);
 	const instanceTypeUuids = instanceTypeResponse.results[0].uuid;
-
 	const requestBody = {
 		status: "NEW",
 		attributes: [],
@@ -39,9 +41,6 @@ const saveReceipt = async (items, outwardNumber, destinationUuid) => {
 			});
 		})
 	);
-	return postRequest(
-		"/openmrs/ws/rest/v2/inventory/stockOperation",
-		requestBody
-	);
+	return postRequest(stockOperationURL, requestBody);
 };
 export default saveReceipt;

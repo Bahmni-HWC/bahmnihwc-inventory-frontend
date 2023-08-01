@@ -15,7 +15,7 @@ import {
 	useItemStockContext,
 	useStockRoomContext,
 } from "../context/item-stock-context";
-import { errorNotification } from "../components/notifications/errorNotification";
+import { errorNotification } from "../components/notifications/response-notifications";
 
 const InventoryMenu = () => {
 	const [cookies] = useCookies();

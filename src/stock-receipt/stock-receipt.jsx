@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import useSWR from "swr";
-import { fetcherPost, stockReceiptURL, getRequest, fetcher, stockRoomURL, inventoryItemURL } from "../utils/api-utils";
+import { fetcherPost, stockReceiptURL, getRequest, fetcher, stockRoomURL, inventoryItemByNameURL } from "../utils/api-utils";
 import saveReceipt from '../service/save-receipt';
 
 import {
@@ -35,8 +35,8 @@ import { getCalculatedQuantity, getStockReceiptObj, getLoadStockObj } from "./ea
 import { headers, locationCookieName } from "../../constants";
 import { useCookies } from "react-cookie";
 import { Add16, Subtract16 } from "@carbon/icons-react";
-import { errorNotification } from "../components/notifications/errorNotification";
-import { getDatePattern } from "../utils/date-utils";
+import {getDatePattern} from "../utils/date-utils";
+import { errorNotification } from "../components/notifications/response-notifications";
 
 const StockReceipt = () => {
 	const [items, setItems] = useState([]);
@@ -64,7 +64,7 @@ const StockReceipt = () => {
 	let dropdownItems=[];
 
 	const { data: invItems, error: inventoryItemError } = useSWR(
-		inventoryItemURL(),
+		inventoryItemByNameURL(),
 		fetcher
 	);
 
@@ -365,7 +365,11 @@ const StockReceipt = () => {
 							}
 						</Column>
 					</Row>
-					{stockReceiptError && <h3 style={{paddingTop:'1rem'}}>{errorNotification("Something went wrong while fetching URL")}</h3>}
+					{stockReceiptError && (
+						<h3 style={{ paddingTop: "1rem" }}>
+							{errorNotification("Something went wrong while fetching URL")}
+						</h3>
+					)}
 					{stockIntakeButtonClick && !eaushdhaResponse && !error ? (
 						<Loading />
 					) : (
