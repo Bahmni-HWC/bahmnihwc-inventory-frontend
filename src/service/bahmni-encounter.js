@@ -4,12 +4,6 @@ const bahmniEncounterPost = async (data, location) => {
 	const dispenseConceptData = await getRequest(dispenseConceptURL);
 	const session = await getRequest(sessionURL)
 	const observations = data.dispense_drugs.map((drug) => ({
-		providers: [
-			{
-				uuid: session.currentProvider.uuid,
-				name: session.user.username,
-			},
-		],
 		conceptSortWeight: 1,
 		status: "FINAL",
 		conceptUuid: dispenseConceptData.results[0].uuid,
