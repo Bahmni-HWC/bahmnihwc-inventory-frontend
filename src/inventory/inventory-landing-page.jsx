@@ -19,7 +19,6 @@ import { useItemStockContext } from "../context/item-stock-context";
 import styles from "./inventory.module.scss";
 import { Button } from "carbon-components-react";
 import { exportToExcel } from "./export-to-excel";
-import { errorNotification } from "../components/notifications/errorNotification";
 import { getFormattedDate } from '../utils/date-utils';
 import { useCookies } from "react-cookie";
 

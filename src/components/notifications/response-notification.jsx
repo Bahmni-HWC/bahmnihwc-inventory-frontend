@@ -1,7 +1,7 @@
 import { InlineNotification } from "carbon-components-react";
 import React from "react";
 
-export const notification = (kind, title, message) => {
+export const ResponseNotification = (kind, title, message) => {
   return (
     <div>
 		    <InlineNotification

@@ -15,7 +15,7 @@ import {
 	useItemStockContext,
 	useStockRoomContext,
 } from "../context/item-stock-context";
-import { notification } from "../components/notifications/notification";
+import { ResponseNotification } from "../components/notifications/response-notification";
 
 const InventoryMenu = () => {
 	const [cookies] = useCookies();
@@ -57,7 +57,7 @@ const InventoryMenu = () => {
 		return <Loading />;
 
 	return inventoryItemError ? (
-		<div>{notification("error","Error","Something went wrong while fetching URL")}</div>
+		<div>{ResponseNotification("error","Error","Something went wrong while fetching URL")}</div>
 	) : (
 		<div style={{ paddingTop: "2rem" }}>
 			<h4>{getLocationName(cookies[locationCookieName]?.name)} </h4>

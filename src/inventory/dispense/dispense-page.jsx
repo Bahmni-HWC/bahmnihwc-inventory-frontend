@@ -31,7 +31,7 @@ import styles from "./dispense.module.scss";
 import { saveDispense } from "../../service/save-dispense";
 import DrugItemDetails from "./drug-item-details";
 import { getDrugItems, getMappedDrugs } from "./drug-mapper";
-import { notification } from "../../components/notifications/notification";
+import { ResponseNotification } from "../../components/notifications/response-notification";
 
 export const DispensePage = () => {
 	let rows = [];
@@ -128,7 +128,7 @@ export const DispensePage = () => {
 	if (items == undefined && inventoryItemError == undefined) return <Loading />;
 
 	return inventoryItemError ? (
-		<div>{notification("error","Error","Something went wrong while fetching URL")}</div>
+		<div>{ResponseNotification("error","Error","Something went wrong while fetching URL")}</div>
 	) : (
 		<div className={styles.dispenseContainer}>
 			<h5 style={{ paddingBottom: "1rem" }}>{activePatients}</h5>

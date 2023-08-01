@@ -37,6 +37,7 @@ import { headers, locationCookieName } from "../../constants";
 import { useCookies } from "react-cookie";
 import { Add16, Subtract16 } from "@carbon/icons-react";
 import { getDatePattern } from "../utils/date-utils";
+import { ResponseNotification } from "../components/notifications/response-notification";
 
 const StockReceipt = () => {
 	const [items, setItems] = useState([]);
@@ -370,8 +371,8 @@ const StockReceipt = () => {
 							}
 						</Column>
 					</Row>
-					{stockReceiptError && <h3 style={{paddingTop:'1rem'}}>{notification("error","Error","Something went wrong while fetching URL")}</h3>}
-					{stockEmptyResonseMessage && <div style={{paddingTop:'20px'}}>{notification("info","info","No data is received for the outward number. Could you please retry?")}</div>}
+					{stockReceiptError && <h3 style={{paddingTop:'1rem'}}>{ResponseNotification("error","Error","Something went wrong while fetching URL")}</h3>}
+					{stockEmptyResonseMessage && <div style={{paddingTop:'20px'}}>{ResponseNotification("info","info","No data is received for the outward number. Could you please retry?")}</div>}
 					{stockIntakeButtonClick && !eaushdhaResponse && !error ? (
 						<Loading />
 					) : (
