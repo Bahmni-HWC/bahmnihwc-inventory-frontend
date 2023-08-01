@@ -15,6 +15,8 @@ import React, { useEffect, useState } from "react";
 import { headers } from "../../constants";
 import { useItemStockContext } from "../context/item-stock-context";
 import { exportToExcel } from "./export-to-excel";
+import { getFormattedDate } from '../utils/date-utils';
+import { useCookies } from "react-cookie";
 import styles from "./inventory.module.scss";
 
 export const InventoryLandingPage = () => {

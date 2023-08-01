@@ -32,10 +32,7 @@ import styles from "./dispense.module.scss";
 import saveDispense from "../../service/save-dispense";
 import DrugItemDetails from "./drug-item-details";
 import { getDrugItems, getMappedDrugs } from "./drug-mapper";
-import {
-	errorNotification,
-	successNotification,
-} from "../../components/notifications/response-notifications";
+import { ResponseNotification } from "../../components/notifications/response-notification";
 import { useStockRoomContext } from "../../context/item-stock-context";
 import bahmniEncounterPost from "../../service/bahmni-encounter";
 
@@ -145,15 +142,15 @@ export const DispensePage = () => {
 	if (items == undefined && inventoryItemError == undefined) return <Loading />;
 
 	if (saveSuccess) {
-		return successNotification("Dispense successful", setSaveSuccess);
+		return ResponseNotification("success","Success","Dispense successful", setSaveSuccess);
 	}
 
 	if (saveError) {
-		return errorNotification("Dispense failed", setSaveError);
+		return ResponseNotification("error","Error","Dispense failed", setSaveError);
 	}
 
 	return inventoryItemError ? (
-		<div>{errorNotification("Something went wrong while fetching URL")}</div>
+		<div>{ResponseNotification("error","Error","Something went wrong while fetching URL")}</div>
 	) : (
 		<div className={styles.dispenseContainer}>
 			<h5 style={{ paddingBottom: "1rem" }}>{activePatients}</h5>
