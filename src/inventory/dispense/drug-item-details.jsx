@@ -40,8 +40,8 @@ const DrugItemDetails = (props) => {
 			const dispensedDrugItem = drugInfo.filter(
 				(item) => item.dispensed === false
 			);
-			props.setIsInvalid(invalid || dispensedDrugItem.length === 0);
 			const modifiedData = drugInfo.filter((item) => item.dispensed === false && item.prescribedQty > 0);
+			props.setIsInvalid(invalid || dispensedDrugItem.length === 0 || modifiedData.length === 0);
 			props.setModifiedData(modifiedData);
 		}
 	}, [drugInfo]);
@@ -55,9 +55,11 @@ const DrugItemDetails = (props) => {
 		) {
 			const rowObj = [];
 			for (let drugItem of drugItems) {
+				let isItemPresent = false;
 				for (let item of itemStock) {
 					if (item.item.name.includes(drugItem.drugName)) {
-						const isDispensedDrug = dispensedDrug(drugItem.orderAttributes);
+					isItemPresent = true;
+                    const isDispensedDrug = dispensedDrug(drugItem.orderAttributes);
 						rowObj.push({
 							id: drugItem.id,
 							itemUuid: item.item.uuid,
@@ -70,6 +72,18 @@ const DrugItemDetails = (props) => {
 						});
 					}
 				}
+				if(!isItemPresent){
+                    rowObj.push({
+                        id: drugItem.id,
+                        itemUuid: null,
+                        drugName: getTitle(drugItem),
+                        name: drugItem.drugName,
+                        avlQty: 0,
+                        prescribedQty: drugItem.quantity,
+                        invalidQty: true,
+
+                    });
+                }
 			}
 			setDrugInfo(rowObj);
 		}
