@@ -1,7 +1,8 @@
 import { utils as XLSXUtils, writeFile as XLSXWriteFile } from "xlsx";
+import { getFormattedDate } from '../utils/date-utils';
 
 export const exportToExcel = (rows) => {
-  const currentDate = new Date().toLocaleDateString().replace(/\//g, "-");
+  const currentDate = getFormattedDate();
   const fileName = `inv_${currentDate}.xlsx`;
   const exportData = rows.map(({ id, ...rest }) => ({
     "Product Name": rest.productName,
