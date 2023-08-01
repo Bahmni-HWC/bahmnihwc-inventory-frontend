@@ -11,17 +11,31 @@ import {
 	TableToolbarContent,
 	TableToolbarSearch,
 } from "carbon-components-react";
+import useSWR from "swr";
+import { fetcher, invItemURLByStockroom, stockRoomURL } from "../utils/api-utils";
 import React, { useState } from "react";
-import { headers } from "../../constants";
+import { headers, locationCookieName } from "../../constants";
 import { useItemStockContext } from "../context/item-stock-context";
 import styles from "./inventory.module.scss";
 import { Button } from "carbon-components-react";
 import { exportToExcel } from "./export-to-excel";
-
-import getFormattedDate from "../utils/date-utils";
+import { errorNotification } from "../components/notifications/errorNotification";
+import { getFormattedDate } from '../utils/date-utils';
+import { useCookies } from "react-cookie";
 
 export const InventoryLandingPage = () => {
 	let rows = [];
+	const [cookies] = useCookies();
+
+	const { data: stockRoom, error: stockRoomError } = useSWR(
+		stockRoomURL(cookies[locationCookieName]?.name.trim()),
+		fetcher
+	);
+
+	const { data: items, error: inventoryItemError } = useSWR(
+		stockRoom ? invItemURLByStockroom(stockRoom.results[0].uuid) : '',
+		fetcher
+	);
 	const { itemStock } = useItemStockContext();
 
 	const [searchText, setSearchText] = useState("");
