@@ -20,7 +20,6 @@ import styles from "./inventory.module.scss";
 import { Button } from "carbon-components-react";
 import { exportToExcel } from "./export-to-excel";
 import { errorNotification } from "../components/notifications/errorNotification";
-import { getFormattedDate } from '../utils/date-utils';
 import { useCookies } from "react-cookie";
 
 export const InventoryLandingPage = () => {
@@ -70,7 +69,7 @@ export const InventoryLandingPage = () => {
               }
             }
     }, [itemStock])
-	
+
 	const filteredRows = rows.filter((row) =>
 		searchText !== ""
 			? row?.productName?.toLowerCase().includes(searchText?.toLowerCase())
