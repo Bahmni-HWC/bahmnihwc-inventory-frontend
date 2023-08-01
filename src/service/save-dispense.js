@@ -21,6 +21,7 @@ const saveDispense = async (data, sourceStockRoom) => {
 				itemArray.push({
 					item: response.results[0].uuid,
 					quantity: item.prescribedQty,
+					calculatedExpiration: true
 				});
 			} else {
 				console.log(`Item '${itemName}' not found in the inventory.`);
@@ -36,7 +37,7 @@ const saveDispense = async (data, sourceStockRoom) => {
 		items: itemArray,
 		operationNumber: "",
 		instanceType: instanceTypeUuids,
-		operationDate: getFormattedDate,
+		operationDate: getFormattedDate(),
 		patient: data.patientUuid,
 		source: sourceStockRoom[0].uuid,
 		destination: "",
