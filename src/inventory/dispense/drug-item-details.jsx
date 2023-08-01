@@ -14,6 +14,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { useItemStockContext } from "../../context/item-stock-context";
 import styles from "./dispense.module.scss";
+import { drugItemheader } from "../../../constants";
 
 const DrugItemDetails = (props) => {
 	const [drugItems, setDrugItems] = useState([]);
@@ -34,10 +35,14 @@ const DrugItemDetails = (props) => {
 		if (drugInfo && drugInfo.length > 0) {
 			let invalid = false;
 			drugInfo.forEach((item) => {
-				if (item.invalidQty && invalid === false) invalid = true;
+				if (item.invalidQty > 0 && invalid === false) invalid = true;
 			});
-			props.setIsInvalid(invalid);
-			props.setModifiedData(drugInfo);
+			const dispensedDrugItem = drugInfo.filter(
+				(item) => item.dispensed === false
+			);
+			const modifiedData = drugInfo.filter((item) => item.dispensed === false && item.prescribedQty > 0);
+			props.setIsInvalid(invalid || dispensedDrugItem.length === 0 || modifiedData.length === 0);
+			props.setModifiedData(modifiedData);
 		}
 	}, [drugInfo]);
 
@@ -50,19 +55,35 @@ const DrugItemDetails = (props) => {
 		) {
 			const rowObj = [];
 			for (let drugItem of drugItems) {
+				let isItemPresent = false;
 				for (let item of itemStock) {
 					if (item.item.name.includes(drugItem.drugName)) {
+					isItemPresent = true;
+                    const isDispensedDrug = dispensedDrug(drugItem.orderAttributes);
 						rowObj.push({
 							id: drugItem.id,
 							itemUuid: item.item.uuid,
 							drugName: getTitle(drugItem),
 							name: drugItem.drugName,
 							avlQty: item.quantity,
-							prescribedQty: drugItem.quantity,
-							invalidQty: item.quantity < drugItem.quantity,
+							prescribedQty: isDispensedDrug ? 0 : drugItem.quantity,
+							invalidQty: !isDispensedDrug && item.quantity < drugItem.quantity,
+							dispensed: isDispensedDrug,
 						});
 					}
 				}
+				if(!isItemPresent){
+                    rowObj.push({
+                        id: drugItem.id,
+                        itemUuid: null,
+                        drugName: getTitle(drugItem),
+                        name: drugItem.drugName,
+                        avlQty: 0,
+                        prescribedQty: drugItem.quantity,
+                        invalidQty: true,
+
+                    });
+                }
 			}
 			setDrugInfo(rowObj);
 		}
@@ -111,11 +132,23 @@ const DrugItemDetails = (props) => {
 		return false;
 	};
 
-	const drugItemheader = [
-		{ key: "drugName", header: "Drug Name" },
-		{ key: "avlQty", header: "Avl.Qty" },
-		{ key: "prescribedQty", header: "Pres.Qty" },
-	];
+	const dispensedDrug = (orderAttributes) => {
+		if (orderAttributes == null) return false;
+
+		for (const orderAttribute of orderAttributes) {
+			if (
+				orderAttribute.name === "Dispensed" &&
+				orderAttribute.value === "true"
+			)
+				return true;
+		}
+		return false;
+	};
+
+	const isDispensed = (row) => {
+		const item = drugInfo.find((item) => item.id === row.id);
+		return item?.dispensed ?? false;
+	};
 
 	return (
 		<Grid>
@@ -169,10 +202,15 @@ const DrugItemDetails = (props) => {
 																	<TextInput
 																		size="sm"
 																		value={
-																			isInvalid(cell.value) ? "" : cell.value
+																			isDispensed(row)
+																				? "Dispensed"
+																				: isInvalid(cell.value)
+																				? ""
+																				: cell.value
 																		}
 																		id={cell.id}
 																		labelText=""
+																		disabled={isDispensed(row)}
 																		style={
 																			!isSufficient(cell.value, row)
 																				? { color: "red" }

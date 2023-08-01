@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import useSWR from "swr";
-import { fetcherPost, stockReceiptURL, getRequest, fetcher, stockRoomURL, inventoryItemURL } from "../utils/api-utils";
+import { fetcherPost, stockReceiptURL, getRequest, fetcher, stockRoomURL, inventoryItemByNameURL } from "../utils/api-utils";
 import saveReceipt from '../service/save-receipt';
 
 import {
@@ -66,7 +66,7 @@ const StockReceipt = () => {
 	let dropdownItems=[];
 
 	const { data: invItems, error: inventoryItemError } = useSWR(
-		inventoryItemURL(),
+		inventoryItemByNameURL(),
 		fetcher
 	);
 

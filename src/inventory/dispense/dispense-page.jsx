@@ -19,6 +19,7 @@ import {
 	fetcher,
 	activePatientWithDrugOrders,
 	prescribedDrugOrders,
+	stockRoomURL,
 } from "../../utils/api-utils";
 import {
 	locationCookieName,
@@ -28,18 +29,24 @@ import {
 import { useCookies } from "react-cookie";
 import CustomModal from "../../components/CustomModal";
 import styles from "./dispense.module.scss";
-import { saveDispense } from "../../service/save-dispense";
+import saveDispense from "../../service/save-dispense";
 import DrugItemDetails from "./drug-item-details";
 import { getDrugItems, getMappedDrugs } from "./drug-mapper";
 import { ResponseNotification } from "../../components/notifications/response-notification";
+import { useStockRoomContext } from "../../context/item-stock-context";
+import bahmniEncounterPost from "../../service/bahmni-encounter";
 
 export const DispensePage = () => {
 	let rows = [];
 	const [cookies] = useCookies();
+	const location = cookies[locationCookieName];
+
 	const { data: items, error: inventoryItemError } = useSWR(
-		activePatientWithDrugOrders(cookies[locationCookieName]?.uuid),
+		activePatientWithDrugOrders(location?.uuid),
 		fetcher
 	);
+
+	const { stockRoom } = useStockRoomContext();
 
 	const [searchText, setSearchText] = useState("");
 	const [showModal, setShowModal] = useState(false);
@@ -47,9 +54,12 @@ export const DispensePage = () => {
 	const [patient, setPatient] = useState({});
 	const [modifiedData, setModifiedData] = useState([]);
 	const [isInvalid, setIsInvalid] = useState(false);
+	const [saveSuccess, setSaveSuccess] = useState(false);
+	const [saveError, setSaveError] = useState(false);
 
 	useEffect(() => {
 		if (!showModal) {
+			setSearchText("");
 			setIsInvalid(false);
 			setModifiedData([]);
 			setPrescribedDrugs([]);
@@ -119,13 +129,25 @@ export const DispensePage = () => {
 			patientUuid: patient.id,
 			dispense_drugs: modifiedData,
 		};
-		const response = await saveDispense(data);
-		if (response.status === 201) {
-			setShowModal(false);
+		const response = await saveDispense(data, stockRoom);
+		if (response.ok) {
+			setSaveSuccess(true);
+			const bahmniEncoutnerResponse = await bahmniEncounterPost(data, location);
+		} else {
+			setSaveError(true);
 		}
+		setShowModal(false);
 	};
 
 	if (items == undefined && inventoryItemError == undefined) return <Loading />;
+
+	if (saveSuccess) {
+		return successNotification("Dispense successful", setSaveSuccess);
+	}
+
+	if (saveError) {
+		return errorNotification("Dispense failed", setSaveError);
+	}
 
 	return inventoryItemError ? (
 		<div>{ResponseNotification("error","Error","Something went wrong while fetching URL")}</div>
