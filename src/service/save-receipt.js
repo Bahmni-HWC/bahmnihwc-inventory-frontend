@@ -4,7 +4,7 @@ import {
 	stockOperationURL,
 	stockOperationTypeURL,
 } from "../utils/api-utils";
-import getFormattedDate from "../utils/date-utils";
+import {getFormattedDate} from "../utils/date-utils";
 
 const saveReceipt = async (items, outwardNumber, destinationUuid) => {
 	const instanceTypeResponse = await getRequest(

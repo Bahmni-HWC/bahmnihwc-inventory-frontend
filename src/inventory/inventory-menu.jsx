@@ -9,7 +9,7 @@ import {
 } from "../../constants";
 import { DispensePage } from "./dispense/dispense-page";
 import StockReceipt from "../stock-receipt/stock-receipt";
-import { fetcher, invItemURL, stockRoomURL } from "../utils/api-utils";
+import { fetcher, invItemURLByStockroom, stockRoomURL } from "../utils/api-utils";
 import useSWR from "swr";
 import {
 	useItemStockContext,
@@ -28,7 +28,7 @@ const InventoryMenu = () => {
 	);
 
 	const { data: items, error: inventoryItemError } = useSWR(
-		stockRoom ? invItemURL(stockRoom.results[0].uuid) : "",
+		stockRoom ? invItemURLByStockroom(stockRoom.results[0].uuid) : "",
 		fetcher
 	);
 

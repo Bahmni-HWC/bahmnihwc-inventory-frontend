@@ -3,9 +3,9 @@ import {
 	getRequest,
 	stockOperationURL,
 	stockOperationTypeURL,
-	inventoryItemURL,
+	inventoryItemByNameURL,
 } from "../utils/api-utils";
-import getFormattedDate from "../utils/date-utils";
+import {getFormattedDate} from "../utils/date-utils";
 
 const saveDispense = async (data, sourceStockRoom) => {
 	const instanceTypeResponse = await getRequest(
@@ -16,7 +16,7 @@ const saveDispense = async (data, sourceStockRoom) => {
 	if (data.dispense_drugs && Array.isArray(data.dispense_drugs)) {
 		const promises = data.dispense_drugs.map(async (item) => {
 			const itemName = encodeURIComponent(item.name); // Get the drugName from the current item
-			const response = await getRequest(inventoryItemURL(itemName));
+			const response = await getRequest(inventoryItemByNameURL(itemName));
 			if (response.results.length > 0) {
 				itemArray.push({
 					item: response.results[0].uuid,
