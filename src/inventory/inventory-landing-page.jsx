@@ -13,18 +13,16 @@ import {
 } from "carbon-components-react";
 import useSWR from "swr";
 import { fetcher, invItemURLByStockroom, stockRoomURL } from "../utils/api-utils";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { headers, locationCookieName } from "../../constants";
 import { useItemStockContext } from "../context/item-stock-context";
 import styles from "./inventory.module.scss";
 import { Button } from "carbon-components-react";
 import { exportToExcel } from "./export-to-excel";
 import { errorNotification } from "../components/notifications/errorNotification";
-import { getFormattedDate } from '../utils/date-utils';
 import { useCookies } from "react-cookie";
 
 export const InventoryLandingPage = () => {
-	let rows = [];
 	const [cookies] = useCookies();
 
 	const { data: stockRoom, error: stockRoomError } = useSWR(
@@ -38,6 +36,8 @@ export const InventoryLandingPage = () => {
 	);
 	const { itemStock } = useItemStockContext();
 
+	const [rows, setRows] = useState([]);
+
 	const [searchText, setSearchText] = useState("");
 
 	const handleSearch = (event) => {
@@ -45,21 +45,31 @@ export const InventoryLandingPage = () => {
 	};
 	const handleExportToExcel = () => exportToExcel(filteredRows);
 
-	if (itemStock?.length > 0) {
-		for (let index = 0; index < itemStock.length; index++) {
-			const item = itemStock[index];
-			const expiration = item.details[0]?.expiration;
-			const formattedExpirationDate = getFormattedDate;
-			const newObj = {
-				id: `${index}`,
-				productName: itemStock[index].item.name,
-				quantity: item.details[0]?.quantity ?? 0,
-				expiration: expiration ? formattedExpirationDate : "No Expiration Date",
-				batchNumber: item.details[0]?.batchNumber ?? "No Batch Number",
-			};
-			rows.push(newObj);
-		}
-	}
+	useEffect(() => {
+        if (itemStock?.length > 0) {
+            for (let index = 0; index < itemStock.length; index++) {
+                const item = itemStock[index];
+                const updatedRows = item.details.map((detail, detailIndex) => {
+                    const expiration = detail.expiration;
+                    const expirationDate = new Date(expiration);
+                    const formattedExpirationDate = `${expirationDate.getDate().toString().padStart(2, "0")}-${(expirationDate.getMonth() + 1)
+                        .toString()
+                        .padStart(2, "0")}-${expirationDate.getFullYear()}`;
+                    return {
+                        id: `${index}-${detail.batchNumber}-${detailIndex}`,
+                        productName: item.item.name,
+                        quantity: detail.quantity ?? 0,
+                        expiration: expiration ? formattedExpirationDate : "No Expiration Date",
+                        batchNumber: detail.batchNumber ?? "No Batch Number",
+                      };
+                })
+                setRows((prevState) => {
+                    return [...prevState, ...updatedRows]
+                });
+              }
+            }
+    }, [itemStock])
+
 	const filteredRows = rows.filter((row) =>
 		searchText !== ""
 			? row?.productName?.toLowerCase().includes(searchText?.toLowerCase())
