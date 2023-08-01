@@ -142,11 +142,11 @@ export const DispensePage = () => {
 	if (items == undefined && inventoryItemError == undefined) return <Loading />;
 
 	if (saveSuccess) {
-		return successNotification("Dispense successful", setSaveSuccess);
+		return ResponseNotification("success","Success","Dispense successful", setSaveSuccess);
 	}
 
 	if (saveError) {
-		return errorNotification("Dispense failed", setSaveError);
+		return ResponseNotification("error","Error","Dispense failed", setSaveError);
 	}
 
 	return inventoryItemError ? (
