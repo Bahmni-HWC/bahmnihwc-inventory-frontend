@@ -45,3 +45,12 @@
 		width: 100%;
 	}
 }
+.dispenseContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.buttonContainer {
+  width: 10rem; /* Adjust the width as per your requirement */
+}
