@@ -17,7 +17,7 @@ const saveReceipt = async (items, outwardNumber, destinationUuid) => {
 		items: [],
 		operationNumber: "",
 		instanceType: instanceTypeUuids,
-		operationDate: getFormattedDate,
+		operationDate: getFormattedDate(),
 		source: "",
 		destination: destinationUuid,
 		institution: "",
@@ -37,6 +37,7 @@ const saveReceipt = async (items, outwardNumber, destinationUuid) => {
 					quantity: item.totalQuantity,
 					expiration: item.expiration,
 					batchNumber: item.batchNumber,
+					calculatedExpiration: true
 				});
 			});
 		})
