@@ -8,7 +8,7 @@ import {
 	locationCookieName,
 } from "../../constants";
 import { DispensePage } from "./dispense/dispense-page";
-import StockReceipt from "../stock-receipt/stock-receipt";
+import StockReceipt from "./stock-receipt/stock-receipt";
 import { fetcher, invItemURLByStockroom, stockRoomURL } from "../utils/api-utils";
 import useSWR from "swr";
 import {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import useSWR from "swr";
-import { fetcherPost, stockReceiptURL, getRequest, fetcher, stockRoomURL, inventoryItemURL, invItemURL } from "../utils/api-utils";
-import saveReceipt from '../service/save-receipt';
+import { fetcherPost, stockReceiptURL, getRequest, fetcher, stockRoomURL, inventoryItemURL, invItemURL } from "../../utils/api-utils";
+import saveReceipt from '../../service/save-receipt';
 
 import {
 	DataTable,
@@ -29,15 +29,15 @@ import {
 	failureMessage,
 	stockReceiptHeaders,
 	successMessage,
-} from "../../constants";
+} from "../../../constants";
 import styles from "./stock-receipt.module.scss";
 
 import { getCalculatedQuantity, getStockReceiptObj, getLoadStockObj } from "./eaushadha-response-mapper";
-import { headers, locationCookieName } from "../../constants";
+import { headers, locationCookieName } from "../../../constants";
 import { useCookies } from "react-cookie";
 import { Add16, Subtract16 } from "@carbon/icons-react";
-import { getDatePattern } from "../utils/date-utils";
-import { ResponseNotification } from "../components/notifications/response-notification";
+import { getDatePattern } from "../../utils/date-utils";
+import { ResponseNotification } from "../../components/notifications/response-notification";
 
 const StockReceipt = () => {
 	const [items, setItems] = useState([]);

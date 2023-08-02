@@ -50,6 +50,7 @@ export const DispensePage = () => {
 
 	const [searchText, setSearchText] = useState("");
 	const [showModal, setShowModal] = useState(false);
+	const [showModalForAdditionalDispense,setShowModalForAdditionalDispense] = useState(false);
 	const [prescribedDrugs, setPrescribedDrugs] = useState([]);
 	const [patient, setPatient] = useState({});
 	const [modifiedData, setModifiedData] = useState([]);
