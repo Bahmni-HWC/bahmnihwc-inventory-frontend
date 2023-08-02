@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import useSWR from "swr";
-import { fetcherPost, stockReceiptURL, getRequest, fetcher, stockRoomURL, inventoryItemByNameURL } from "../utils/api-utils";
+import { fetcherPost, stockReceiptURL, getRequest, fetcher, stockRoomURL, inventoryItemURL, invItemURL } from "../utils/api-utils";
 import saveReceipt from '../service/save-receipt';
 
 import {
@@ -65,8 +65,15 @@ const StockReceipt = () => {
 
 	let dropdownItems=[];
 
+	const { data: inventoryItems, error: inventoryItemsError } = useSWR(
+		inventoryItemURL(),
+		fetcher
+	);
+
+	let totalInventoryItems=inventoryItems?.length;
+	
 	const { data: invItems, error: inventoryItemError } = useSWR(
-		inventoryItemByNameURL(),
+		invItemURL(totalInventoryItems),
 		fetcher
 	);
 
@@ -80,6 +87,14 @@ const StockReceipt = () => {
 	]);
 
 	const [showModal, setShowModal] = useState(false);
+
+	const [isSaveButtonDisabled, setSaveButtonDisabled] = useState(true);
+
+	useEffect(() => {
+		const hasEmptyFields = rows.some((row) => !row.drugName || !row.batchNo || !row.expiryDate || !row.totalQuantity);
+		setSaveButtonDisabled(hasEmptyFields);
+	}, [rows]);
+
 	useEffect(() => {
 		if (eaushdhaResponse || error) setStockIntakeButtonClick(false);
 	}, [eaushdhaResponse, error]);
@@ -207,7 +222,7 @@ const StockReceipt = () => {
 	const handleAddRow = () => {
 		setRows((prevRows) => [
 		...prevRows,
-		{ id: prevRows.length + 1, drugName: "", batchNo: "", expiryDate: "", quantity: 0, totalQuantity: 0 },
+		{ id: prevRows.length + 1, drugName: "", batchNo: "", expiryDate: "", totalQuantity: 0 },
 		]);
 	};
 
@@ -282,10 +297,10 @@ const StockReceipt = () => {
 								Load Stock
 							</Button>
 							{showModal &&
-							<Modal className="addDrugModal" open={showModal} onRequestClose={handleCloseModal} size='lg' primaryButtonText="Save" secondaryButtonText="Cancel" onRequestSubmit={handleSaveDrugButtonClick}> 
+							<Modal className="addDrugModal" open={showModal} onRequestClose={handleCloseModal} size='lg' primaryButtonText="Save" secondaryButtonText="Cancel" onRequestSubmit={handleSaveDrugButtonClick} primaryButtonDisabled={isSaveButtonDisabled}> 
 								    <DataTable
 									rows={rows}
-									headers={["S.No", "Drug Name", "Batch No", "Expiry Date", "Quantity", "Total Quantity", "Actions"]}
+									headers={["S.No", "Drug Name", "Batch No", "Expiry Date", "Total Quantity", "Actions"]}
 									render={({ rows, headers, getHeaderProps }) => (
 									<TableContainer title="Add New Drug">
 									<Table className={styles.addStocktable}>
@@ -335,16 +350,6 @@ const StockReceipt = () => {
 												pattern = { getDatePattern }
 												/>
 											</DatePicker>
-											</TableCell>
-											<TableCell>
-												<TextInput
-												type="number"
-												id={`quantity-${row.id}`}
-												value={row.quantity}
-												onChange={(e) =>
-													handleInputChange(row.id, "quantity", e.target.valueAsNumber)
-												}
-												/>
 											</TableCell>
 											<TableCell>
 												<TextInput
