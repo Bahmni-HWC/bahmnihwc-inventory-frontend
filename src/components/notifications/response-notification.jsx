@@ -7,6 +7,10 @@ export const ResponseNotification = (kind, title, message, setFunction = () =>{}
       position: 'fixed',
       top: '50px',
       right: '30px',
+      '@media (max-width: 768px)': {
+        top: '30px', // Adjust top position for smaller devices
+        right: '20px', // Adjust right position for smaller devices
+      },
     },
   };
   return (
