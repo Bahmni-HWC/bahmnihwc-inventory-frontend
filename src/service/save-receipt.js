@@ -22,6 +22,7 @@ const saveReceipt = async (items, outwardNumber, destinationUuid) => {
 		destination: destinationUuid,
 		institution: "",
 		department: "",
+		outwardId:outwardNumber,
 	};
 	await Promise.all(
 		items.map(async (item) => {
