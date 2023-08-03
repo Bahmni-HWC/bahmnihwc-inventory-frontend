@@ -106,7 +106,7 @@ const StockReceipt = () => {
 	}, [stockIntakeButtonClick]);
 
 	useEffect(() => {
-		if (outwardNumber.length > 0) {
+		if (outwardNumber.length >= 0) {
 			setIsDisabled(false);
 		}
 		else {
@@ -272,7 +272,7 @@ const StockReceipt = () => {
 								value={outwardNumber}
 								style={{ width: "80%" }}
 								onChange={(e) => setOutwardNumber(e.target.value)}
-								disabled={outwardNumber.length == 0 ? false : isDisabled}
+								disabled={isDisabled}
 							/>
 						</Column>
 						<Column sm={8} lg={4} style={{ paddingTop: "1.5rem" }}>
