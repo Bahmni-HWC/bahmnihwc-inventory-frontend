@@ -38,7 +38,7 @@ const AddItemModal = (props) => {
 	);
 
 	const [rows, setRows] = useState([
-		{ id: 1, drugName: "", avlQty: 0, presQty: 0 },
+		{ id: 1, drugName: "", avlQty: 0, dispQty: 0 },
 	]);
 
 	useEffect(() => {
@@ -48,7 +48,7 @@ const AddItemModal = (props) => {
 					id: itemStock.item.uuid,
 					drugName: itemStock.item.name,
 					avlQty: itemStock.quantity,
-					presQty: 0,
+					dispQty: 0,
 					invalid: false,
 					uuid: itemStock.item.uuid,
 				};
@@ -59,15 +59,14 @@ const AddItemModal = (props) => {
 
 	useEffect(() => {
 		const hasEmptyFields = rows.some(
-			(row) =>
-				!row.drugName || !row.presQty || row.invalid
+			(row) => !row.drugName || !row.dispQty || row.invalid
 		);
-	    props.setModifiedData(rows);
+		props.setModifiedData(rows);
 
-		props.setIsInvalid(hasEmptyFields || !props.patient);
+		props.setIsInvalid(
+			hasEmptyFields || !props.patient || JSON.stringify(props.patient) === "{}"
+		);
 	}, [rows, props.patient]);
-
-
 
 	const handleAddRow = () => {
 		setRows((prevRows) => [
@@ -76,7 +75,7 @@ const AddItemModal = (props) => {
 				id: prevRows.length + 1,
 				drugName: "",
 				avlQty: 0,
-				presQty: 0,
+				dispQty: 0,
 				actions: "",
 			},
 		]);
@@ -109,24 +108,31 @@ const AddItemModal = (props) => {
 	};
 
 	const handleInputChange = (id, value) => {
-		if (isInvalid(value) ) {
+		if (isInvalid(value)) {
 			setRows((prevRows) =>
-				prevRows.map((row) => (row.id === id ? { ...row,presQty: value, invalid: true } : row))
+				prevRows.map((row) =>
+					row.id === id ? { ...row, dispQty: parseInt(value), invalid: true } : row
+				)
+			);
+		} else {
+			setRows((prevRows) =>
+				prevRows.map((row) =>
+					row.id === id
+						? {
+								...row,
+								dispQty: parseInt(value),
+								invalid: parseInt(value) > row.avlQty || parseInt(value) <= 0,
+						  }
+						: row
+				)
 			);
 		}
-		else{
-            setRows((prevRows) =>
-                prevRows.map((row) => (row.id === id ? { ...row, presQty: value, invalid: (parseInt(value)>row.avlQty) } : row))
-            );
-        }
-
 	};
 
 	const isSufficient = (value, row) => {
 		const findRow = rows.find((row) => row.id === row.id);
-		console.log('row', findRow, value)
 		if (findRow) {
-			return findRow.avlQty >= parseInt(value);
+			return findRow.avlQty >= parseInt(value) && parseInt(value) !== 0;
 		}
 		return false;
 	};
@@ -154,16 +160,15 @@ const AddItemModal = (props) => {
 			const familyName =
 				patient.familyName.charAt(0).toUpperCase() +
 				patient.familyName.slice(1);
-				const identifier = patient.identifier;
+			const identifier = patient.identifier;
 
-
-			return `${givenName} ${middleName} ${familyName} (${identifier})`;
+			return `${givenName} ${middleName} ${familyName} (${identifier})`.replace(/\s+/g, ' ')
 		}
 	};
 
 	return (
 		<Grid columns={12}>
-			<Row sm={60}>
+			<Row sm={60} style={{paddingBottom:'1rem'}}>
 				<ComboBox
 					id="combo-box-select-patient"
 					items={allPatientList?.pageOfResults ?? []}
@@ -173,8 +178,8 @@ const AddItemModal = (props) => {
 					onChange={(selectedItem) =>
 						props.setPatient(selectedItem?.selectedItem)
 					}
-                invalid={!props.patient}
-               invalidText="Please select a patient"
+					invalid={!props.patient}
+					invalidText="Please select a patient"
 					style={{ fontWeight: "bolder" }}
 				/>
 			</Row>
@@ -183,12 +188,12 @@ const AddItemModal = (props) => {
 				headers={[
 					{ key: "id", header: "S.No" },
 					{ key: "drugName", header: "Drug Name" },
-					{ key: "avlQty", header: "AvlQty" },
-					{ key: "presQty", header: "PresQty" },
+					{ key: "avlQty", header: "Avl. Qty" },
+					{ key: "dispQty", header: "Disp. Qty" },
 					{ key: "action", header: "Actions" },
 				]}
 				render={({ rows, headers, getHeaderProps }) => (
-					<TableContainer title="Add New Drug">
+					<TableContainer>
 						<Table className={styles.addStocktable}>
 							<TableHead>
 								<TableRow>
@@ -214,23 +219,29 @@ const AddItemModal = (props) => {
 												onChange={(selectedItem) =>
 													handleComboBoxChange(row.id, selectedItem)
 												}
+												style={{minWidth:'15rem'}}
 											/>
 										</TableCell>
 										<TableCell>{row.cells[2].value}</TableCell>
 										<TableCell>
 											<TextInput
-												id={`presQty-${row.id}`}
-												value={row.cells[3].value }
+												id={`dispQty-${row.id}`}
+												value={isInvalid(row.cells[3].value) ? "" : row.cells[3].value}
 												onChange={(e) =>
 													handleInputChange(row.id, e.target.value)
 												}
-												invalid={ !isSufficient(row.cells[3].value, row) || row.invalid}
-												invalidText="Please enter a valid number"
+												invalid={
+													!isSufficient(row.cells[3].value, row) || row.invalid
+												}
+												invalidText="Please enter value <= to available quantity"
+												labelText=""
+												style={{minWidth:'5rem'}}
 											/>
 										</TableCell>
 										<Button
 											kind="danger--tertiary"
 											renderIcon={Subtract16}
+											iconDescription="Delete"
 											className={styles.iconButton}
 											onClick={() => handleDeleteRow(row.id)}
 										/>
@@ -241,6 +252,7 @@ const AddItemModal = (props) => {
 						<Button
 							kind="tertiary"
 							renderIcon={Add16}
+							iconDescription="Add"
 							className={`${styles.iconButton} ${styles.plusButton}`}
 							onClick={handleAddRow}
 						/>

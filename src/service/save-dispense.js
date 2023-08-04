@@ -5,7 +5,7 @@ import {
 	stockOperationTypeURL,
 	inventoryItemByNameURL,
 } from "../utils/api-utils";
-import {getFormattedDate} from "../utils/date-utils";
+import { getFormattedDate } from "../utils/date-utils";
 
 const saveDispense = async (data, sourceStockRoom) => {
 	const instanceTypeResponse = await getRequest(
@@ -17,12 +17,11 @@ const saveDispense = async (data, sourceStockRoom) => {
 		const promises = data.dispense_drugs.map(async (item) => {
 			const itemName = encodeURIComponent(item.name); // Get the drugName from the current item
 			const response = await getRequest(inventoryItemByNameURL(itemName));
-			console.log("response...");
 			if (response.results.length > 0) {
 				itemArray.push({
 					item: response.results[0].uuid,
 					quantity: item.prescribedQty,
-					calculatedExpiration: true
+					calculatedExpiration: true,
 				});
 			} else {
 				console.log(`Item '${itemName}' not found in the inventory.`);
@@ -56,14 +55,11 @@ const saveDispenseForAdhocDispense = async (data, sourceStockRoom) => {
 	const itemArray = [];
 	if (data.dispense_drugs && Array.isArray(data.dispense_drugs)) {
 		const promises = data.dispense_drugs.map(async (item) => {
-
-console.log("item...",item);
-				itemArray.push({
-					item: item.uuid,
-					quantity: item.presQty,
-					calculatedExpiration: true
-				});
-
+			itemArray.push({
+				item: item.uuid,
+				quantity: item.dispQty,
+				calculatedExpiration: true,
+			});
 		});
 		await Promise.all(promises);
 	}
@@ -85,4 +81,4 @@ console.log("item...",item);
 
 	return postRequest(stockOperationURL, requestBody);
 };
-export {saveDispense,saveDispenseForAdhocDispense };
+export { saveDispense, saveDispenseForAdhocDispense };

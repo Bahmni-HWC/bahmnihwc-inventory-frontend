@@ -21,7 +21,7 @@ const CustomModal = (props) => {
 	} = props;
 
 	return (
-		<ComposedModal open={showModal} onClose={() => closeModal(false)}>
+		<ComposedModal open={showModal} onClose={() => closeModal(false)} size="lg">
 			<ModalHeader>
 				<h3>{subTitle}</h3>
 			</ModalHeader>

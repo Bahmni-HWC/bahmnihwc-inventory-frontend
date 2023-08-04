@@ -178,9 +178,7 @@ export const DispensePage = () => {
         		} else {
         			setSaveError(true);
         		}
-        		setShowModal(false);
-       console.log("modifiedData...", modifiedData)
-       console.log("patient......", patient)
+        		setShowModalForAdditionalDispense(false);
     };
 
 	return inventoryItemError ? (
@@ -205,10 +203,10 @@ export const DispensePage = () => {
 							}}
 							size={"sm"}
 							kind="primary"
-							style={{ width: "auto", padding: "0.5rem 1rem" }}
+							style={{ width: "auto", padding: "0.5rem 1rem", background: "#007d79" }}
 							disabled={false}
 						>
-							Dispense Consumables
+							Dispense
 						</Button>
 					</Column>
 				</Row>
