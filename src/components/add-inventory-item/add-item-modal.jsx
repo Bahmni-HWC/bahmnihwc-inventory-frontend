@@ -30,7 +30,7 @@ const AddItemModal = (props) => {
 	const locationUuid = cookies[locationCookieName].uuid;
 
 	const [inventoryItem, setInventoryItem] = useState([]);
-	const [selectedPatient, setSelectedPatient] = useState();
+
 
 	const { data: allPatientList, error: allPatientListError } = useSWR(
 		getAllPatient(locationUuid),
@@ -49,6 +49,8 @@ const AddItemModal = (props) => {
 					drugName: itemStock.item.name,
 					avlQty: itemStock.quantity,
 					presQty: 0,
+					invalid: false,
+					uuid: itemStock.item.uuid,
 				};
 			});
 			setInventoryItem(invItemArray);
@@ -58,10 +60,14 @@ const AddItemModal = (props) => {
 	useEffect(() => {
 		const hasEmptyFields = rows.some(
 			(row) =>
-				!row.drugName || !row.batchNo || !row.expiryDate || !row.totalQuantity
+				!row.drugName || !row.presQty || row.invalid
 		);
-		props.setIsInvalid(hasEmptyFields);
-	}, [rows]);
+	    props.setModifiedData(rows);
+
+		props.setIsInvalid(hasEmptyFields || !props.patient);
+	}, [rows, props.patient]);
+
+
 
 	const handleAddRow = () => {
 		setRows((prevRows) => [
@@ -94,6 +100,7 @@ const AddItemModal = (props) => {
 						drugName: selectedValue?.selectedItem?.drugName ?? "",
 						avlQty: selectedValue.selectedItem?.avlQty ?? 0,
 						invalid: false,
+						uuid: selectedValue.selectedItem?.uuid ?? "",
 					};
 				}
 				return row;
@@ -102,14 +109,17 @@ const AddItemModal = (props) => {
 	};
 
 	const handleInputChange = (id, value) => {
-		if (isInvalid(value)) {
+		if (isInvalid(value) ) {
 			setRows((prevRows) =>
 				prevRows.map((row) => (row.id === id ? { ...row,presQty: value, invalid: true } : row))
 			);
 		}
-		setRows((prevRows) =>
-			prevRows.map((row) => (row.id === id ? { ...row, presQty: value } : row))
-		);
+		else{
+            setRows((prevRows) =>
+                prevRows.map((row) => (row.id === id ? { ...row, presQty: value, invalid: (parseInt(value)>row.avlQty) } : row))
+            );
+        }
+
 	};
 
 	const isSufficient = (value, row) => {
@@ -144,8 +154,10 @@ const AddItemModal = (props) => {
 			const familyName =
 				patient.familyName.charAt(0).toUpperCase() +
 				patient.familyName.slice(1);
+				const identifier = patient.identifier;
 
-			return `${givenName} ${middleName} ${familyName}`;
+
+			return `${givenName} ${middleName} ${familyName} (${identifier})`;
 		}
 	};
 
@@ -159,8 +171,10 @@ const AddItemModal = (props) => {
 					shouldFilterItem={filterPatient}
 					itemToString={(item) => getPatientName(item) ?? ""}
 					onChange={(selectedItem) =>
-						setSelectedPatient(selectedItem?.selectedItem)
+						props.setPatient(selectedItem?.selectedItem)
 					}
+                invalid={!props.patient}
+               invalidText="Please select a patient"
 					style={{ fontWeight: "bolder" }}
 				/>
 			</Row>

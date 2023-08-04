@@ -33,7 +33,7 @@ import { useCookies } from "react-cookie";
 import CustomModal from "../../components/CustomModal";
 import AddItemModal from "../../components/add-inventory-item/add-item-modal";
 import styles from "./dispense.module.scss";
-import saveDispense from "../../service/save-dispense";
+import {saveDispense,saveDispenseForAdhocDispense} from "../../service/save-dispense";
 import DrugItemDetails from "./drug-item-details";
 import { getDrugItems, getMappedDrugs } from "./drug-mapper";
 import { ResponseNotification } from "../../components/notifications/response-notification";
@@ -166,6 +166,23 @@ export const DispensePage = () => {
 		);
 	}
 
+ const handleSaveForAdditionalDispense = async () => {
+        const data = {
+            patientUuid: patient.id,
+            dispense_drugs: modifiedData,
+        };
+        const response = await saveDispenseForAdhocDispense(data, stockRoom);
+        		if (response.ok) {
+        			setSaveSuccess(true);
+
+        		} else {
+        			setSaveError(true);
+        		}
+        		setShowModal(false);
+       console.log("modifiedData...", modifiedData)
+       console.log("patient......", patient)
+    };
+
 	return inventoryItemError ? (
 		<div>
 			{ResponseNotification(
@@ -278,11 +295,11 @@ export const DispensePage = () => {
 					subTitle={`Dispense drug for`}
 					primaryButton="Dispense"
 					secondaryButton="Cancel"
-					handleSubmit={handleSave}
+					handleSubmit={handleSaveForAdditionalDispense}
 					closeModal={() => setShowModalForAdditionalDispense(false)}
 					invalid={isInvalid}
 				>
-					<AddItemModal setIsInvalid={setIsInvalid} />
+					<AddItemModal setIsInvalid={setIsInvalid} setModifiedData={setModifiedData} setPatient = {setPatient} patient ={patient}/>
 				</CustomModal>
 			)}
 		</div>
