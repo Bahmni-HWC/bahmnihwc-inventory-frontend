@@ -44,7 +44,9 @@ const StockReceipt = () => {
 	const [addDrugItems, setAddDrugItems] = useState([]);
 	const [outwardNumber, setOutwardNumber] = useState("");
 	const [stockIntakeButtonClick, setStockIntakeButtonClick] = useState(false);
-	const [isDisabled, setIsDisabled] = useState(true);
+	const [isOutwardNumberDisabled, setIsOutwardNumberDisabled] = useState(true);
+	const [isLoadStockDisabled, setIsLoadStockDisabled] = useState(true);
+	const [isFetchStockDisabled, setIsFetchStockDisabled] = useState(true);
 	const [receivedResponse, setReceivedResponse] = useState();
 	const [onSuccesful, setOnSuccesful] = useState(false);
 	const [onFailure, setOnFailure] = useState(false);
@@ -100,20 +102,24 @@ const StockReceipt = () => {
 	}, [eaushdhaResponse, error]);
 
 	useEffect(() => {
-		if (stockIntakeButtonClick) {
-			setIsDisabled(true);
-		}
-	}, [stockIntakeButtonClick]);
-
-	useEffect(() => {
 		if (outwardNumber.length > 0) {
-			setIsDisabled(false);
+		  setIsLoadStockDisabled(true);
+		  setIsOutwardNumberDisabled(false);
+		  setIsFetchStockDisabled(false);
+		} else {
+		  setIsLoadStockDisabled(false);
+		  setIsOutwardNumberDisabled(false);
+		  setIsFetchStockDisabled(true);
 		}
-		else {
-			setIsDisabled(true);
+	  
+		if (items.length > 0) {
+		  setIsLoadStockDisabled(true);
+		  setIsOutwardNumberDisabled(true);
+		  setIsFetchStockDisabled(true);
 		}
-	}, [outwardNumber,isDisabled]);
-
+	  
+	  }, [items, outwardNumber]);
+	  
 	useEffect(() => {
 		if (eaushdhaResponse && eaushdhaResponse.length > 0) {
 			setItems(getStockReceiptObj(eaushdhaResponse));
@@ -131,7 +137,7 @@ const StockReceipt = () => {
 			setItems([]);
 			setReceivedResponse([]);
 			setStockIntakeButtonClick(false);
-			setIsDisabled(true);
+			setIsOutwardNumberDisabled(true);
 			setOutwardNumber("");
 		}
 	}, [onSuccesful]);
@@ -272,7 +278,7 @@ const StockReceipt = () => {
 								value={outwardNumber}
 								style={{ width: "80%" }}
 								onChange={(e) => setOutwardNumber(e.target.value)}
-								disabled={outwardNumber.length == 0 ? false : isDisabled}
+								disabled={isOutwardNumberDisabled}
 							/>
 						</Column>
 						<Column sm={8} lg={4} style={{ paddingTop: "1.5rem" }}>
@@ -280,8 +286,8 @@ const StockReceipt = () => {
 								onClick={() => setStockIntakeButtonClick(true)}
 								size={"md"}
 								kind="primary"
-								disabled={isDisabled}
-								className={!isDisabled ? styles.buttonColor : ""}
+								disabled={isFetchStockDisabled}
+								className={!isFetchStockDisabled ? styles.buttonColor : ""}
 							>
 								Stock Fetch
 							</Button>
@@ -291,8 +297,8 @@ const StockReceipt = () => {
 								onClick={() =>{setShowModal(true)}}
 								size={"md"}
 								kind="primary"
-								disabled={!isDisabled}
-								className={isDisabled ? styles.buttonColor : ""}
+								disabled={isLoadStockDisabled}
+								className={!isLoadStockDisabled ? styles.buttonColor : ""}
 							>
 								Load Stock
 							</Button>
