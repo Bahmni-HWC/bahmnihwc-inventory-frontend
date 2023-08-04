@@ -43,7 +43,6 @@ import {
   locationCookieName,
 } from '../../constants';
 import styles from './stock-receipt.module.scss';
-import './stock-receipt.scss';
 
 import {
   getCalculatedQuantity,
