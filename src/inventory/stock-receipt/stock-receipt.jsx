@@ -1,7 +1,14 @@
 import React, { useEffect, useState } from "react";
 import useSWR from "swr";
-import { fetcherPost, stockReceiptURL, getRequest, fetcher, stockRoomURL, inventoryItemURL, invItemURL } from "../../utils/api-utils";
-import saveReceipt from '../../service/save-receipt';
+import {
+	fetcherPost,
+	stockReceiptURL,
+	fetcher,
+	stockRoomURL,
+	inventoryItemURL,
+	invItemURL,
+} from "../../utils/api-utils";
+import saveReceipt from "../../service/save-receipt";
 
 import {
 	DataTable,
@@ -32,7 +39,11 @@ import {
 } from "../../../constants";
 import styles from "./stock-receipt.module.scss";
 
-import { getCalculatedQuantity, getStockReceiptObj, getLoadStockObj } from "./eaushadha-response-mapper";
+import {
+	getCalculatedQuantity,
+	getStockReceiptObj,
+	getLoadStockObj,
+} from "./eaushadha-response-mapper";
 import { headers, locationCookieName } from "../../../constants";
 import { useCookies } from "react-cookie";
 import { Add16, Subtract16 } from "@carbon/icons-react";
@@ -49,7 +60,8 @@ const StockReceipt = () => {
 	const [onSuccesful, setOnSuccesful] = useState(false);
 	const [onFailure, setOnFailure] = useState(false);
 	const [stockReceiptError, setStockReceiptError] = useState();
-	const [stockEmptyResonseMessage, setStockEmptyResonseMessage] = useState(false);
+	const [stockEmptyResonseMessage, setStockEmptyResonseMessage] =
+		useState(false);
 
 	const { data: eaushdhaResponse, error } = useSWR(
 		stockIntakeButtonClick ? stockReceiptURL : "",
@@ -63,15 +75,15 @@ const StockReceipt = () => {
 		fetcher
 	);
 
-	let dropdownItems=[];
+	let dropdownItems = [];
 
 	const { data: inventoryItems, error: inventoryItemsError } = useSWR(
 		inventoryItemURL(),
 		fetcher
 	);
 
-	let totalInventoryItems=inventoryItems?.length;
-	
+	let totalInventoryItems = inventoryItems?.length;
+
 	const { data: invItems, error: inventoryItemError } = useSWR(
 		invItemURL(totalInventoryItems),
 		fetcher
@@ -79,11 +91,18 @@ const StockReceipt = () => {
 
 	if (invItems?.results?.length > 0) {
 		for (let index = 0; index < invItems.results.length; index++) {
-			dropdownItems.push(invItems.results[index].name)
+			dropdownItems.push(invItems.results[index].name);
 		}
 	}
 	const [rows, setRows] = useState([
-		{ id: 1, drugName: "", batchNo: "", expiryDate: "", quantity: 0, totalQuantity: 0 },
+		{
+			id: 1,
+			drugName: "",
+			batchNo: "",
+			expiryDate: "",
+			quantity: 0,
+			totalQuantity: 0,
+		},
 	]);
 
 	const [showModal, setShowModal] = useState(false);
@@ -91,7 +110,10 @@ const StockReceipt = () => {
 	const [isSaveButtonDisabled, setSaveButtonDisabled] = useState(true);
 
 	useEffect(() => {
-		const hasEmptyFields = rows.some((row) => !row.drugName || !row.batchNo || !row.expiryDate || !row.totalQuantity);
+		const hasEmptyFields = rows.some(
+			(row) =>
+				!row.drugName || !row.batchNo || !row.expiryDate || !row.totalQuantity
+		);
 		setSaveButtonDisabled(hasEmptyFields);
 	}, [rows]);
 
@@ -108,22 +130,20 @@ const StockReceipt = () => {
 	useEffect(() => {
 		if (outwardNumber.length > 0) {
 			setIsDisabled(false);
-		}
-		else {
+		} else {
 			setIsDisabled(true);
 		}
-	}, [outwardNumber,isDisabled]);
+	}, [outwardNumber, isDisabled]);
 
 	useEffect(() => {
 		if (eaushdhaResponse && eaushdhaResponse.length > 0) {
 			setItems(getStockReceiptObj(eaushdhaResponse));
 			setReceivedResponse(eaushdhaResponse);
 		}
-		if(eaushdhaResponse&& eaushdhaResponse.length===0){
+		if (eaushdhaResponse && eaushdhaResponse.length === 0) {
 			setStockEmptyResonseMessage(true);
 		}
-		if (error) 
-			setStockReceiptError(error);
+		if (error) setStockReceiptError(error);
 	}, [eaushdhaResponse, error]);
 
 	useEffect(() => {
@@ -162,44 +182,51 @@ const StockReceipt = () => {
 	};
 	const handleSave = async () => {
 		try {
-				const response = await saveReceipt(items, outwardNumber, stockRoom.results[0]?.uuid);
-					if (response && response.ok) {
-					setOnSuccesful(true);
-					} else {
-					setOnFailure(true);
-					}
-				} catch (error) {
-					setOnFailure(true);
-				}
-
+			const response = await saveReceipt(
+				items,
+				outwardNumber,
+				stockRoom.results[0]?.uuid
+			);
+			if (response && response.ok) {
+				setOnSuccesful(true);
+			} else {
+				setOnFailure(true);
+			}
+		} catch (error) {
+			setOnFailure(true);
+		}
 	};
 
 	const handleSaveDrugButtonClick = async () => {
 		try {
-		  await setAddDrugItems(getLoadStockObj(rows));
-		  setShowModal(false);
+			await setAddDrugItems(getLoadStockObj(rows));
+			setShowModal(false);
 		} catch (error) {
-		  console.error("An error occurred:", error);
-		  return;
+			console.error("An error occurred:", error);
+			return;
 		}
-	  };
-	  
-	  useEffect(() => {
+	};
+
+	useEffect(() => {
 		const saveData = async () => {
-		  try {
-			const response = await saveReceipt(addDrugItems, outwardNumber, stockRoom.results[0]?.uuid);
-			if (response) {
-			  response.ok ? setOnSuccesful(true) : setOnFailure(true);
+			try {
+				const response = await saveReceipt(
+					addDrugItems,
+					outwardNumber,
+					stockRoom.results[0]?.uuid
+				);
+				if (response) {
+					response.ok ? setOnSuccesful(true) : setOnFailure(true);
+				}
+			} catch (error) {
+				console.error("An error occurred during saveReceipt:", error);
 			}
-		  } catch (error) {
-			console.error("An error occurred during saveReceipt:", error);
-		  }
 		};
-	  
+
 		if (addDrugItems.length > 0) {
-		  saveData();
+			saveData();
 		}
-	  }, [addDrugItems, outwardNumber]);
+	}, [addDrugItems, outwardNumber]);
 
 	const renderNotificationMessage = (kind, title) => {
 		return (
@@ -218,35 +245,39 @@ const StockReceipt = () => {
 	const handleCloseModal = () => {
 		setShowModal(false);
 	};
-	
+
 	const handleAddRow = () => {
 		setRows((prevRows) => [
-		...prevRows,
-		{ id: prevRows.length + 1, drugName: "", batchNo: "", expiryDate: "", totalQuantity: 0 },
+			...prevRows,
+			{
+				id: prevRows.length + 1,
+				drugName: "",
+				batchNo: "",
+				expiryDate: "",
+				totalQuantity: 0,
+			},
 		]);
 	};
 
 	const handleDeleteRow = (id) => {
-	setRows((prevRows) => prevRows.filter((row) => row.id !== id));
+		setRows((prevRows) => prevRows.filter((row) => row.id !== id));
 	};
 
 	const handleComboBoxChange = (rowId, selectedValue) => {
 		setRows((prevRows) => {
-		  return prevRows.map((row) => {
-			if (row.id === rowId) {
-			  return { ...row, drugName: selectedValue };
-			}
-			return row;
-		  });
+			return prevRows.map((row) => {
+				if (row.id === rowId) {
+					return { ...row, drugName: selectedValue };
+				}
+				return row;
+			});
 		});
-	  };
-	
+	};
+
 	const handleInputChange = (id, field, value) => {
-	setRows((prevRows) =>
-		prevRows.map((row) =>
-		row.id === id ? { ...row, [field]: value } : row
-		)
-	);
+		setRows((prevRows) =>
+			prevRows.map((row) => (row.id === id ? { ...row, [field]: value } : row))
+		);
 	};
 
 	const currentDate = new Date();
@@ -288,7 +319,9 @@ const StockReceipt = () => {
 						</Column>
 						<Column sm={8} lg={4} style={{ paddingTop: "1.5rem" }}>
 							<Button
-								onClick={() =>{setShowModal(true)}}
+								onClick={() => {
+									setShowModal(true);
+								}}
 								size={"md"}
 								kind="primary"
 								disabled={!isDisabled}
@@ -296,88 +329,158 @@ const StockReceipt = () => {
 							>
 								Load Stock
 							</Button>
-							{showModal &&
-							<Modal className="addDrugModal" open={showModal} onRequestClose={handleCloseModal} size='lg' primaryButtonText="Save" secondaryButtonText="Cancel" onRequestSubmit={handleSaveDrugButtonClick} primaryButtonDisabled={isSaveButtonDisabled}> 
-								    <DataTable
-									rows={rows}
-									headers={["S.No", "Drug Name", "Batch No", "Expiry Date", "Total Quantity", "Actions"]}
-									render={({ rows, headers, getHeaderProps }) => (
-									<TableContainer title="Add New Drug">
-									<Table className={styles.addStocktable}>
-										<TableHead>
-										<TableRow>
-											{headers.map((header, index) => (
-											<TableHeader key={index} {...getHeaderProps({ header })}>
-												{header}
-											</TableHeader>
-											))}
-										</TableRow>
-										</TableHead>
-										<TableBody>
-										{rows.map((row) => (
-											<TableRow key={row.id}>
-											<TableCell>{row.id}</TableCell>
-											<TableCell>  
-												<ComboBox
-													items={dropdownItems}
-													shouldFilterItem={filterItems}
-													selectedItem={row.drugName}
-													onChange={(selectedItem) => handleComboBoxChange(row.id, selectedItem)}
-													style={{ width: "270px" }}
-												/>
-											</TableCell>
-											<TableCell>
-												<TextInput
-												id={`batchNo-${row.id}`}
-												value={row.batchNo}
-												onChange={(e) =>
-													handleInputChange(row.id, "batchNo", e.target.value)
-												}
-												/>
-											</TableCell>
-											<TableCell>
-											<DatePicker
-												datePickerType="single"
-												id={`expiryDate-${row.id}`}
-												dateFormat="d/m/Y"
-												value={row.expiryDate}
-												minDate={currentDate}
-												onChange={(date) => handleInputChange(row.id, 'expiryDate', date[0])}
-											>
-												<DatePickerInput
-												value={row.expiryDate}
-												onChange={(e) => handleInputChange(row.id, 'expiryDate', e.target.value)}
-												pattern = { getDatePattern }
-												/>
-											</DatePicker>
-											</TableCell>
-											<TableCell>
-												<TextInput
-												type="number"
-												id={`totalQuantity-${row.id}`}
-												value={row.totalQuantity}
-												onChange={(e) =>
-													handleInputChange(row.id, "totalQuantity", e.target.valueAsNumber)
-												}
-												/>
-											</TableCell>
-											<TableCell>
-											<Button kind="danger--tertiary" renderIcon={Subtract16} className={styles.iconButton} onClick={() => handleDeleteRow(row.id)}/>
-											</TableCell>
-											</TableRow>
-										))}
-										</TableBody>
-									</Table>
-									<Button kind="tertiary" renderIcon={Add16} className={`${styles.iconButton} ${styles.plusButton}`}onClick={handleAddRow}/>
-									</TableContainer>
-									)}
+							{showModal && (
+								<Modal
+									className="addDrugModal"
+									open={showModal}
+									onRequestClose={handleCloseModal}
+									size="lg"
+									primaryButtonText="Save"
+									secondaryButtonText="Cancel"
+									onRequestSubmit={handleSaveDrugButtonClick}
+									primaryButtonDisabled={isSaveButtonDisabled}
+								>
+									<DataTable
+										rows={rows}
+										headers={[
+											"S.No",
+											"Drug Name",
+											"Batch No",
+											"Expiry Date",
+											"Total Quantity",
+											"Actions",
+										]}
+										render={({ rows, headers, getHeaderProps }) => (
+											<TableContainer title="Add New Drug">
+													<Table className={styles.addStocktable}>
+														<TableHead>
+															<TableRow>
+																{headers.map((header, index) => (
+																	<TableHeader
+																		key={index}
+																		{...getHeaderProps({ header })}
+																	>
+																		{header}
+																	</TableHeader>
+																))}
+															</TableRow>
+														</TableHead>
+														<TableBody>
+															{rows.map((row) => (
+																<TableRow key={row.id}>
+																	<TableCell>{row.id}</TableCell>
+																	<TableCell>
+																		<ComboBox
+																			items={dropdownItems}
+																			shouldFilterItem={filterItems}
+																			selectedItem={row.drugName}
+																			onChange={(selectedItem) =>
+																				handleComboBoxChange(
+																					row.id,
+																					selectedItem
+																				)
+																			}
+																			style={{ width: "270px" }}
+																		/>
+																	</TableCell>
+																	<TableCell>
+																		<TextInput
+																			id={`batchNo-${row.id}`}
+																			value={row.batchNo}
+																			onChange={(e) =>
+																				handleInputChange(
+																					row.id,
+																					"batchNo",
+																					e.target.value
+																				)
+																			}
+																		/>
+																	</TableCell>
+																	<TableCell>
+																		<DatePicker
+																			datePickerType="single"
+																			id={`expiryDate-${row.id}`}
+																			dateFormat="d/m/Y"
+																			value={row.expiryDate}
+																			minDate={currentDate}
+																			onChange={(date) =>
+																				handleInputChange(
+																					row.id,
+																					"expiryDate",
+																					date[0]
+																				)
+																			}
+																		>
+																			<DatePickerInput
+																				value={row.expiryDate}
+																				onChange={(e) =>
+																					handleInputChange(
+																						row.id,
+																						"expiryDate",
+																						e.target.value
+																					)
+																				}
+																				pattern={getDatePattern}
+																			/>
+																		</DatePicker>
+																	</TableCell>
+																	<TableCell>
+																		<TextInput
+																			type="number"
+																			id={`totalQuantity-${row.id}`}
+																			value={row.totalQuantity}
+																			onChange={(e) =>
+																				handleInputChange(
+																					row.id,
+																					"totalQuantity",
+																					e.target.valueAsNumber
+																				)
+																			}
+																		/>
+																	</TableCell>
+																	<TableCell>
+																		<Button
+																			kind="danger--tertiary"
+																			renderIcon={Subtract16}
+																			className={styles.iconButton}
+																			onClick={() => handleDeleteRow(row.id)}
+																		/>
+																	</TableCell>
+																</TableRow>
+															))}
+														</TableBody>
+													</Table>
+													<Button
+														kind="tertiary"
+														renderIcon={Add16}
+														className={`${styles.iconButton} ${styles.plusButton}`}
+														onClick={handleAddRow}
+													/>
+											</TableContainer>
+										)}
 									/>
-							</Modal>
-							}
+								</Modal>
+							)}
 						</Column>
 					</Row>
-					{stockReceiptError && <h3 style={{paddingTop:'1rem'}}>{ResponseNotification("error","Error","Something went wrong while fetching URL")}</h3>}
-					{stockEmptyResonseMessage && <div style={{paddingTop:'20px'}}>{ResponseNotification("info","info","No data is received for the outward number. Could you please retry?")}</div>}
+					{stockReceiptError && (
+						<h3 style={{ paddingTop: "1rem" }}>
+							{ResponseNotification(
+								"error",
+								"Error",
+								"Something went wrong while fetching URL"
+							)}
+						</h3>
+					)}
+					{stockEmptyResonseMessage && (
+						<div style={{ paddingTop: "20px" }}>
+							{ResponseNotification(
+								"info",
+								"info",
+								"No data is received for the outward number. Could you please retry?"
+							)}
+						</div>
+					)}
 					{stockIntakeButtonClick && !eaushdhaResponse && !error ? (
 						<Loading />
 					) : (
