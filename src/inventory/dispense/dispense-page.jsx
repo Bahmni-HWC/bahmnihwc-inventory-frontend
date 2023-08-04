@@ -282,7 +282,7 @@ export const DispensePage = () => {
 					closeModal={() => setShowModalForAdditionalDispense(false)}
 					invalid={isInvalid}
 				>
-					<AddItemModal />
+					<AddItemModal setIsInvalid={setIsInvalid} />
 				</CustomModal>
 			)}
 		</div>

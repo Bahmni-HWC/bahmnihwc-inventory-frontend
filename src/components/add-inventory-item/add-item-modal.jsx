@@ -23,7 +23,7 @@ import { useItemStockContext } from "../../context/item-stock-context";
 import { fetcher, getAllPatient } from "../../utils/api-utils";
 import styles from "./add-item-modal.module.scss";
 
-const AddItemModal = () => {
+const AddItemModal = (props) => {
 	const { itemStock } = useItemStockContext();
 	const [cookies] = useCookies();
 
@@ -55,6 +55,14 @@ const AddItemModal = () => {
 		}
 	}, [itemStock]);
 
+	useEffect(() => {
+		const hasEmptyFields = rows.some(
+			(row) =>
+				!row.drugName || !row.batchNo || !row.expiryDate || !row.totalQuantity
+		);
+		props.setIsInvalid(hasEmptyFields);
+	}, [rows]);
+
 	const handleAddRow = () => {
 		setRows((prevRows) => [
 			...prevRows,
@@ -85,20 +93,40 @@ const AddItemModal = () => {
 						...row,
 						drugName: selectedValue?.selectedItem?.drugName ?? "",
 						avlQty: selectedValue.selectedItem?.avlQty ?? 0,
+						invalid: false,
 					};
 				}
 				return row;
 			});
 		});
 	};
-	
+
 	const handleInputChange = (id, value) => {
+		if (isInvalid(value)) {
+			setRows((prevRows) =>
+				prevRows.map((row) => (row.id === id ? { ...row,presQty: value, invalid: true } : row))
+			);
+		}
 		setRows((prevRows) =>
 			prevRows.map((row) => (row.id === id ? { ...row, presQty: value } : row))
 		);
 	};
 
-	console.log('rows', rows)
+	const isSufficient = (value, row) => {
+		const findRow = rows.find((row) => row.id === row.id);
+		console.log('row', findRow, value)
+		if (findRow) {
+			return findRow.avlQty >= parseInt(value);
+		}
+		return false;
+	};
+
+	const isInvalid = (value) => {
+		if (value !== "") {
+			return isNaN(value);
+		}
+		return false;
+	};
 
 	const filterPatient = (patient) =>
 		getPatientName(patient.item)
@@ -178,10 +206,12 @@ const AddItemModal = () => {
 										<TableCell>
 											<TextInput
 												id={`presQty-${row.id}`}
-												value={row.cells[3].value}
+												value={row.cells[3].value }
 												onChange={(e) =>
 													handleInputChange(row.id, e.target.value)
 												}
+												invalid={ !isSufficient(row.cells[3].value, row) || row.invalid}
+												invalidText="Please enter a valid number"
 											/>
 										</TableCell>
 										<Button
