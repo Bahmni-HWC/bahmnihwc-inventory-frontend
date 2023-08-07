@@ -1,9 +1,9 @@
 import {
 	Button,
+	Column,
 	ComboBox,
 	DataTable,
 	Grid,
-	Row,
 	Table,
 	TableBody,
 	TableCell,
@@ -18,9 +18,12 @@ import React, { useEffect, useState } from "react";
 import { Add16, Subtract16 } from "@carbon/icons-react";
 import { useCookies } from "react-cookie";
 import useSWR from "swr";
-import { locationCookieName } from "../../../constants";
-import { useItemStockContext } from "../../context/item-stock-context";
-import { fetcher, getAllPatient } from "../../utils/api-utils";
+import {
+	drugItemheaderDispense,
+	locationCookieName,
+} from "../../../../constants";
+import { useItemStockContext } from "../../../context/item-stock-context";
+import { fetcher, getAllPatient } from "../../../utils/api-utils";
 import styles from "./add-item-modal.module.scss";
 
 const AddItemModal = (props) => {
@@ -30,7 +33,6 @@ const AddItemModal = (props) => {
 	const locationUuid = cookies[locationCookieName].uuid;
 
 	const [inventoryItem, setInventoryItem] = useState([]);
-
 
 	const { data: allPatientList, error: allPatientListError } = useSWR(
 		getAllPatient(locationUuid),
@@ -111,7 +113,9 @@ const AddItemModal = (props) => {
 		if (isInvalid(value)) {
 			setRows((prevRows) =>
 				prevRows.map((row) =>
-					row.id === id ? { ...row, dispQty: parseInt(value), invalid: true } : row
+					row.id === id
+						? { ...row, dispQty: parseInt(value), invalid: true }
+						: row
 				)
 			);
 		} else {
@@ -162,13 +166,16 @@ const AddItemModal = (props) => {
 				patient.familyName.slice(1);
 			const identifier = patient.identifier;
 
-			return `${givenName} ${middleName} ${familyName} (${identifier})`.replace(/\s+/g, ' ')
+			return `${givenName} ${middleName} ${familyName} (${identifier})`.replace(
+				/\s+/g,
+				" "
+			);
 		}
 	};
 
 	return (
-		<Grid columns={12}>
-			<Row sm={60} style={{paddingBottom:'1rem'}}>
+		<Grid className={styles.grid}>
+			<Column sm={16} lg={4} className={styles.comboBox}>
 				<ComboBox
 					id="combo-box-select-patient"
 					items={allPatientList?.pageOfResults ?? []}
@@ -182,18 +189,12 @@ const AddItemModal = (props) => {
 					invalidText="Please select a patient"
 					style={{ fontWeight: "bolder" }}
 				/>
-			</Row>
+			</Column>
 			<DataTable
 				rows={rows}
-				headers={[
-					{ key: "id", header: "S.No" },
-					{ key: "drugName", header: "Drug Name" },
-					{ key: "avlQty", header: "Avl. Qty" },
-					{ key: "dispQty", header: "Disp. Qty" },
-					{ key: "action", header: "Actions" },
-				]}
+				headers={drugItemheaderDispense}
 				render={({ rows, headers, getHeaderProps }) => (
-					<TableContainer>
+					<TableContainer id="stock-table-container">
 						<Table className={styles.addStocktable}>
 							<TableHead>
 								<TableRow>
@@ -208,7 +209,7 @@ const AddItemModal = (props) => {
 								{rows.map((row) => (
 									<TableRow key={row.id}>
 										<TableCell>{row.id}</TableCell>
-										<TableCell>
+										<TableCell id="combo-box-drug-item">
 											<ComboBox
 												id="combo-box-1"
 												items={inventoryItem}
@@ -219,14 +220,18 @@ const AddItemModal = (props) => {
 												onChange={(selectedItem) =>
 													handleComboBoxChange(row.id, selectedItem)
 												}
-												style={{minWidth:'15rem'}}
+												className={styles.drugItem}
 											/>
 										</TableCell>
 										<TableCell>{row.cells[2].value}</TableCell>
 										<TableCell>
 											<TextInput
 												id={`dispQty-${row.id}`}
-												value={isInvalid(row.cells[3].value) ? "" : row.cells[3].value}
+												value={
+													isInvalid(row.cells[3].value)
+														? ""
+														: row.cells[3].value
+												}
 												onChange={(e) =>
 													handleInputChange(row.id, e.target.value)
 												}
@@ -235,7 +240,7 @@ const AddItemModal = (props) => {
 												}
 												invalidText="Please enter value <= to available quantity"
 												labelText=""
-												style={{minWidth:'5rem'}}
+												className={styles.dispQtyInput}
 											/>
 										</TableCell>
 										<Button

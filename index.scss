@@ -1,17 +1,25 @@
-@import '~carbon-components/scss/globals/scss/styles.scss';
+@import "~carbon-components/scss/globals/scss/styles.scss";
 .inv-datatable {
-  table {
-    &.bx--data-table--sticky-header {
-      max-height: calc(100vh - 250px);
-    }
-  }
+	table {
+		&.bx--data-table--sticky-header {
+			max-height: calc(100vh - 250px);
+		}
+	}
 }
 
 // Overwriting styles for stock table content
 #stock-table-container .bx--data-table-content {
-  min-height: 20rem;
-  max-height: calc(100vh - 240px);
-  @media all and (min-width: 768px) {
-    max-height: 22rem;
-  }
+	min-height: 20rem;
+	max-height: calc(100vh - 240px);
+	@media all and (min-width: 768px) {
+		max-height: 22rem;
+	}
+}
+
+#combo-box-drug-item .bx--list-box__menu-item {
+	height: auto;
+	.bx--list-box__menu-item__option {
+		height: auto;
+		white-space: normal;
+	}
 }

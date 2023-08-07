@@ -24,7 +24,7 @@ import {
 import React, { useEffect, useState } from 'react';
 import { useCookies } from 'react-cookie';
 import useSWR from 'swr';
-import saveReceipt from '../service/save-receipt';
+import saveReceipt from '../../service/save-receipt';
 import {
   fetcher,
   fetcherPost,
@@ -32,18 +32,18 @@ import {
   inventoryItemURL,
   stockReceiptURL,
   stockRoomURL
-} from '../utils/api-utils';
+} from '../../utils/api-utils';
 
 import {
   failureMessage,
   locationCookieName,
   stockReceiptHeaders,
   successMessage
-} from '../../constants';
+} from '../../../constants';
 import styles from './stock-receipt.module.scss';
 
-import { ResponseNotification } from '../components/notifications/response-notification';
-import { getDatePattern } from '../utils/date-utils';
+import { ResponseNotification } from '../../components/notifications/response-notification';
+import { getDatePattern } from '../../utils/date-utils';
 import {
   getCalculatedQuantity,
   getLoadStockObj,

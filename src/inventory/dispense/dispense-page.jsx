@@ -31,7 +31,7 @@ import {
 } from "../../../constants";
 import { useCookies } from "react-cookie";
 import CustomModal from "../../components/CustomModal";
-import AddItemModal from "../../components/add-inventory-item/add-item-modal";
+import AddItemModal from "./add-inventory-item/add-item-modal";
 import styles from "./dispense.module.scss";
 import {saveDispense,saveDispenseForAdhocDispense} from "../../service/save-dispense";
 import DrugItemDetails from "./drug-item-details";
