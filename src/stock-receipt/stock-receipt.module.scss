@@ -1,36 +1,40 @@
-@import "~carbon-components/scss/globals/scss/styles.scss";
+@import '~carbon-components/scss/globals/scss/styles.scss';
 
 .stockReceiptTable {
-	max-height: calc(100vh - 500px);
-	overflow-y: scroll;
+  max-height: calc(100vh - 500px);
+  overflow-y: scroll;
 }
 
 .buttonSet {
-	float: right;
-	justify-content: end;
-	width: 30%;
-	padding-top: 1rem;
+  float: right;
+  justify-content: end;
+  width: 30%;
+  padding-top: 1rem;
 }
 
 .buttonColor {
-	background-color: #007d79 !important;
+  background-color: #007d79 !important;
 }
 
 .stickyColumn {
-		position: sticky;
-		left: 0;
-		z-index: 2;
+  position: sticky;
+  left: 0;
+  z-index: 2;
 }
 
-
-[id^="expiryDate-"] input {
-    width: 12rem !important;
+[id^='expiryDate-'] input {
+  width: 12rem !important;
 }
 
-.iconButton{
-	padding: 1.3rem 1.5rem 1.3rem 1.5rem !important;
-    float: right;
+.iconButton {
+  padding: 1.3rem 1.5rem 1.3rem 1.5rem !important;
+  float: right;
 }
-.plusButton{
-	margin: 1rem 1rem auto auto !important;
+.plusButton {
+  margin: 1rem 1rem auto auto !important;
+}
+
+.batchNumberInput,
+.totalQuantityInput {
+  min-width: 7rem;
 }
