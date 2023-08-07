@@ -216,20 +216,11 @@ const StockReceipt = () => {
     }
   }, [addDrugItems, outwardNumber]);
 
-  const renderNotificationMessage = (kind, title) => {
-    return (
-      <ToastNotification
-        kind={kind}
-        lowContrast={true}
-        title={title}
-        timeout={5000}
-        onClose={() => {
-          setOnSuccesful(false);
-          setOnFailure(false);
-        }}
-      />
-    );
+  const setOnSuccessAndFailure =(status) => {
+    setOnSuccesful(status);
+    setOnFailure(status);
   };
+
   const handleCloseModal = () => {
     setShowModal(false);
   };
@@ -273,8 +264,8 @@ const StockReceipt = () => {
       <Grid style={{ paddingLeft: '0', margin: '0' }}>
         <Column lg={16}>
           <Column lg={3}>
-            {onSuccesful && renderNotificationMessage('success', successMessage)}
-            {onFailure && renderNotificationMessage('error', failureMessage)}
+            {onSuccesful && ResponseNotification('success','Success', successMessage, setOnSuccessAndFailure)}
+            {onFailure && ResponseNotification('error','Error',failureMessage,  setOnSuccessAndFailure)}
           </Column>
           <Row>
             <Column sm={8} lg={4}>
