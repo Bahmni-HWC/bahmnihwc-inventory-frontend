@@ -17,7 +17,7 @@ const saveReceipt = async (items, outwardNumber, destinationUuid) => {
 			const itemUuids = response.results[0].uuid;
 			// Add the item to the requestBody.items array with all corresponding properties
 			itemsArray.push({
-				item: itemUuids[0],
+				item: itemUuids,
 				quantity: item.totalQuantity,
 				expiration: item.expiration,
 				batchNumber: item.batchNumber,
