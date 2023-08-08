@@ -7,15 +7,9 @@ export const exportToExcel = (rows) => {
   const exportData = rows.map(({ id, ...rest }) => ({
     "Product Name": rest.productName,
     "Quantity": rest.quantity,
-    "Expiration": rest.expiration,
-    "Batch Number": rest.batchNumber,
   }));
 
-  const headerRow = {
-    "Exported Date": currentDate,
-  };
-
-  const worksheet = XLSXUtils.json_to_sheet([headerRow, ...exportData]);
+  const worksheet = XLSXUtils.json_to_sheet([...exportData]);
   const workbook = XLSXUtils.book_new();
   XLSXUtils.book_append_sheet(workbook, worksheet, "Inventory Data");
 
