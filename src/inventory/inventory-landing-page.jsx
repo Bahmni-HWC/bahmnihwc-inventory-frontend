@@ -1,28 +1,30 @@
 import {
-	Button,
-	DataTable,
-	Table,
-	TableBody,
-	TableCell,
-	TableContainer,
-	TableHead,
-	TableHeader,
-	TableRow,
-	TableToolbarContent,
-	TableToolbarSearch,
+    Button,
+    DataTable,
+    Link,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableHeader,
+    TableRow,
+    TableToolbarContent,
+    TableToolbarSearch,
 } from "carbon-components-react";
 import React, { useEffect, useState } from "react";
-import { headers } from "../../constants";
+import { inventoryDetailItemsHeaders, inventoryHeaders } from "../../constants";
+import { TableModal } from "../components/BasicTableModal";
 import { useItemStockContext } from "../context/item-stock-context";
 import { exportToExcel } from "./export-to-excel";
-import { getFormattedDate } from '../utils/date-utils';
-import { useCookies } from "react-cookie";
 import styles from "./inventory.module.scss";
 
 export const InventoryLandingPage = () => {
 	const { itemStock } = useItemStockContext();
 
 	const [rows, setRows] = useState([]);
+	const [showModal, setShowModal] = useState(false);
+	const [selectedProductName, setSelectedProductName] = useState("");
 
 	const [searchText, setSearchText] = useState("");
 
@@ -32,29 +34,40 @@ export const InventoryLandingPage = () => {
 	const handleExportToExcel = () => exportToExcel(filteredRows);
 
 	useEffect(() => {
-        if (itemStock?.length > 0) {
-            for (let index = 0; index < itemStock.length; index++) {
-                const item = itemStock[index];
-                const updatedRows = item.details.map((detail, detailIndex) => {
-                    const expiration = detail.expiration;
-                    const expirationDate = new Date(expiration);
-                    const formattedExpirationDate = `${expirationDate.getDate().toString().padStart(2, "0")}-${(expirationDate.getMonth() + 1)
-                        .toString()
-                        .padStart(2, "0")}-${expirationDate.getFullYear()}`;
-                    return {
-                        id: `${index}-${detail.batchNumber}-${detailIndex}`,
-                        productName: item.item.name,
-                        quantity: detail.quantity ?? 0,
-                        expiration: expiration ? formattedExpirationDate : "No Expiration Date",
-                        batchNumber: detail.batchNumber ?? "No Batch Number",
-                      };
-                })
-                setRows((prevState) => {
-                    return [...prevState, ...updatedRows]
-                });
-              }
-            }
-    }, [itemStock])
+		if (itemStock?.length > 0) {
+			const updatedRows = itemStock.map((item, index) => {
+				return {
+					id: `${index}`,
+					productName: item.item.name,
+					quantity: item.quantity ?? 0,
+				};
+			});
+			setRows((prevState) => {
+				return [...prevState, ...updatedRows];
+			});
+		}
+	}, [itemStock]);
+
+	const getItemDetails = (productName) => {
+		if (itemStock?.length > 0) {
+			const item = itemStock.find((itemObject) => itemObject.item.name === productName);
+			const updatedRows = item.details.map((detail, detailIndex) => {
+				const expiration = detail.expiration;
+				const expirationDate = new Date(expiration);
+				const formattedExpirationDate = `${expirationDate.getDate().toString().padStart(2, "0")}-${(expirationDate.getMonth() + 1)
+					.toString()
+					.padStart(2, "0")}-${expirationDate.getFullYear()}`;
+				return {
+					id: `${detail.batchNumber}-${detailIndex}`,
+					productName: item.item.name,
+					quantity: detail.quantity ?? 0,
+					expiration: expiration ? formattedExpirationDate : "No Expiration Date",
+					batchNumber: detail.batchNumber ?? "No Batch Number",
+				};
+			});
+			return updatedRows;
+		}
+	};
 
 	const filteredRows = rows.filter((row) =>
 		searchText !== ""
@@ -64,9 +77,14 @@ export const InventoryLandingPage = () => {
 
 	const isSortable = (key) => key === "productName";
 
+	const handleClick = (productName) => {
+        setSelectedProductName(productName);
+		setShowModal(true);
+	};
+
 	return (
 		<div className={styles.inventoryContainer}>
-			<DataTable rows={filteredRows} headers={headers}>
+			<DataTable rows={filteredRows} headers={inventoryHeaders}>
 				{({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
 					<>
 						<TableContainer>
@@ -129,7 +147,13 @@ export const InventoryLandingPage = () => {
 														} 
 												}`}
 													>
-														{cell.value}
+														{cell.id.includes("productName") ? (
+															<Link href="#" onClick={() => handleClick(cell.value)}>
+																{cell.value}
+															</Link>
+														) : (
+															<>{cell.value}</>
+														)}
 													</TableCell>
 												))}
 											</TableRow>
@@ -141,6 +165,15 @@ export const InventoryLandingPage = () => {
 					</>
 				)}
 			</DataTable>
+			{showModal && (
+				<TableModal
+					showModal={showModal}
+					headers={inventoryDetailItemsHeaders}
+					rows={getItemDetails(selectedProductName)}
+					closeModal={() => setShowModal(false)}
+					stickyColumnName={"productName"}
+				/>
+			)}
 		</div>
 	);
 };
