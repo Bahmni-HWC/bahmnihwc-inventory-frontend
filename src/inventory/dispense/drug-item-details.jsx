@@ -40,8 +40,12 @@ const DrugItemDetails = (props) => {
 			const dispensedDrugItem = drugInfo.filter(
 				(item) => item.dispensed === false
 			);
-			const modifiedData = drugInfo.filter((item) => item.dispensed === false && item.prescribedQty > 0);
-			props.setIsInvalid(invalid || dispensedDrugItem.length === 0 || modifiedData.length === 0);
+			const modifiedData = drugInfo.filter(
+				(item) => item.dispensed === false && item.prescribedQty > 0
+			);
+			props.setIsInvalid(
+				invalid || dispensedDrugItem.length === 0 || modifiedData.length === 0
+			);
 			props.setModifiedData(modifiedData);
 		}
 	}, [drugInfo]);
@@ -95,11 +99,11 @@ const DrugItemDetails = (props) => {
 		if (drug.dosingInstructions.frequency !== null) {
 			title = `${drug.drugName} - ${dosingInstructions.dose} ${dosingInstructions.doseUnits} | ${dosingInstructions.frequency} | ${drug.duration} ${drug.durationUnits}`;
 		} else {
-			const administrationInstructions = drug.dosingInstructions.administrationInstructions
+			const administrationInstructions =
+				drug.dosingInstructions.administrationInstructions;
 			const parsedobj = JSON.parse(administrationInstructions);
-			title = `${drug.drugName} - ${parsedobj.morningDose}-${parsedobj.afternoonDose}-${parsedobj.eveningDose} ${dosingInstructions.doseUnits} | ${drug.duration} ${drug.durationUnits}`
+			title = `${drug.drugName} - ${parsedobj.morningDose}-${parsedobj.afternoonDose}-${parsedobj.eveningDose} ${dosingInstructions.doseUnits} | ${drug.duration} ${drug.durationUnits}`;
 		}
-
 		return title;
 	};
 

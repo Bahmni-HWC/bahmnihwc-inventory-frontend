@@ -50,3 +50,11 @@ export const drugItemheader = [
 	{ key: "avlQty", header: "Avl.Qty" },
 	{ key: "prescribedQty", header: "Pres.Qty" },
 ];
+
+export const drugItemheaderDispense = [
+	{ key: "id", header: "S.No" },
+	{ key: "drugName", header: "Drug Name" },
+	{ key: "avlQty", header: "Avl. Qty" },
+	{ key: "dispQty", header: "Disp. Qty" },
+	{ key: "action", header: "Actions" },
+]

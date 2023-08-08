@@ -12,32 +12,40 @@ import {
 	TableToolbarContent,
 	TableToolbarSearch,
 	Link,
+	Button,
 	Loading,
+	Grid,
+	Row,
+	Column,
 } from "carbon-components-react";
 import useSWR from "swr";
+import { useCookies } from "react-cookie";
 import {
 	fetcher,
 	activePatientWithDrugOrders,
 	prescribedDrugOrders,
-	stockRoomURL,
 } from "../../utils/api-utils";
 import {
 	locationCookieName,
 	dispenseHeaders,
 	activePatients,
 } from "../../../constants";
-import { useCookies } from "react-cookie";
 import CustomModal from "../../components/CustomModal";
+import AddItemModal from "./add-inventory-item/add-item-modal";
 import styles from "./dispense.module.scss";
-import saveDispense from "../../service/save-dispense";
+import {
+	saveDispense,
+	saveDispenseForAdhocDispense,
+} from "../../service/save-dispense";
 import DrugItemDetails from "./drug-item-details";
 import { getDrugItems, getMappedDrugs } from "./drug-mapper";
 import { ResponseNotification } from "../../components/notifications/response-notification";
 import { useStockRoomContext } from "../../context/item-stock-context";
 import bahmniEncounterPost from "../../service/bahmni-encounter";
 
-export const DispensePage = () => {
+const DispensePage = () => {
 	let rows = [];
+
 	const [cookies] = useCookies();
 	const location = cookies[locationCookieName];
 
@@ -50,6 +58,8 @@ export const DispensePage = () => {
 
 	const [searchText, setSearchText] = useState("");
 	const [showModal, setShowModal] = useState(false);
+	const [showModalForAdditionalDispense, setShowModalForAdditionalDispense] =
+		useState(false);
 	const [prescribedDrugs, setPrescribedDrugs] = useState([]);
 	const [patient, setPatient] = useState({});
 	const [modifiedData, setModifiedData] = useState([]);
@@ -72,21 +82,19 @@ export const DispensePage = () => {
 	};
 
 	if (Array.isArray(items)) {
-		rows = items.map((item) => {
-			return {
-				item,
-				id: item.uuid,
-				patientName: item.name,
-				patientId: item.identifier,
-			};
-		});
+		rows = items.map((item) => ({
+			item,
+			id: item.uuid,
+			patientName: item.name,
+			patientId: item.identifier,
+		}));
 	}
 
-	const filteredRows = rows.filter((row) => {
-		return searchText !== ""
+	const filteredRows = rows.filter((row) =>
+		searchText !== ""
 			? row?.patientName?.toLowerCase().includes(searchText?.toLowerCase())
-			: row;
-	});
+			: row
+	);
 
 	const { data: drugItems, error: drugItemsError } = useSWR(
 		showModal && patient.id ? prescribedDrugOrders(patient.id) : "",
@@ -95,7 +103,7 @@ export const DispensePage = () => {
 
 	useEffect(() => {
 		if (drugItems) {
-			const visitDrugOrders = drugItems.visitDrugOrders;
+			const { visitDrugOrders } = drugItems;
 			const drugOrders = [];
 			visitDrugOrders.forEach((visitDrugOrder) => {
 				if (isValid(visitDrugOrder)) {
@@ -139,21 +147,71 @@ export const DispensePage = () => {
 		setShowModal(false);
 	};
 
-	if (items == undefined && inventoryItemError == undefined) return <Loading />;
+	if (items === undefined && inventoryItemError === undefined)
+		return <Loading />;
 
 	if (saveSuccess) {
-		return ResponseNotification("success","Success","Dispense successful", setSaveSuccess);
+		return ResponseNotification(
+			"success",
+			"Success",
+			"Dispense successful",
+			setSaveSuccess
+		);
 	}
 
 	if (saveError) {
-		return ResponseNotification("error","Error","Dispense failed", setSaveError);
+		return ResponseNotification(
+			"error",
+			"Error",
+			"Dispense failed",
+			setSaveError
+		);
 	}
 
+	const handleSaveForAdditionalDispense = async () => {
+		const data = {
+			patientUuid: patient.id,
+			dispense_drugs: modifiedData,
+		};
+		const response = await saveDispenseForAdhocDispense(data, stockRoom);
+		if (response.ok) {
+			setSaveSuccess(true);
+		} else {
+			setSaveError(true);
+		}
+		setShowModalForAdditionalDispense(false);
+	};
+
 	return inventoryItemError ? (
-		<div>{ResponseNotification("error","Error","Something went wrong while fetching URL")}</div>
+		<div>
+			{ResponseNotification(
+				"error",
+				"Error",
+				"Something went wrong while fetching URL"
+			)}
+		</div>
 	) : (
 		<div className={styles.dispenseContainer}>
-			<h5 style={{ paddingBottom: "1rem" }}>{activePatients}</h5>
+			<Grid>
+				<Row>
+					<Column>
+						<h5 style={{ paddingBottom: "1rem" }}>{activePatients}</h5>
+					</Column>
+					<Column sm={3.5}>
+						<Button
+							onClick={() => {
+								setShowModalForAdditionalDispense(true);
+							}}
+							size={"sm"}
+							kind='primary'
+							className={styles.dispenseButton}
+							disabled={false}
+						>
+							Dispense
+						</Button>
+					</Column>
+				</Row>
+			</Grid>
 			<DataTable
 				rows={filteredRows}
 				headers={dispenseHeaders}
@@ -197,7 +255,7 @@ export const DispensePage = () => {
 										<TableRow {...getRowProps({ row })}>
 											{row.cells.map((cell) => (
 												<TableCell key={cell.id}>
-													<Link href="#" onClick={() => handleOnLinkClick(row)}>
+													<Link href='#' onClick={() => handleOnLinkClick(row)}>
 														{cell.value}
 													</Link>
 												</TableCell>
@@ -210,12 +268,13 @@ export const DispensePage = () => {
 					</>
 				)}
 			</DataTable>
+
 			{showModal && (
 				<CustomModal
 					showModal={showModal}
 					subTitle={`Dispense drug for ${patient.name}`}
-					primaryButton="Dispense"
-					secondaryButton="Cancel"
+					primaryButton='Dispense'
+					secondaryButton='Cancel'
 					handleSubmit={handleSave}
 					closeModal={() => setShowModal(false)}
 					invalid={isInvalid}
@@ -229,6 +288,26 @@ export const DispensePage = () => {
 					/>
 				</CustomModal>
 			)}
+			{showModalForAdditionalDispense && (
+				<CustomModal
+					showModal={showModalForAdditionalDispense}
+					subTitle={`Dispense drug for`}
+					primaryButton='Dispense'
+					secondaryButton='Cancel'
+					handleSubmit={handleSaveForAdditionalDispense}
+					closeModal={() => setShowModalForAdditionalDispense(false)}
+					invalid={isInvalid}
+				>
+					<AddItemModal
+						setIsInvalid={setIsInvalid}
+						setModifiedData={setModifiedData}
+						setPatient={setPatient}
+						patient={patient}
+					/>
+				</CustomModal>
+			)}
 		</div>
 	);
 };
+
+export default DispensePage;

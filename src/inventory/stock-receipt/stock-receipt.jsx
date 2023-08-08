@@ -1,56 +1,53 @@
-import React, { useEffect, useState } from 'react';
-import useSWR from 'swr';
-import {
-  DataTable,
-  TextInput,
-  Table,
-  TableHead,
-  TableRow,
-  TableHeader,
-  TableCell,
-  TableBody,
-  Button,
-  Loading,
-  ButtonSet,
-  Grid,
-  Column,
-  Row,
-  ToastNotification,
-  TableContainer,
-  Modal,
-  DatePicker,
-  DatePickerInput,
-  ComboBox,
-} from 'carbon-components-react';
-import { useCookies } from 'react-cookie';
 import { Add16, Subtract16 } from '@carbon/icons-react';
 import {
-  fetcherPost,
-  stockReceiptURL,
-  getRequest,
+  Button,
+  ButtonSet,
+  Column,
+  ComboBox,
+  DataTable,
+  DatePicker,
+  DatePickerInput,
+  Grid,
+  Loading,
+  Modal,
+  Row,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableHeader,
+  TableRow,
+  TextInput,
+} from 'carbon-components-react';
+import React, { useEffect, useState } from 'react';
+import { useCookies } from 'react-cookie';
+import useSWR from 'swr';
+import saveReceipt from '../../service/save-receipt';
+import {
   fetcher,
-  stockRoomURL,
-  inventoryItemURL,
+  fetcherPost,
   invItemURL,
-} from '../utils/api-utils';
-import saveReceipt from '../service/save-receipt';
+  inventoryItemURL,
+  stockReceiptURL,
+  stockRoomURL
+} from '../../utils/api-utils';
 
 import {
   failureMessage,
-  stockReceiptHeaders,
-  successMessage,
-  headers,
   locationCookieName,
-} from '../../constants';
+  stockReceiptHeaders,
+  successMessage
+} from '../../../constants';
 import styles from './stock-receipt.module.scss';
 
+import { ResponseNotification } from '../../components/notifications/response-notification';
+import { getDatePattern } from '../../utils/date-utils';
 import {
   getCalculatedQuantity,
-  getStockReceiptObj,
   getLoadStockObj,
+  getStockReceiptObj,
 } from './eaushadha-response-mapper';
-import { getDatePattern } from '../utils/date-utils';
-import { ResponseNotification } from '../components/notifications/response-notification';
 
 const StockReceipt = () => {
   const [items, setItems] = useState([]);
@@ -237,14 +234,12 @@ const StockReceipt = () => {
   };
 
   const handleComboBoxChange = (rowId, selectedValue) => {
-    setRows((prevRows) => {
-      return prevRows.map((row) => {
+    setRows((prevRows) => prevRows.map((row) => {
         if (row.id === rowId) {
           return { ...row, drugName: selectedValue };
         }
         return row;
-      });
-    });
+      }));
   };
 
   const handleInputChange = (id, field, value) => {
@@ -255,9 +250,7 @@ const StockReceipt = () => {
 
   const currentDate = new Date();
 
-  const filterItems = (menu) => {
-    return menu?.item?.toLowerCase().includes(menu?.inputValue?.toLowerCase());
-  };
+  const filterItems = (menu) => menu?.item?.toLowerCase().includes(menu?.inputValue?.toLowerCase());
 
   return (
     <>
