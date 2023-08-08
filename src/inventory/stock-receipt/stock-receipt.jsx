@@ -19,7 +19,6 @@ import {
   TableHeader,
   TableRow,
   TextInput,
-  ToastNotification,
 } from 'carbon-components-react';
 import React, { useEffect, useState } from 'react';
 import { useCookies } from 'react-cookie';
@@ -235,14 +234,12 @@ const StockReceipt = () => {
   };
 
   const handleComboBoxChange = (rowId, selectedValue) => {
-    setRows((prevRows) => {
-      return prevRows.map((row) => {
+    setRows((prevRows) => prevRows.map((row) => {
         if (row.id === rowId) {
           return { ...row, drugName: selectedValue };
         }
         return row;
-      });
-    });
+      }));
   };
 
   const handleInputChange = (id, field, value) => {
@@ -253,9 +250,7 @@ const StockReceipt = () => {
 
   const currentDate = new Date();
 
-  const filterItems = (menu) => {
-    return menu?.item?.toLowerCase().includes(menu?.inputValue?.toLowerCase());
-  };
+  const filterItems = (menu) => menu?.item?.toLowerCase().includes(menu?.inputValue?.toLowerCase());
 
   return (
     <>

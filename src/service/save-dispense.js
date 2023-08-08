@@ -54,7 +54,7 @@ const saveDispenseForAdhocDispense = async (data, sourceStockRoom) => {
 
 	const itemArray = [];
 	if (data.dispense_drugs && Array.isArray(data.dispense_drugs)) {
-		const promises = data.dispense_drugs.map(async (item) => {
+		const promises = data.dispense_drugs.map((item) => {
 			itemArray.push({
 				item: item.uuid,
 				quantity: item.dispQty,

@@ -19,6 +19,7 @@ import {
 	Column,
 } from "carbon-components-react";
 import useSWR from "swr";
+import { useCookies } from "react-cookie";
 import {
 	fetcher,
 	activePatientWithDrugOrders,
@@ -29,18 +30,20 @@ import {
 	dispenseHeaders,
 	activePatients,
 } from "../../../constants";
-import { useCookies } from "react-cookie";
 import CustomModal from "../../components/CustomModal";
 import AddItemModal from "./add-inventory-item/add-item-modal";
 import styles from "./dispense.module.scss";
-import {saveDispense,saveDispenseForAdhocDispense} from "../../service/save-dispense";
+import {
+	saveDispense,
+	saveDispenseForAdhocDispense,
+} from "../../service/save-dispense";
 import DrugItemDetails from "./drug-item-details";
 import { getDrugItems, getMappedDrugs } from "./drug-mapper";
 import { ResponseNotification } from "../../components/notifications/response-notification";
 import { useStockRoomContext } from "../../context/item-stock-context";
 import bahmniEncounterPost from "../../service/bahmni-encounter";
 
-export const DispensePage = () => {
+const DispensePage = () => {
 	let rows = [];
 
 	const [cookies] = useCookies();
@@ -79,21 +82,19 @@ export const DispensePage = () => {
 	};
 
 	if (Array.isArray(items)) {
-		rows = items.map((item) => {
-			return {
-				item,
-				id: item.uuid,
-				patientName: item.name,
-				patientId: item.identifier,
-			};
-		});
+		rows = items.map((item) => ({
+			item,
+			id: item.uuid,
+			patientName: item.name,
+			patientId: item.identifier,
+		}));
 	}
 
-	const filteredRows = rows.filter((row) => {
-		return searchText !== ""
+	const filteredRows = rows.filter((row) =>
+		searchText !== ""
 			? row?.patientName?.toLowerCase().includes(searchText?.toLowerCase())
-			: row;
-	});
+			: row
+	);
 
 	const { data: drugItems, error: drugItemsError } = useSWR(
 		showModal && patient.id ? prescribedDrugOrders(patient.id) : "",
@@ -102,7 +103,7 @@ export const DispensePage = () => {
 
 	useEffect(() => {
 		if (drugItems) {
-			const visitDrugOrders = drugItems.visitDrugOrders;
+			const { visitDrugOrders } = drugItems;
 			const drugOrders = [];
 			visitDrugOrders.forEach((visitDrugOrder) => {
 				if (isValid(visitDrugOrder)) {
@@ -146,7 +147,8 @@ export const DispensePage = () => {
 		setShowModal(false);
 	};
 
-	if (items == undefined && inventoryItemError == undefined) return <Loading />;
+	if (items === undefined && inventoryItemError === undefined)
+		return <Loading />;
 
 	if (saveSuccess) {
 		return ResponseNotification(
@@ -166,20 +168,19 @@ export const DispensePage = () => {
 		);
 	}
 
- const handleSaveForAdditionalDispense = async () => {
-        const data = {
-            patientUuid: patient.id,
-            dispense_drugs: modifiedData,
-        };
-        const response = await saveDispenseForAdhocDispense(data, stockRoom);
-        		if (response.ok) {
-        			setSaveSuccess(true);
-
-        		} else {
-        			setSaveError(true);
-        		}
-        		setShowModalForAdditionalDispense(false);
-    };
+	const handleSaveForAdditionalDispense = async () => {
+		const data = {
+			patientUuid: patient.id,
+			dispense_drugs: modifiedData,
+		};
+		const response = await saveDispenseForAdhocDispense(data, stockRoom);
+		if (response.ok) {
+			setSaveSuccess(true);
+		} else {
+			setSaveError(true);
+		}
+		setShowModalForAdditionalDispense(false);
+	};
 
 	return inventoryItemError ? (
 		<div>
@@ -202,8 +203,8 @@ export const DispensePage = () => {
 								setShowModalForAdditionalDispense(true);
 							}}
 							size={"sm"}
-							kind="primary"
-							style={{ width: "auto", padding: "0.5rem 1rem", background: "#007d79" }}
+							kind='primary'
+							className={styles.dispenseButton}
 							disabled={false}
 						>
 							Dispense
@@ -254,7 +255,7 @@ export const DispensePage = () => {
 										<TableRow {...getRowProps({ row })}>
 											{row.cells.map((cell) => (
 												<TableCell key={cell.id}>
-													<Link href="#" onClick={() => handleOnLinkClick(row)}>
+													<Link href='#' onClick={() => handleOnLinkClick(row)}>
 														{cell.value}
 													</Link>
 												</TableCell>
@@ -272,8 +273,8 @@ export const DispensePage = () => {
 				<CustomModal
 					showModal={showModal}
 					subTitle={`Dispense drug for ${patient.name}`}
-					primaryButton="Dispense"
-					secondaryButton="Cancel"
+					primaryButton='Dispense'
+					secondaryButton='Cancel'
 					handleSubmit={handleSave}
 					closeModal={() => setShowModal(false)}
 					invalid={isInvalid}
@@ -291,15 +292,22 @@ export const DispensePage = () => {
 				<CustomModal
 					showModal={showModalForAdditionalDispense}
 					subTitle={`Dispense drug for`}
-					primaryButton="Dispense"
-					secondaryButton="Cancel"
+					primaryButton='Dispense'
+					secondaryButton='Cancel'
 					handleSubmit={handleSaveForAdditionalDispense}
 					closeModal={() => setShowModalForAdditionalDispense(false)}
 					invalid={isInvalid}
 				>
-					<AddItemModal setIsInvalid={setIsInvalid} setModifiedData={setModifiedData} setPatient = {setPatient} patient ={patient}/>
+					<AddItemModal
+						setIsInvalid={setIsInvalid}
+						setModifiedData={setModifiedData}
+						setPatient={setPatient}
+						patient={patient}
+					/>
 				</CustomModal>
 			)}
 		</div>
 	);
 };
+
+export default DispensePage;
