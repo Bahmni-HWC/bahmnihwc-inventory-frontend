@@ -172,6 +172,7 @@ export const InventoryLandingPage = () => {
 					rows={getItemDetails(selectedProductName)}
 					closeModal={() => setShowModal(false)}
 					stickyColumnName={"productName"}
+					title={`Stock Details for ${selectedProductName}`}
 				/>
 			)}
 		</div>
