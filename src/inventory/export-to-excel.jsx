@@ -13,5 +13,12 @@ export const exportToExcel = (rows) => {
   const workbook = XLSXUtils.book_new();
   XLSXUtils.book_append_sheet(workbook, worksheet, "Inventory Data");
 
+  const columnKeys = Object.keys(exportData[0]);
+  const columnWidths = columnKeys.map(key => ({
+    wch: Math.max(key.length, ...exportData.map(row => (row[key] || '').toString().length)) + 2
+  }));
+
+  worksheet['!cols'] = columnWidths;
+
   XLSXWriteFile(workbook, fileName);
 };
