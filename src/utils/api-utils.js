@@ -1,7 +1,7 @@
 export const invItemURLByStockroom = (locationName) =>
 	`/openmrs/ws/rest/v2/inventory/itemStock?stockroom_uuid=${locationName}`;
-export const inventoryItemURL=()=>`/openmrs/ws/rest/v2/inventory/item?limit=1&v=full`;
-export const invItemURL=(limit)=>`/openmrs/ws/rest/v2/inventory/item?limit=${limit}&v=full`;
+export const inventoryItemURL = () => `/openmrs/ws/rest/v2/inventory/item?limit=1&v=full`;
+export const invItemURL = (limit) => `/openmrs/ws/rest/v2/inventory/item?limit=${limit}&v=full`;
 export const activePatientWithDrugOrders = (locationUuid) =>
 	`/openmrs/ws/rest/v1/bahmnicore/sql?location_uuid=${locationUuid}&q=emrapi.sqlSearch.activePatientsWithDrugOrders&v=full`;
 export const fetcher = (url) =>
@@ -21,9 +21,9 @@ const timeoutId = setTimeout(() => {
 
 export const fetcherPost = (url, data) =>
 	fetch(url, {
-		method: "POST",
+		method: 'POST',
 		headers: {
-			"Content-Type": "application/json",
+			'Content-Type': 'application/json',
 		},
 		body: JSON.stringify(data),
 		signal: controller.signal,
@@ -35,27 +35,29 @@ export const fetcherPost = (url, data) =>
 		return response.json();
 	});
 
-export const postRequest = (url, data) =>
+export const postRequest = (url, data) => {
+	console.log('postrequest', url, data);
 	fetch(`${url}`, {
-		method: "post",
+		method: 'post',
 		headers: {
-			"Content-Type": "application/json",
-			"x-access-token": "token-value",
+			'Content-Type': 'application/json',
+			'x-access-token': 'token-value',
 		},
 		body: JSON.stringify(data),
 	});
+};
 export const getRequest = (url) =>
-  fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  }).then((response) => {
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    return response.json();
-  });
+	fetch(url, {
+		method: 'GET',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+	}).then((response) => {
+		if (!response.ok) {
+			throw new Error(`HTTP error! Status: ${response.status}`);
+		}
+		return response.json();
+	});
 export const swrOptions = {
 	revalidateIfStale: false,
 	revalidateOnFocus: false,
@@ -66,12 +68,14 @@ export const stockRoomURL = (locationName) =>
 
 export const prescribedDrugOrders = (patientUuid) =>
 	`/openmrs/ws/rest/v1/bahmnicore/drugOrders/prescribedAndActive?getEffectiveOrdersOnly=false&getOtherActive=true&numberOfVisits=1&patientUuid=${patientUuid}&preferredLocale=en`;
-export const stockReceiptURL = () =>
-	"/openmrs/ws/rest/v1/eaushadha/stock-receipt";
+export const stockReceiptURL = () => '/openmrs/ws/rest/v1/eaushadha/stock-receipt';
 
-export const dispenseConceptURL = '/openmrs/ws/rest/v1/concept?q=Dispensed&limit=1'
-export const stockOperationURL = "/openmrs/ws/rest/v2/inventory/stockOperation"
-export const stockOperationTypeURL = (stockOperationType) => `/openmrs/ws/rest/v2/inventory/stockOperationType?v=full&q=${stockOperationType}`
-export const inventoryItemByNameURL = (itemName) => `/openmrs/ws/rest/v2/inventory/item?v=full&q=${itemName}`
-export const sessionURL = '/openmrs/ws/rest/v1/session?v=custom:(uuid)'
-export const getAllPatient = (locationUuid) => `/openmrs/ws/rest/v1/bahmni/search/patient/lucene?filterOnAllIdentifiers=true&loginLocationUuid=${locationUuid}`
+export const dispenseConceptURL = '/openmrs/ws/rest/v1/concept?q=Dispensed&limit=1';
+export const stockOperationURL = '/openmrs/ws/rest/v2/inventory/stockOperation';
+export const stockOperationTypeURL = (stockOperationType) =>
+	`/openmrs/ws/rest/v2/inventory/stockOperationType?v=full&q=${stockOperationType}`;
+export const inventoryItemByNameURL = (itemName) =>
+	`/openmrs/ws/rest/v2/inventory/item?v=full&q=${itemName}`;
+export const sessionURL = '/openmrs/ws/rest/v1/session?v=custom:(uuid)';
+export const getAllPatient = (locationUuid) =>
+	`/openmrs/ws/rest/v1/bahmni/search/patient/lucene?filterOnAllIdentifiers=true&loginLocationUuid=${locationUuid}`;
