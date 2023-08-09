@@ -29,8 +29,6 @@ const InventoryMenu = () => {
 
 	totalInventoryItemsInStockroom =invItems?.length;
 
-	console.log(totalInventoryItemsInStockroom);
-
 	const { data: items, error: inventoryItemError } = useSWR(
 		stockRoom ? invItemURLByStockroom(stockRoom.results[0].uuid,totalInventoryItemsInStockroom) : '',
 		fetcher
