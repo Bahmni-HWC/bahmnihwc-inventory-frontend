@@ -100,10 +100,10 @@ const StockReceipt = () => {
   const [isSaveButtonDisabled, setSaveButtonDisabled] = useState(true);
 
   useEffect(() => {
-    const hasEmptyFields = rows.some(
-      (row) => !row.drugName || !row.batchNo || !row.expiryDate || !row.totalQuantity,
+    const hasEmptyOrNegativeFields = rows.some(
+      (row) => !row.drugName || !row.batchNo || !row.expiryDate || !row.totalQuantity || row.totalQuantity <= 0,
     );
-    setSaveButtonDisabled(hasEmptyFields);
+    setSaveButtonDisabled(hasEmptyOrNegativeFields);
   }, [rows]);
 
   useEffect(() => {
