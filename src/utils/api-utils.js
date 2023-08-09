@@ -1,5 +1,5 @@
-export const invItemURLByStockroom = (locationName) =>
-	`/openmrs/ws/rest/v2/inventory/itemStock?stockroom_uuid=${locationName}`;
+export const invItemURLByStockroom = (locationUuid,limit) =>
+	`/openmrs/ws/rest/v2/inventory/itemStock?stockroom_uuid=${locationUuid}&limit=${limit}`;
 export const inventoryItemURL=()=>`/openmrs/ws/rest/v2/inventory/item?limit=1&v=full`;
 export const invItemURL=(limit)=>`/openmrs/ws/rest/v2/inventory/item?limit=${limit}&v=full`;
 export const activePatientWithDrugOrders = (locationUuid) =>

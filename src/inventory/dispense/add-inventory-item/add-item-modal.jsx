@@ -40,14 +40,16 @@ const AddItemModal = (props) => {
 
 	useEffect(() => {
 		if (itemStock) {
-			const invItemArray = itemStock.map((itemStock) => ({
-				id: itemStock.item.uuid,
-				drugName: itemStock.item.name,
-				avlQty: itemStock.quantity,
-				dispQty: 0,
-				invalid: false,
-				uuid: itemStock.item.uuid,
-			}));
+			const invItemArray = itemStock.map((itemStock) => {
+				return {
+					id: itemStock.item.uuid,
+					drugName: itemStock.item.name,
+					avlQty: itemStock.quantity,
+					dispQty: 0,
+					invalid: false,
+					uuid: itemStock.item.uuid,
+				};
+			});
 			setInventoryItem(invItemArray);
 		}
 	}, [itemStock]);

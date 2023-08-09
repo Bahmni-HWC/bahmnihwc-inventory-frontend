@@ -1,6 +1,7 @@
 import {
 	Button,
 	DataTable,
+	Link,
 	Table,
 	TableBody,
 	TableCell,
@@ -12,7 +13,8 @@ import {
 	TableToolbarSearch,
 } from 'carbon-components-react';
 import React, { useEffect, useState } from 'react';
-import { headers } from '../../constants';
+import { inventoryDetailItemsHeaders, inventoryHeaders } from '../../constants';
+import TableModal from '../components/BasicTableModal';
 import { useItemStockContext } from '../context/item-stock-context';
 import { exportToExcel } from './export-to-excel';
 import styles from './inventory.module.scss';
@@ -21,6 +23,8 @@ const InventoryLandingPage = () => {
 	const { itemStock } = useItemStockContext();
 
 	const [rows, setRows] = useState([]);
+	const [showModal, setShowModal] = useState(false);
+	const [selectedProductName, setSelectedProductName] = useState('');
 
 	const [searchText, setSearchText] = useState('');
 
@@ -32,33 +36,42 @@ const InventoryLandingPage = () => {
 	useEffect(() => {
 		if (itemStock?.length > 0) {
 			const updatedRows = [];
-			for (let index = 0; index < itemStock.length; index++) {
-				const item = itemStock[index];
-				updatedRows.push(
-					...item.details.map((detail, detailIndex) => {
-						const { expiration } = detail;
-						const expirationDate = new Date(expiration);
-						const formattedExpirationDate = `${expirationDate
-							.getDate()
-							.toString()
-							.padStart(2, '0')}-${(expirationDate.getMonth() + 1)
-							.toString()
-							.padStart(2, '0')}-${expirationDate.getFullYear()}`;
-						return {
-							id: `${index}-${detail.batchNumber}-${detailIndex}`,
-							productName: item.item.name,
-							quantity: detail.quantity ?? 0,
-							expiration: expiration ? formattedExpirationDate : 'No Expiration Date',
-							batchNumber: detail.batchNumber ?? 'No Batch Number',
-						};
-					})
-				);
-			}
+
+			updatedRows.push(
+				...itemStock.map((item, index) => ({
+					id: `${index}`,
+					productName: item.item.name,
+					quantity: item.quantity ?? 0,
+				}))
+			);
 			setRows(updatedRows);
 		} else {
 			setRows([]);
 		}
 	}, [itemStock]);
+
+	const getItemDetails = (productName) => {
+		if (itemStock?.length > 0) {
+			const item = itemStock.find((itemObject) => itemObject.item.name === productName);
+			const updatedRows = item.details.map((detail, detailIndex) => {
+				const { expiration } = detail;
+				const expirationDate = new Date(expiration);
+				const formattedExpirationDate = `${expirationDate.getDate().toString().padStart(2, '0')}-${(
+					expirationDate.getMonth() + 1
+				)
+					.toString()
+					.padStart(2, '0')}-${expirationDate.getFullYear()}`;
+				return {
+					id: `${detail.batchNumber}-${detailIndex}`,
+					productName: item.item.name,
+					quantity: detail.quantity ?? 0,
+					expiration: expiration ? formattedExpirationDate : 'No Expiration Date',
+					batchNumber: detail.batchNumber ?? 'No Batch Number',
+				};
+			});
+			return updatedRows;
+		}
+	};
 
 	const filteredRows = rows.filter((row) =>
 		searchText !== '' ? row?.productName?.toLowerCase().includes(searchText?.toLowerCase()) : row
@@ -66,9 +79,14 @@ const InventoryLandingPage = () => {
 
 	const isSortable = (key) => key === 'productName';
 
+	const handleClick = (productName) => {
+		setSelectedProductName(productName);
+		setShowModal(true);
+	};
+
 	return (
 		<div className={styles.inventoryContainer}>
-			<DataTable rows={filteredRows} headers={headers}>
+			<DataTable rows={filteredRows} headers={inventoryHeaders}>
 				{({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
 					<>
 						<TableContainer>
@@ -114,7 +132,13 @@ const InventoryLandingPage = () => {
 														} 
 												}`}
 													>
-														{cell.value}
+														{cell.id.includes('productName') ? (
+															<Link href='#' onClick={() => handleClick(cell.value)}>
+																{cell.value}
+															</Link>
+														) : (
+															<>{cell.value}</>
+														)}
 													</TableCell>
 												))}
 											</TableRow>
@@ -126,6 +150,16 @@ const InventoryLandingPage = () => {
 					</>
 				)}
 			</DataTable>
+			{showModal && (
+				<TableModal
+					showModal={showModal}
+					headers={inventoryDetailItemsHeaders}
+					rows={getItemDetails(selectedProductName)}
+					closeModal={() => setShowModal(false)}
+					stickyColumnName={'productName'}
+					title={`Stock Details for ${selectedProductName}`}
+				/>
+			)}
 		</div>
 	);
 };

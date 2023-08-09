@@ -21,6 +21,17 @@ const InventoryMenu = () => {
 		fetcher
 	);
 
+	let totalInventoryItemsInStockroom = 1;
+
+	const { data: invItems, error: inventoryItemsError } = useSWR(
+		stockRoom
+			? invItemURLByStockroom(stockRoom.results[0].uuid, totalInventoryItemsInStockroom)
+			: '',
+		fetcher
+	);
+
+	totalInventoryItemsInStockroom = invItems?.length;
+
 	const { data: items, error: inventoryItemError } = useSWR(
 		stockRoom ? invItemURLByStockroom(stockRoom.results[0].uuid) : '',
 		fetcher

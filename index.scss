@@ -23,3 +23,24 @@
 		white-space: normal;
 	}
 }
+
+#combo-box-drug-item .bx--list-box__menu-item {
+  height: auto;
+  .bx--list-box__menu-item__option {
+    height: auto;
+    white-space: normal;
+  }
+}
+
+// Overwriting styles for table modal
+#modal-table-container {
+  overflow-y: auto;
+  .bx--data-table tbody tr td {
+    min-width: 8rem;
+    padding: 0.5rem 1rem;
+  }
+
+  @media all and (min-width: 768px) {
+    max-height: 25rem;
+  }
+}
