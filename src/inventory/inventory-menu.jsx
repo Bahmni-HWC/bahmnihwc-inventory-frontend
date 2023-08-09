@@ -19,9 +19,20 @@ const InventoryMenu = () => {
 		stockRoomURL(cookies[locationCookieName]?.name.trim()),
 		fetcher
 	);
+	
+	let totalInventoryItemsInStockroom=1
+
+	const { data: invItems, error: inventoryItemsError } = useSWR(
+		stockRoom ? invItemURLByStockroom(stockRoom.results[0].uuid,totalInventoryItemsInStockroom) : '',
+		fetcher
+	);
+
+	totalInventoryItemsInStockroom =invItems?.length;
+
+	console.log(totalInventoryItemsInStockroom);
 
 	const { data: items, error: inventoryItemError } = useSWR(
-		stockRoom ? invItemURLByStockroom(stockRoom.results[0].uuid) : '',
+		stockRoom ? invItemURLByStockroom(stockRoom.results[0].uuid,totalInventoryItemsInStockroom) : '',
 		fetcher
 	);
 
