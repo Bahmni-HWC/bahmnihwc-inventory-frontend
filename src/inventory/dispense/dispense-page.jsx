@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
 	DataTable,
 	TableContainer,
@@ -17,33 +17,23 @@ import {
 	Grid,
 	Row,
 	Column,
-} from "carbon-components-react";
-import useSWR from "swr";
-import { useCookies } from "react-cookie";
-import {
-	fetcher,
-	activePatientWithDrugOrders,
-	prescribedDrugOrders,
-} from "../../utils/api-utils";
-import {
-	locationCookieName,
-	dispenseHeaders,
-	activePatients,
-} from "../../../constants";
-import CustomModal from "../../components/CustomModal";
-import AddItemModal from "./add-inventory-item/add-item-modal";
-import styles from "./dispense.module.scss";
-import {
-	saveDispense,
-	saveDispenseForAdhocDispense,
-} from "../../service/save-dispense";
-import DrugItemDetails from "./drug-item-details";
-import { getDrugItems, getMappedDrugs } from "./drug-mapper";
-import { ResponseNotification } from "../../components/notifications/response-notification";
-import { useStockRoomContext } from "../../context/item-stock-context";
-import bahmniEncounterPost from "../../service/bahmni-encounter";
+} from 'carbon-components-react';
+import useSWR from 'swr';
+import { useCookies } from 'react-cookie';
+import { fetcher, activePatientWithDrugOrders, prescribedDrugOrders } from '../../utils/api-utils';
+import { locationCookieName, dispenseHeaders, activePatients } from '../../../constants';
+import CustomModal from '../../components/CustomModal';
+import AddItemModal from './add-inventory-item/add-item-modal';
+import styles from './dispense.module.scss';
+import { saveDispense, saveDispenseForAdhocDispense } from '../../service/save-dispense';
+import DrugItemDetails from './drug-item-details';
+import { getDrugItems, getMappedDrugs } from './drug-mapper';
+import { ResponseNotification } from '../../components/notifications/response-notification';
+import { useStockRoomContext } from '../../context/item-stock-context';
+import bahmniEncounterPost from '../../service/bahmni-encounter';
 
-const DispensePage = () => {
+const DispensePage = (props) => {
+	const { setReloadData } = props;
 	let rows = [];
 
 	const [cookies] = useCookies();
@@ -56,10 +46,9 @@ const DispensePage = () => {
 
 	const { stockRoom } = useStockRoomContext();
 
-	const [searchText, setSearchText] = useState("");
+	const [searchText, setSearchText] = useState('');
 	const [showModal, setShowModal] = useState(false);
-	const [showModalForAdditionalDispense, setShowModalForAdditionalDispense] =
-		useState(false);
+	const [showModalForAdditionalDispense, setShowModalForAdditionalDispense] = useState(false);
 	const [prescribedDrugs, setPrescribedDrugs] = useState([]);
 	const [patient, setPatient] = useState({});
 	const [modifiedData, setModifiedData] = useState([]);
@@ -68,14 +57,15 @@ const DispensePage = () => {
 	const [saveError, setSaveError] = useState(false);
 
 	useEffect(() => {
-		if (!showModal) {
-			setSearchText("");
+		if (!showModal && !showModalForAdditionalDispense) {
+			setSearchText('');
 			setIsInvalid(false);
 			setModifiedData([]);
 			setPrescribedDrugs([]);
 			setPatient({});
+			setReloadData(false);
 		}
-	}, [showModal]);
+	}, [showModal, showModalForAdditionalDispense]);
 
 	const handleSearch = (event) => {
 		setSearchText(event.target.value);
@@ -91,13 +81,11 @@ const DispensePage = () => {
 	}
 
 	const filteredRows = rows.filter((row) =>
-		searchText !== ""
-			? row?.patientName?.toLowerCase().includes(searchText?.toLowerCase())
-			: row
+		searchText !== '' ? row?.patientName?.toLowerCase().includes(searchText?.toLowerCase()) : row
 	);
 
 	const { data: drugItems, error: drugItemsError } = useSWR(
-		showModal && patient.id ? prescribedDrugOrders(patient.id) : "",
+		showModal && patient.id ? prescribedDrugOrders(patient.id) : '',
 		fetcher
 	);
 
@@ -122,7 +110,7 @@ const DispensePage = () => {
 		}
 		return false;
 	};
-	const isSortable = (key) => key === "patientName";
+	const isSortable = (key) => key === 'patientName';
 
 	const handleOnLinkClick = (patientDetails) => {
 		setShowModal(true);
@@ -131,7 +119,6 @@ const DispensePage = () => {
 			name: patientDetails.cells[1].value,
 		});
 	};
-
 	const handleSave = async () => {
 		const data = {
 			patientUuid: patient.id,
@@ -139,6 +126,7 @@ const DispensePage = () => {
 		};
 		const response = await saveDispense(data, stockRoom);
 		if (response.ok) {
+			setReloadData(true);
 			setSaveSuccess(true);
 			const bahmniEncoutnerResponse = await bahmniEncounterPost(data, location);
 		} else {
@@ -147,26 +135,7 @@ const DispensePage = () => {
 		setShowModal(false);
 	};
 
-	if (items === undefined && inventoryItemError === undefined)
-		return <Loading />;
-
-	if (saveSuccess) {
-		return ResponseNotification(
-			"success",
-			"Success",
-			"Dispense successful",
-			setSaveSuccess
-		);
-	}
-
-	if (saveError) {
-		return ResponseNotification(
-			"error",
-			"Error",
-			"Dispense failed",
-			setSaveError
-		);
-	}
+	if (items === undefined && inventoryItemError === undefined) return <Loading />;
 
 	const handleSaveForAdditionalDispense = async () => {
 		const data = {
@@ -175,6 +144,7 @@ const DispensePage = () => {
 		};
 		const response = await saveDispenseForAdhocDispense(data, stockRoom);
 		if (response.ok) {
+			setReloadData(true);
 			setSaveSuccess(true);
 		} else {
 			setSaveError(true);
@@ -182,27 +152,24 @@ const DispensePage = () => {
 		setShowModalForAdditionalDispense(false);
 	};
 
-	return inventoryItemError ? (
-		<div>
-			{ResponseNotification(
-				"error",
-				"Error",
-				"Something went wrong while fetching URL"
-			)}
-		</div>
-	) : (
+	return (
 		<div className={styles.dispenseContainer}>
 			<Grid>
 				<Row>
 					<Column>
-						<h5 style={{ paddingBottom: "1rem" }}>{activePatients}</h5>
+						<h5 style={{ paddingBottom: '1rem' }}>{activePatients}</h5>
+						{saveSuccess &&
+							ResponseNotification('success', 'Success', 'Dispense successful', setSaveSuccess)}
+						{saveError ||
+							(inventoryItemError &&
+								ResponseNotification('error', 'Error', 'Dispense failed', setSaveError))}
 					</Column>
 					<Column sm={3.5}>
 						<Button
 							onClick={() => {
 								setShowModalForAdditionalDispense(true);
 							}}
-							size={"sm"}
+							size={'sm'}
 							kind='primary'
 							className={styles.dispenseButton}
 							disabled={false}
@@ -212,20 +179,13 @@ const DispensePage = () => {
 					</Column>
 				</Row>
 			</Grid>
-			<DataTable
-				rows={filteredRows}
-				headers={dispenseHeaders}
-				stickyHeader={true}
-			>
+			<DataTable rows={filteredRows} headers={dispenseHeaders} stickyHeader={true}>
 				{({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
 					<>
 						<TableContainer>
-							<TableToolbar style={{ width: "14.5rem" }}>
-								<TableToolbarContent style={{ justifyContent: "flex-start" }}>
-									<TableToolbarSearch
-										value={searchText}
-										onChange={handleSearch}
-									/>
+							<TableToolbar style={{ width: '14.5rem' }}>
+								<TableToolbarContent style={{ justifyContent: 'flex-start' }}>
+									<TableToolbarSearch value={searchText} onChange={handleSearch} />
 								</TableToolbarContent>
 							</TableToolbar>
 							<Table {...getTableProps()}>
@@ -245,7 +205,7 @@ const DispensePage = () => {
 								</TableHead>
 								<TableBody>
 									{rows.length === 0 && (
-										<TableRow style={{ fontSize: "20px" }}>
+										<TableRow style={{ fontSize: '20px' }}>
 											<TableCell colSpan={headers.length}>
 												No active patients with drug orders
 											</TableCell>

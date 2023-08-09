@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { Tabs, Tab, Loading } from 'carbon-components-react';
 import { useCookies } from 'react-cookie';
-import useSWR from 'swr';
-import { InventoryLandingPage } from './inventory-landing-page';
+import useSWR, { mutate } from 'swr';
+import InventoryLandingPage from './inventory-landing-page';
 import { getLocationName, inventoryMenu, locationCookieName } from '../../constants';
 import DispensePage from './dispense/dispense-page';
 import StockReceipt from './stock-receipt/stock-receipt';
@@ -14,6 +14,7 @@ const InventoryMenu = () => {
 	const [cookies] = useCookies();
 	const { setItemStock, setItemStockError } = useItemStockContext();
 	const { setStockRoom, setStockRoomError } = useStockRoomContext();
+	const [reloadData, setReloadData] = React.useState(false);
 
 	const { data: stockRoom, error: stockRoomError } = useSWR(
 		stockRoomURL(cookies[locationCookieName]?.name.trim()),
@@ -24,6 +25,12 @@ const InventoryMenu = () => {
 		stockRoom ? invItemURLByStockroom(stockRoom.results[0].uuid) : '',
 		fetcher
 	);
+
+	useEffect(() => {
+		if (reloadData) {
+			mutate(invItemURLByStockroom(stockRoom.results[0].uuid));
+		}
+	}, [reloadData]);
 
 	useEffect(() => {
 		if (items) {
@@ -56,10 +63,10 @@ const InventoryMenu = () => {
 					<InventoryLandingPage />
 				</Tab>
 				<Tab label='Stock Receipt'>
-					<StockReceipt />
+					<StockReceipt setReloadData={setReloadData} />
 				</Tab>
 				<Tab label={inventoryMenu[1]}>
-					<DispensePage />
+					<DispensePage setReloadData={setReloadData} />
 				</Tab>
 			</Tabs>
 		</div>

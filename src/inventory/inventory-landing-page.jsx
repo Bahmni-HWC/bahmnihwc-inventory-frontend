@@ -10,21 +10,19 @@ import {
 	TableRow,
 	TableToolbarContent,
 	TableToolbarSearch,
-} from "carbon-components-react";
-import React, { useEffect, useState } from "react";
-import { headers } from "../../constants";
-import { useItemStockContext } from "../context/item-stock-context";
-import { exportToExcel } from "./export-to-excel";
-import { getFormattedDate } from '../utils/date-utils';
-import { useCookies } from "react-cookie";
-import styles from "./inventory.module.scss";
+} from 'carbon-components-react';
+import React, { useEffect, useState } from 'react';
+import { headers } from '../../constants';
+import { useItemStockContext } from '../context/item-stock-context';
+import { exportToExcel } from './export-to-excel';
+import styles from './inventory.module.scss';
 
-export const InventoryLandingPage = () => {
+const InventoryLandingPage = () => {
 	const { itemStock } = useItemStockContext();
 
 	const [rows, setRows] = useState([]);
 
-	const [searchText, setSearchText] = useState("");
+	const [searchText, setSearchText] = useState('');
 
 	const handleSearch = (event) => {
 		setSearchText(event.target.value);
@@ -32,37 +30,41 @@ export const InventoryLandingPage = () => {
 	const handleExportToExcel = () => exportToExcel(filteredRows);
 
 	useEffect(() => {
-        if (itemStock?.length > 0) {
-            for (let index = 0; index < itemStock.length; index++) {
-                const item = itemStock[index];
-                const updatedRows = item.details.map((detail, detailIndex) => {
-                    const expiration = detail.expiration;
-                    const expirationDate = new Date(expiration);
-                    const formattedExpirationDate = `${expirationDate.getDate().toString().padStart(2, "0")}-${(expirationDate.getMonth() + 1)
-                        .toString()
-                        .padStart(2, "0")}-${expirationDate.getFullYear()}`;
-                    return {
-                        id: `${index}-${detail.batchNumber}-${detailIndex}`,
-                        productName: item.item.name,
-                        quantity: detail.quantity ?? 0,
-                        expiration: expiration ? formattedExpirationDate : "No Expiration Date",
-                        batchNumber: detail.batchNumber ?? "No Batch Number",
-                      };
-                })
-                setRows((prevState) => {
-                    return [...prevState, ...updatedRows]
-                });
-              }
-            }
-    }, [itemStock])
+		if (itemStock?.length > 0) {
+			const updatedRows = [];
+			for (let index = 0; index < itemStock.length; index++) {
+				const item = itemStock[index];
+				updatedRows.push(
+					...item.details.map((detail, detailIndex) => {
+						const { expiration } = detail;
+						const expirationDate = new Date(expiration);
+						const formattedExpirationDate = `${expirationDate
+							.getDate()
+							.toString()
+							.padStart(2, '0')}-${(expirationDate.getMonth() + 1)
+							.toString()
+							.padStart(2, '0')}-${expirationDate.getFullYear()}`;
+						return {
+							id: `${index}-${detail.batchNumber}-${detailIndex}`,
+							productName: item.item.name,
+							quantity: detail.quantity ?? 0,
+							expiration: expiration ? formattedExpirationDate : 'No Expiration Date',
+							batchNumber: detail.batchNumber ?? 'No Batch Number',
+						};
+					})
+				);
+			}
+			setRows(updatedRows);
+		} else {
+			setRows([]);
+		}
+	}, [itemStock]);
 
 	const filteredRows = rows.filter((row) =>
-		searchText !== ""
-			? row?.productName?.toLowerCase().includes(searchText?.toLowerCase())
-			: row
+		searchText !== '' ? row?.productName?.toLowerCase().includes(searchText?.toLowerCase()) : row
 	);
 
-	const isSortable = (key) => key === "productName";
+	const isSortable = (key) => key === 'productName';
 
 	return (
 		<div className={styles.inventoryContainer}>
@@ -71,25 +73,14 @@ export const InventoryLandingPage = () => {
 					<>
 						<TableContainer>
 							<TableToolbarContent className={styles.tableToolbarContent}>
-								<TableToolbarSearch
-									value={searchText}
-									onChange={handleSearch}
-								/>
+								<TableToolbarSearch value={searchText} onChange={handleSearch} />
 								{rows.length > 0 && (
-									<Button
-										onClick={handleExportToExcel}
-										kind="tertiary"
-										size="sm"
-									>
+									<Button onClick={handleExportToExcel} kind='tertiary' size='sm'>
 										Export To Excel
 									</Button>
 								)}
 							</TableToolbarContent>
-							<Table
-								{...getTableProps()}
-								useZebraStyles={true}
-								className={styles.table}
-							>
+							<Table {...getTableProps()} useZebraStyles={true} className={styles.table}>
 								<TableHead>
 									<TableRow>
 										{headers.map((header) => (
@@ -98,11 +89,7 @@ export const InventoryLandingPage = () => {
 													header,
 													isSortable: isSortable(header.key),
 												})}
-												className={
-													header.key === "productName"
-														? styles.stickyColumn
-														: ""
-												}
+												className={header.key === 'productName' ? styles.stickyColumn : ''}
 											>
 												{header.header}
 											</TableHeader>
@@ -111,7 +98,7 @@ export const InventoryLandingPage = () => {
 								</TableHead>
 								<TableBody>
 									{rows.length === 0 ? (
-										<TableRow style={{ fontSize: "20px" }}>
+										<TableRow style={{ fontSize: '20px' }}>
 											<TableCell colSpan={headers.length}>
 												Currently there are no stocks available
 											</TableCell>
@@ -123,9 +110,7 @@ export const InventoryLandingPage = () => {
 													<TableCell
 														key={cell.id}
 														className={`${
-															cell.id.includes("productName")
-																? styles.stickyColumn
-																: ""
+															cell.id.includes('productName') ? styles.stickyColumn : ''
 														} 
 												}`}
 													>
@@ -144,3 +129,5 @@ export const InventoryLandingPage = () => {
 		</div>
 	);
 };
+
+export default InventoryLandingPage;
