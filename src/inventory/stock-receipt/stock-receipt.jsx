@@ -62,20 +62,16 @@ const StockReceipt = () => {
   const [onFailure, setOnFailure] = useState(false);
   const [stockReceiptError, setStockReceiptError] = useState();
   const [stockEmptyResonseMessage, setStockEmptyResonseMessage] = useState(false);
-
-  const { data: eaushdhaResponse, error } = useSWR(
-    stockIntakeButtonClick ? stockReceiptURL : '',
-    (url) => fetcherPost(url, { ouid: outwardNumber }),
-  );
-
+  const [showModal, setShowModal] = useState(false);
+  const [isSaveButtonDisabled, setSaveButtonDisabled] = useState(true);
   const [cookies] = useCookies();
+  const currentDate = new Date();
+  let dropdownItems = [];
 
   const { data: stockRoom, error: stockRoomError } = useSWR(
     stockRoomURL(cookies[locationCookieName]?.name.trim()),
     fetcher,
   );
-
-  let dropdownItems = [];
 
   const { data: inventoryItems, error: inventoryItemsError } = useSWR(inventoryItemURL(), fetcher);
 
@@ -95,20 +91,34 @@ const StockReceipt = () => {
     { id: 1, drugName: '', batchNo: '', expiryDate: '', quantity: 0, totalQuantity: 0 },
   ]);
 
-  const [showModal, setShowModal] = useState(false);
-
-  const [isSaveButtonDisabled, setSaveButtonDisabled] = useState(true);
-
+  useEffect(() => {
+    if (stockIntakeButtonClick) {
+      const fetchData = async () => {
+        console.log(stockReceiptURL);
+        try {
+          const response = await fetcherPost(stockReceiptURL(), { ouid: outwardNumber });
+          if (response) {
+            console.log("eaushda response", response);
+            setItems(getStockReceiptObj(response));
+            setReceivedResponse(response);
+            setStockEmptyResonseMessage(response.length === 0);
+          }
+        } catch (error) {
+          setStockReceiptError(error);
+        }
+      };
+  
+      fetchData();
+      setStockIntakeButtonClick(false);
+    }
+  }, [stockIntakeButtonClick, outwardNumber]);
+  
   useEffect(() => {
     const hasEmptyOrNegativeFields = rows.some(
       (row) => !row.drugName || !row.batchNo || !row.expiryDate || !row.totalQuantity || row.totalQuantity <= 0,
     );
     setSaveButtonDisabled(hasEmptyOrNegativeFields);
   }, [rows]);
-
-  useEffect(() => {
-    if (eaushdhaResponse || error) setStockIntakeButtonClick(false);
-  }, [eaushdhaResponse, error]);
 
   useEffect(() => {
     if (outwardNumber.length > 0) {
@@ -127,17 +137,6 @@ const StockReceipt = () => {
       setIsFetchStockDisabled(true);
     }
   }, [items, outwardNumber]);
-
-  useEffect(() => {
-    if (eaushdhaResponse && eaushdhaResponse.length > 0) {
-      setItems(getStockReceiptObj(eaushdhaResponse));
-      setReceivedResponse(eaushdhaResponse);
-    }
-    if (eaushdhaResponse && eaushdhaResponse.length === 0) {
-      setStockEmptyResonseMessage(true);
-    }
-    if (error) setStockReceiptError(error);
-  }, [eaushdhaResponse, error]);
 
   useEffect(() => {
     if (onSuccesful) {
@@ -247,8 +246,6 @@ const StockReceipt = () => {
       prevRows.map((row) => (row.id === id ? { ...row, [field]: value } : row)),
     );
   };
-
-  const currentDate = new Date();
 
   const filterItems = (menu) => menu?.item?.toLowerCase().includes(menu?.inputValue?.toLowerCase());
 
@@ -427,7 +424,7 @@ const StockReceipt = () => {
               )}
             </div>
           )}
-          {stockIntakeButtonClick && !eaushdhaResponse && !error ? (
+          {stockIntakeButtonClick && !receivedResponse&& !stockReceiptError ? (
             <Loading />
           ) : (
             items &&
