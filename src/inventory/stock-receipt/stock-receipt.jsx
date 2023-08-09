@@ -95,11 +95,9 @@ const StockReceipt = () => {
   useEffect(() => {
     if (stockIntakeButtonClick) {
       const fetchData = async () => {
-        console.log(stockReceiptURL);
         try {
           const response = await fetcherPost(stockReceiptURL(), { ouid: outwardNumber });
           if (response) {
-            console.log("eaushda response", response);
             setItems(getStockReceiptObj(response));
             setReceivedResponse(response);
             setStockEmptyResonseMessage(response.length === 0);
