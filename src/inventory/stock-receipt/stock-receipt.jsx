@@ -62,6 +62,7 @@ const StockReceipt = () => {
   const [onFailure, setOnFailure] = useState(false);
   const [stockReceiptError, setStockReceiptError] = useState();
   const [stockEmptyResonseMessage, setStockEmptyResonseMessage] = useState(false);
+  const [negativeError, setNegativeError] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [isSaveButtonDisabled, setSaveButtonDisabled] = useState(true);
   const [cookies] = useCookies();
@@ -242,6 +243,7 @@ const StockReceipt = () => {
   };
 
   const handleInputChange = (id, field, value) => {
+    (field === 'totalQuantity' && value < 0)? setNegativeError(true): setNegativeError(false);
     setRows((prevRows) =>
       prevRows.map((row) => (row.id === id ? { ...row, [field]: value } : row)),
     );
@@ -384,6 +386,7 @@ const StockReceipt = () => {
                                       )
                                     }
                                   />
+                                {negativeError && (<p style={{ color: 'red' }}>Value cannot be negative</p>)}
                                 </TableCell>
                                 <TableCell>
                                   <Button
