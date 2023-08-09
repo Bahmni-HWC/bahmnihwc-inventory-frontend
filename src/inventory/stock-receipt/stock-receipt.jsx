@@ -63,10 +63,30 @@ const StockReceipt = () => {
   const [stockReceiptError, setStockReceiptError] = useState();
   const [stockEmptyResonseMessage, setStockEmptyResonseMessage] = useState(false);
 
-  const { data: eaushdhaResponse, error } = useSWR(
-    stockIntakeButtonClick ? stockReceiptURL : '',
-    (url) => fetcherPost(url, { ouid: outwardNumber }),
-  );
+  let eaushdhaResponse = [];
+  const error = '';
+
+    useEffect(async() => {
+    if(stockIntakeButtonClick){
+         const fetchData = async () => {
+                try {
+        const requestBody = {
+            ouid:outwardNumber
+        };
+     eaushdhaResponse = await fetcherPost(stockReceiptURL(), requestBody);
+     setReceivedResponse(eaushdhaResponse);
+     setItems(getStockReceiptObj(eaushdhaResponse));
+  if (eaushdhaResponse.length === 0) {
+             setStockEmptyResonseMessage(true);
+           } else {
+             setStockEmptyResonseMessage(false);
+           }
+            } catch (error) {
+                     console.error('An error occurred during stock fetch:', error);
+                   }
+};
+fetchData();}
+},[stockIntakeButtonClick,outwardNumber]);
 
   const [cookies] = useCookies();
 
@@ -128,16 +148,6 @@ const StockReceipt = () => {
     }
   }, [items, outwardNumber]);
 
-  useEffect(() => {
-    if (eaushdhaResponse && eaushdhaResponse.length > 0) {
-      setItems(getStockReceiptObj(eaushdhaResponse));
-      setReceivedResponse(eaushdhaResponse);
-    }
-    if (eaushdhaResponse && eaushdhaResponse.length === 0) {
-      setStockEmptyResonseMessage(true);
-    }
-    if (error) setStockReceiptError(error);
-  }, [eaushdhaResponse, error]);
 
   useEffect(() => {
     if (onSuccesful) {
