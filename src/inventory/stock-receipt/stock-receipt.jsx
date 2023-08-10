@@ -151,6 +151,7 @@ const StockReceipt = (props) => {
       setIsOutwardNumberDisabled(true);
       setOutwardNumber('');
       setReloadData(false);
+      setAddDrugItems([]);
     }
   }, [onSuccesful]);
 
@@ -254,7 +255,7 @@ const StockReceipt = (props) => {
   };
 
   const handleInputChange = (id, field, value) => {
-    field === 'totalQuantity' && value < 0 ? setNegativeError(true) : setNegativeError(false);
+    field === 'totalQuantity' && value <= 0 ? setNegativeError(true) : setNegativeError(false);
     setRows((prevRows) =>
       prevRows.map((row) => (row.id === id ? { ...row, [field]: value } : row)),
     );
@@ -400,7 +401,7 @@ const StockReceipt = (props) => {
                                     }
                                   />
                                   {negativeError && (
-                                    <p style={{ color: 'red' }}>Value cannot be negative</p>
+                                    <p style={{ color: 'red' }}>Value cannot be negative or 0</p>
                                   )}
                                 </TableCell>
                                 <TableCell>
@@ -457,6 +458,7 @@ const StockReceipt = (props) => {
                             <TableRow>
                               {headers.map((header) => (
                                 <TableHeader
+                                  key={header.key}
                                   {...getHeaderProps({
                                     header,
                                   })}
@@ -469,29 +471,31 @@ const StockReceipt = (props) => {
                           </TableHead>
                           <TableBody>
                             {rows.map((row) => (
-                              <TableRow {...getRowProps({ row })}>
+                              <TableRow {...getRowProps({ row })} key='stock-fetch'>
                                 {row.cells.map((cell) => {
                                   if (
                                     cell.id.includes('totalQuantity') ||
                                     cell.id.includes('quantity')
                                   ) {
+                                    console.log('cell', cell.value)
                                     return (
                                       <TableCell key={cell.id}>
                                         <TextInput
+                                          type='number'
                                           size='sm'
                                           id={cell.id}
                                           value={cell.value}
-                                          invalid={isNaN(cell.value)}
+                                          invalid={isNaN(cell.value) || parseInt(cell.value,10) <= 0}
                                           invalidText='Please enter a valid number'
                                           labelText={''}
+                                          min={0}
                                           onChange={(e) =>
                                             updateActualQuantity(e.target.value, row, cell.id)
                                           }
                                         />
                                       </TableCell>
                                     );
-                                  } else
-                                    return (
+                                  } return (
                                       <TableCell
                                         key={cell.id}
                                         className={

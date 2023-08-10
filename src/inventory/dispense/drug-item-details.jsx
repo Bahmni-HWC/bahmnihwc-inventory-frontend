@@ -58,12 +58,12 @@ const DrugItemDetails = (props) => {
 			itemStock.length > 0
 		) {
 			const rowObj = [];
-			for (let drugItem of drugItems) {
+			for (const drugItem of drugItems) {
 				let isItemPresent = false;
-				for (let item of itemStock) {
+				const isDispensedDrug = dispensedDrug(drugItem.orderAttributes);
+				for (const item of itemStock) {
 					if (item.item.name.includes(drugItem.drugName)) {
 					isItemPresent = true;
-                    const isDispensedDrug = dispensedDrug(drugItem.orderAttributes);
 						rowObj.push({
 							id: drugItem.id,
 							itemUuid: item.item.uuid,
@@ -83,9 +83,9 @@ const DrugItemDetails = (props) => {
                         drugName: getTitle(drugItem),
                         name: drugItem.drugName,
                         avlQty: 0,
-                        prescribedQty: drugItem.quantity,
+                        prescribedQty: isDispensedDrug ? 0 : drugItem.quantity,
                         invalidQty: true,
-
+						dispensed: isDispensedDrug,
                     });
                 }
 			}
