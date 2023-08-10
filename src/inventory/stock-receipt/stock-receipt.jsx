@@ -126,6 +126,18 @@ const StockReceipt = (props) => {
   }, [rows]);
 
   useEffect(() => {
+    if(items.length > 0) {
+     let negativeValue = false
+      items.forEach((item) => {
+        if(item.invalid) {
+          negativeValue = true
+        }
+      })
+      setNegativeError(negativeValue)
+    }
+  }, [items]);
+
+  useEffect(() => {
     if (outwardNumber.length > 0) {
       setIsLoadStockDisabled(true);
       setIsOutwardNumberDisabled(false);
@@ -155,6 +167,23 @@ const StockReceipt = (props) => {
     }
   }, [onSuccesful]);
 
+  useEffect(() => {
+    if (!showModal) {
+      setAddDrugItems([]);
+      setRows([
+        {
+          id: 1,
+          drugName: '',
+          batchNo: '',
+          expiryDate: '',
+          quantity: 0,
+          totalQuantity: 0,
+          invalid: false,
+        },
+      ]);
+    }
+  }, [showModal]);
+
   const handleCancel = () => {
     setItems(getStockReceiptObj(receivedResponse));
   };
@@ -166,18 +195,20 @@ const StockReceipt = (props) => {
           return {
             ...item,
             totalQuantity: parseInt(quantity),
+            invalid: parseInt(quantity) <= 0 || item.quantity <= 0,
           };
         } else {
           return {
             ...item,
             quantity: quantity,
             totalQuantity: getCalculatedQuantity(quantity, item.unitPack),
+            invalid: parseInt(quantity) <= 0 || item.totalQuantity <= 0,
           };
         }
       }
       return item;
     });
-    setItems(updatedValue);
+    setItems(updatedValue)
   };
   const handleSave = async () => {
     try {
@@ -235,7 +266,14 @@ const StockReceipt = (props) => {
   const handleAddRow = () => {
     setRows((prevRows) => [
       ...prevRows,
-      { id: prevRows.length + 1, drugName: '', batchNo: '', expiryDate: '', totalQuantity: 0 },
+      {
+        id: prevRows.length + 1,
+        drugName: '',
+        batchNo: '',
+        expiryDate: '',
+        totalQuantity: 0,
+        invalid: false,
+      },
     ]);
   };
 
@@ -254,11 +292,22 @@ const StockReceipt = (props) => {
     );
   };
 
+  const isInvalid = (id) => {
+    const row = rows.find((row) => row.id === id);
+    return row.invalid;
+  };
+
   const handleInputChange = (id, field, value) => {
-    field === 'totalQuantity' && value <= 0 ? setNegativeError(true) : setNegativeError(false);
-    setRows((prevRows) =>
-      prevRows.map((row) => (row.id === id ? { ...row, [field]: value } : row)),
-    );
+    if (field === 'totalQuantity') {
+      setRows((prevRows) =>
+        prevRows.map((row) =>
+          row.id === id ? { ...row, totalQuantity: value, invalid: value <= 0 } : row,
+        ),
+      );
+    } else
+      setRows((prevRows) =>
+        prevRows.map((row) => (row.id === id ? { ...row, [field]: value } : row)),
+      );
   };
 
   const filterItems = (menu) => menu?.item?.toLowerCase().includes(menu?.inputValue?.toLowerCase());
@@ -290,7 +339,7 @@ const StockReceipt = (props) => {
                 size={'md'}
                 kind='primary'
                 disabled={isFetchStockDisabled}
-                className={!isFetchStockDisabled ? styles.buttonColor : ''}
+                className={!isFetchStockDisabled ? styles.primaryButton : ''}
               >
                 Stock Fetch
               </Button>
@@ -303,12 +352,13 @@ const StockReceipt = (props) => {
                 size={'md'}
                 kind='primary'
                 disabled={isLoadStockDisabled}
-                className={!isLoadStockDisabled ? styles.buttonColor : ''}
+                className={!isLoadStockDisabled ? styles.primaryButton : ''}
               >
                 Load Stock
               </Button>
               {showModal && (
                 <Modal
+                  id={isSaveButtonDisabled? '':'primaryButton'}
                   className='add-drug-modal'
                   open={showModal}
                   onRequestClose={handleCloseModal}
@@ -390,8 +440,11 @@ const StockReceipt = (props) => {
                                   <TextInput
                                     type='number'
                                     id={`totalQuantity-${row.id}`}
+                                    min={0}
                                     className={styles.totalQuantityInput}
                                     value={row.totalQuantity}
+                                    invalid={isInvalid(row.id)}
+                                    invalidText='Value cannot be negative or 0'
                                     onChange={(e) =>
                                       handleInputChange(
                                         row.id,
@@ -400,9 +453,6 @@ const StockReceipt = (props) => {
                                       )
                                     }
                                   />
-                                  {negativeError && (
-                                    <p style={{ color: 'red' }}>Value cannot be negative or 0</p>
-                                  )}
                                 </TableCell>
                                 <TableCell>
                                   <Button
@@ -477,7 +527,6 @@ const StockReceipt = (props) => {
                                     cell.id.includes('totalQuantity') ||
                                     cell.id.includes('quantity')
                                   ) {
-                                    console.log('cell', cell.value)
                                     return (
                                       <TableCell key={cell.id}>
                                         <TextInput
@@ -485,8 +534,10 @@ const StockReceipt = (props) => {
                                           size='sm'
                                           id={cell.id}
                                           value={cell.value}
-                                          invalid={isNaN(cell.value) || parseInt(cell.value,10) <= 0}
-                                          invalidText='Please enter a valid number'
+                                          invalid={
+                                            isNaN(cell.value) || parseInt(cell.value,10) <= 0
+                                          }
+                                          invalidText='Value cannot be negative or 0'
                                           labelText={''}
                                           min={0}
                                           onChange={(e) =>
@@ -495,16 +546,17 @@ const StockReceipt = (props) => {
                                         />
                                       </TableCell>
                                     );
-                                  } return (
-                                      <TableCell
-                                        key={cell.id}
-                                        className={
-                                          cell.id.includes('item') ? styles.stickyColumn : ''
-                                        }
-                                      >
-                                        {cell.value}
-                                      </TableCell>
-                                    );
+                                  }
+                                  return (
+                                    <TableCell
+                                      key={cell.id}
+                                      className={
+                                        cell.id.includes('item') ? styles.stickyColumn : ''
+                                      }
+                                    >
+                                      {cell.value}
+                                    </TableCell>
+                                  );
                                 })}
                               </TableRow>
                             ))}
@@ -523,7 +575,12 @@ const StockReceipt = (props) => {
               <Button kind='secondary' onClick={handleCancel}>
                 Cancel
               </Button>
-              <Button kind='primary' onClick={handleSave} className={styles.buttonColor}>
+              <Button
+                kind='primary'
+                onClick={handleSave}
+                className={!negativeError ? styles.primaryButton : styles.disabledButton}
+                disabled={negativeError}
+              >
                 Save
               </Button>
             </ButtonSet>

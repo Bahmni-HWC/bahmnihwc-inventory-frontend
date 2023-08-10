@@ -16,6 +16,7 @@ export const getStockReceiptObj = (response) => {
 			quantity: element.quantity_In_Pack,
 			totalQuantity: element.quantity_In_Units,
 			unitPack: element.unitPack,
+			invalid: false
 		};
 		stockReceiptArray.push(rowObj);
 	})
