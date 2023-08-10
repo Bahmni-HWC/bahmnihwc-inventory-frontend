@@ -35,12 +35,18 @@ const InventoryLandingPage = () => {
 
   useEffect(() => {
     if (itemStock?.length > 0) {
-      const updatedRows = itemStock.map((item, index) => ({
-        id: `${index}`,
-        productName: item.item.name,
-        quantity: item.quantity ?? 0,
-      }));
-      setRows((prevState) => [...prevState, ...updatedRows]);
+      const updatedRows = [];
+
+      updatedRows.push(
+        ...itemStock.map((item, index) => ({
+          id: `${index}`,
+          productName: item.item.name,
+          quantity: item.quantity ?? 0,
+        })),
+      );
+      setRows(updatedRows);
+    } else {
+      setRows([]);
     }
   }, [itemStock]);
 
@@ -87,7 +93,7 @@ const InventoryLandingPage = () => {
               <TableToolbarContent className={styles.tableToolbarContent}>
                 <TableToolbarSearch value={searchText} onChange={handleSearch} />
                 {rows.length > 0 && (
-                  <Button onClick={handleExportToExcel} kind="tertiary" size="sm">
+                  <Button onClick={handleExportToExcel} kind='tertiary' size='sm'>
                     Export To Excel
                   </Button>
                 )}
@@ -127,7 +133,7 @@ const InventoryLandingPage = () => {
 												}`}
                           >
                             {cell.id.includes('productName') ? (
-                              <Link href="#" onClick={() => handleClick(cell.value)}>
+                              <Link href='#' onClick={() => handleClick(cell.value)}>
                                 {cell.value}
                               </Link>
                             ) : (

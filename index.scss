@@ -24,6 +24,14 @@
   }
 }
 
+#combo-box-drug-item .bx--list-box__menu-item {
+  height: auto;
+  .bx--list-box__menu-item__option {
+    height: auto;
+    white-space: normal;
+  }
+}
+
 // Overwriting styles for table modal
 #modal-table-container {
   overflow-y: auto;

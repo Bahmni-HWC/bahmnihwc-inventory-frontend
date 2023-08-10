@@ -30,14 +30,14 @@ import {
   invItemURL,
   inventoryItemURL,
   stockReceiptURL,
-  stockRoomURL
+  stockRoomURL,
 } from '../../utils/api-utils';
 
 import {
   failureMessage,
   locationCookieName,
   stockReceiptHeaders,
-  successMessage
+  successMessage,
 } from '../../../constants';
 import styles from './stock-receipt.module.scss';
 
@@ -49,7 +49,7 @@ import {
   getStockReceiptObj,
 } from './eaushadha-response-mapper';
 
-const StockReceipt = () => {
+const StockReceipt = (props) => {
   const [items, setItems] = useState([]);
   const [addDrugItems, setAddDrugItems] = useState([]);
   const [outwardNumber, setOutwardNumber] = useState('');
@@ -68,6 +68,7 @@ const StockReceipt = () => {
   const [cookies] = useCookies();
   const currentDate = new Date();
   let dropdownItems = [];
+  const { setReloadData } = props;
 
   const { data: stockRoom, error: stockRoomError } = useSWR(
     stockRoomURL(cookies[locationCookieName]?.name.trim()),
@@ -105,16 +106,21 @@ const StockReceipt = () => {
         } catch (error) {
           setStockReceiptError(error);
         }
+        setStockIntakeButtonClick(false);
       };
-  
+
       fetchData();
-      setStockIntakeButtonClick(false);
     }
   }, [stockIntakeButtonClick, outwardNumber]);
-  
+
   useEffect(() => {
     const hasEmptyOrNegativeFields = rows.some(
-      (row) => !row.drugName || !row.batchNo || !row.expiryDate || !row.totalQuantity || row.totalQuantity <= 0,
+      (row) =>
+        !row.drugName ||
+        !row.batchNo ||
+        !row.expiryDate ||
+        !row.totalQuantity ||
+        row.totalQuantity <= 0,
     );
     setSaveButtonDisabled(hasEmptyOrNegativeFields);
   }, [rows]);
@@ -144,6 +150,7 @@ const StockReceipt = () => {
       setStockIntakeButtonClick(false);
       setIsOutwardNumberDisabled(true);
       setOutwardNumber('');
+      setReloadData(false);
     }
   }, [onSuccesful]);
 
@@ -175,6 +182,7 @@ const StockReceipt = () => {
     try {
       const response = await saveReceipt(items, outwardNumber, stockRoom.results[0]?.uuid);
       if (response && response.ok) {
+        setReloadData(true);
         setOnSuccesful(true);
       } else {
         setOnFailure(true);
@@ -198,8 +206,11 @@ const StockReceipt = () => {
     const saveData = async () => {
       try {
         const response = await saveReceipt(addDrugItems, outwardNumber, stockRoom.results[0]?.uuid);
-        if (response) {
-          response.ok ? setOnSuccesful(true) : setOnFailure(true);
+        if (response && response.ok) {
+          setReloadData(true);
+          setOnSuccesful(true);
+        } else {
+          setOnFailure(true);
         }
       } catch (error) {
         console.error('An error occurred during saveReceipt:', error);
@@ -211,7 +222,7 @@ const StockReceipt = () => {
     }
   }, [addDrugItems, outwardNumber]);
 
-  const setOnSuccessAndFailure =(status) => {
+  const setOnSuccessAndFailure = (status) => {
     setOnSuccesful(status);
     setOnFailure(status);
   };
@@ -232,16 +243,19 @@ const StockReceipt = () => {
   };
 
   const handleComboBoxChange = (rowId, selectedValue) => {
-    setRows((prevRows) => prevRows.map((row) => {
+    setRows((prevRows) =>
+      prevRows.map((row) => {
         if (row.id === rowId) {
           return { ...row, drugName: selectedValue };
         }
         return row;
-      }));
+      }),
+    );
   };
 
   const handleInputChange = (id, field, value) => {
     (field === 'totalQuantity')?((value < 0)?setNegativeError(true):setNegativeError(false)):"";
+
     setRows((prevRows) =>
       prevRows.map((row) => (row.id === id ? { ...row, [field]: value } : row)),
     );
@@ -254,14 +268,16 @@ const StockReceipt = () => {
       <Grid style={{ paddingLeft: '0', margin: '0' }}>
         <Column lg={16}>
           <Column lg={3}>
-            {onSuccesful && ResponseNotification('success','Success', successMessage, setOnSuccessAndFailure)}
-            {onFailure && ResponseNotification('error','Error',failureMessage,  setOnSuccessAndFailure)}
+            {onSuccesful &&
+              ResponseNotification('success', 'Success', successMessage, setOnSuccessAndFailure)}
+            {onFailure &&
+              ResponseNotification('error', 'Error', failureMessage, setOnSuccessAndFailure)}
           </Column>
           <Row>
             <Column sm={8} lg={4}>
               <TextInput
-                id="stock-receipt"
-                labelText="Outward Number"
+                id='stock-receipt'
+                labelText='Outward Number'
                 value={outwardNumber}
                 style={{ width: '80%' }}
                 onChange={(e) => setOutwardNumber(e.target.value)}
@@ -272,7 +288,7 @@ const StockReceipt = () => {
               <Button
                 onClick={() => setStockIntakeButtonClick(true)}
                 size={'md'}
-                kind="primary"
+                kind='primary'
                 disabled={isFetchStockDisabled}
                 className={!isFetchStockDisabled ? styles.buttonColor : ''}
               >
@@ -285,7 +301,7 @@ const StockReceipt = () => {
                   setShowModal(true);
                 }}
                 size={'md'}
-                kind="primary"
+                kind='primary'
                 disabled={isLoadStockDisabled}
                 className={!isLoadStockDisabled ? styles.buttonColor : ''}
               >
@@ -293,15 +309,15 @@ const StockReceipt = () => {
               </Button>
               {showModal && (
                 <Modal
-                  className="add-drug-modal"
+                  className='add-drug-modal'
                   open={showModal}
                   onRequestClose={handleCloseModal}
-                  size="lg"
-                  primaryButtonText="Save"
-                  secondaryButtonText="Cancel"
+                  size='lg'
+                  primaryButtonText='Save'
+                  secondaryButtonText='Cancel'
                   onRequestSubmit={handleSaveDrugButtonClick}
                   primaryButtonDisabled={isSaveButtonDisabled}
-                  modalHeading="Add New Drug"
+                  modalHeading='Add New Drug'
                 >
                   <DataTable
                     rows={rows}
@@ -314,7 +330,7 @@ const StockReceipt = () => {
                       'Actions',
                     ]}
                     render={({ rows, headers, getHeaderProps }) => (
-                      <TableContainer id="stock-table-container">
+                      <TableContainer id='stock-table-container'>
                         <Table className={styles.addStocktable}>
                           <TableHead>
                             <TableRow>
@@ -352,9 +368,9 @@ const StockReceipt = () => {
                                 </TableCell>
                                 <TableCell>
                                   <DatePicker
-                                    datePickerType="single"
+                                    datePickerType='single'
                                     id={`expiryDate-${row.id}`}
-                                    dateFormat="d/m/Y"
+                                    dateFormat='d/m/Y'
                                     value={row.expiryDate}
                                     minDate={currentDate}
                                     onChange={(date) =>
@@ -372,7 +388,7 @@ const StockReceipt = () => {
                                 </TableCell>
                                 <TableCell>
                                   <TextInput
-                                    type="number"
+                                    type='number'
                                     id={`totalQuantity-${row.id}`}
                                     className={styles.totalQuantityInput}
                                     value={row.totalQuantity}
@@ -384,11 +400,13 @@ const StockReceipt = () => {
                                       )
                                     }
                                   />
-                                {negativeError && (<p style={{ color: 'red' }}>Value cannot be negative</p>)}
+                                  {negativeError && (
+                                    <p style={{ color: 'red' }}>Value cannot be negative</p>
+                                  )}
                                 </TableCell>
                                 <TableCell>
                                   <Button
-                                    kind="danger--tertiary"
+                                    kind='danger--tertiary'
                                     renderIcon={Subtract16}
                                     className={styles.iconButton}
                                     onClick={() => handleDeleteRow(row.id)}
@@ -399,7 +417,7 @@ const StockReceipt = () => {
                           </TableBody>
                         </Table>
                         <Button
-                          kind="tertiary"
+                          kind='tertiary'
                           renderIcon={Add16}
                           className={`${styles.iconButton} ${styles.plusButton}`}
                           onClick={handleAddRow}
@@ -425,7 +443,7 @@ const StockReceipt = () => {
               )}
             </div>
           )}
-          {stockIntakeButtonClick && !receivedResponse&& !stockReceiptError ? (
+          {stockIntakeButtonClick && !receivedResponse && !stockReceiptError ? (
             <Loading />
           ) : (
             items &&
@@ -461,11 +479,11 @@ const StockReceipt = () => {
                                     return (
                                       <TableCell key={cell.id}>
                                         <TextInput
-                                          size="sm"
+                                          size='sm'
                                           id={cell.id}
                                           value={cell.value}
                                           invalid={isNaN(cell.value)}
-                                          invalidText="Please enter a valid number"
+                                          invalidText='Please enter a valid number'
                                           labelText={''}
                                           onChange={(e) =>
                                             updateActualQuantity(e.target.value, row, cell.id)
@@ -499,10 +517,10 @@ const StockReceipt = () => {
 
           {items && items.length > 0 && (
             <ButtonSet className={styles.buttonSet}>
-              <Button kind="secondary" onClick={handleCancel}>
+              <Button kind='secondary' onClick={handleCancel}>
                 Cancel
               </Button>
-              <Button kind="primary" onClick={handleSave} className={styles.buttonColor}>
+              <Button kind='primary' onClick={handleSave} className={styles.buttonColor}>
                 Save
               </Button>
             </ButtonSet>
