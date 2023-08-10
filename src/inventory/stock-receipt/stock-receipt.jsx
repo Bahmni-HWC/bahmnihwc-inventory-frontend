@@ -106,10 +106,10 @@ const StockReceipt = (props) => {
         } catch (error) {
           setStockReceiptError(error);
         }
+        setStockIntakeButtonClick(false);
       };
 
       fetchData();
-      setStockIntakeButtonClick(false);
     }
   }, [stockIntakeButtonClick, outwardNumber]);
 
