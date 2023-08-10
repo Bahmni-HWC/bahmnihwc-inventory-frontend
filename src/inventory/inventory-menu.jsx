@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Tabs, Tab, Loading } from 'carbon-components-react';
 import { useCookies } from 'react-cookie';
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';
 import InventoryLandingPage from './inventory-landing-page';
 import { getLocationName, inventoryMenu, locationCookieName } from '../../constants';
 import DispensePage from './dispense/dispense-page';
@@ -14,25 +14,34 @@ const InventoryMenu = () => {
   const [cookies] = useCookies();
   const { setItemStock, setItemStockError } = useItemStockContext();
   const { setStockRoom, setStockRoomError } = useStockRoomContext();
+  const [reloadData, setReloadData] = React.useState(false);
 
-	const { data: stockRoom, error: stockRoomError } = useSWR(
-		stockRoomURL(cookies[locationCookieName]?.name.trim()),
-		fetcher,
-	);
-	
-	let totalInventoryItemsInStockroom=1
+  const { data: stockRoom, error: stockRoomError } = useSWR(
+    stockRoomURL(cookies[locationCookieName]?.name.trim()),
+    fetcher,
+  );
 
-	const { data: invItems, error: inventoryItemsError } = useSWR(
-		stockRoom ? invItemURLByStockroom(stockRoom.results[0].uuid,totalInventoryItemsInStockroom) : '',
-		fetcher,
-	);
+  let totalInventoryItemsInStockroom = 1;
 
-	totalInventoryItemsInStockroom =invItems?.length;
+  const { data: invItems, error: inventoryItemsError } = useSWR(
+    stockRoom
+      ? invItemURLByStockroom(stockRoom.results[0].uuid, totalInventoryItemsInStockroom)
+      : '',
+    fetcher,
+  );
 
-	const { data: items, error: inventoryItemError } = useSWR(
-		stockRoom ? invItemURLByStockroom(stockRoom.results[0].uuid,totalInventoryItemsInStockroom) : '',
-		fetcher,
-	);
+  totalInventoryItemsInStockroom = invItems?.length;
+
+  const { data: items, error: inventoryItemError } = useSWR(
+    stockRoom ? invItemURLByStockroom(stockRoom.results[0].uuid) : '',
+    fetcher,
+  );
+
+  useEffect(() => {
+    if (reloadData) {
+      mutate(invItemURLByStockroom(stockRoom.results[0].uuid));
+    }
+  }, [reloadData]);
 
   useEffect(() => {
     if (items) {
@@ -64,11 +73,11 @@ const InventoryMenu = () => {
         <Tab label={inventoryMenu[0]}>
           <InventoryLandingPage />
         </Tab>
-        <Tab label="Stock Receipt">
-          <StockReceipt />
+        <Tab label='Stock Receipt'>
+          <StockReceipt setReloadData={setReloadData} />
         </Tab>
         <Tab label={inventoryMenu[1]}>
-          <DispensePage />
+          <DispensePage setReloadData={setReloadData} />
         </Tab>
       </Tabs>
     </div>
