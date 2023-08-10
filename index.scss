@@ -46,7 +46,16 @@
 }
 
 #primaryButton {
-  .bx--btn--primary{
+  .bx--btn--primary {
     background-color: #007d79;
+  }
+}
+
+#errorMessageWrapper {
+  height: 1.5rem;
+  .errorMessage {
+    text-align: center;
+    color: #da1e28;
+    background-color: #fdeded;
   }
 }

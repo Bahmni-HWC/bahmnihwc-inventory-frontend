@@ -49,6 +49,8 @@ import {
   getStockReceiptObj,
 } from './eaushadha-response-mapper';
 
+import "../../../index.scss"
+
 const StockReceipt = (props) => {
   const [items, setItems] = useState([]);
   const [addDrugItems, setAddDrugItems] = useState([]);
@@ -126,14 +128,14 @@ const StockReceipt = (props) => {
   }, [rows]);
 
   useEffect(() => {
-    if(items.length > 0) {
-     let negativeValue = false
+    if (items.length > 0) {
+      let negativeValue = false;
       items.forEach((item) => {
-        if(item.invalid) {
-          negativeValue = true
+        if (item.invalid) {
+          negativeValue = true;
         }
-      })
-      setNegativeError(negativeValue)
+      });
+      setNegativeError(negativeValue);
     }
   }, [items]);
 
@@ -202,13 +204,13 @@ const StockReceipt = (props) => {
             ...item,
             quantity: quantity,
             totalQuantity: getCalculatedQuantity(quantity, item.unitPack),
-            invalid: parseInt(quantity) <= 0 || item.totalQuantity <= 0,
+            invalid: parseInt(quantity) <= 0,
           };
         }
       }
       return item;
     });
-    setItems(updatedValue)
+    setItems(updatedValue);
   };
   const handleSave = async () => {
     try {
@@ -358,7 +360,7 @@ const StockReceipt = (props) => {
               </Button>
               {showModal && (
                 <Modal
-                  id={isSaveButtonDisabled? '':'primaryButton'}
+                  id={isSaveButtonDisabled ? '' : 'primaryButton'}
                   className='add-drug-modal'
                   open={showModal}
                   onRequestClose={handleCloseModal}
@@ -393,76 +395,87 @@ const StockReceipt = (props) => {
                           </TableHead>
                           <TableBody>
                             {rows.map((row) => (
-                              <TableRow key={row.id}>
-                                <TableCell>{row.id}</TableCell>
-                                <TableCell>
-                                  <ComboBox
-                                    items={dropdownItems}
-                                    shouldFilterItem={filterItems}
-                                    selectedItem={row.drugName}
-                                    onChange={(selectedItem) =>
-                                      handleComboBoxChange(row.id, selectedItem)
-                                    }
-                                    style={{ width: '270px' }}
-                                  />
-                                </TableCell>
-                                <TableCell>
-                                  <TextInput
-                                    id={`batchNo-${row.id}`}
-                                    className={styles.batchNumberInput}
-                                    value={row.batchNo}
-                                    onChange={(e) =>
-                                      handleInputChange(row.id, 'batchNo', e.target.value)
-                                    }
-                                  />
-                                </TableCell>
-                                <TableCell>
-                                  <DatePicker
-                                    datePickerType='single'
-                                    id={`expiryDate-${row.id}`}
-                                    dateFormat='d/m/Y'
-                                    value={row.expiryDate}
-                                    minDate={currentDate}
-                                    onChange={(date) =>
-                                      handleInputChange(row.id, 'expiryDate', date[0])
-                                    }
-                                  >
-                                    <DatePickerInput
-                                      value={row.expiryDate}
-                                      onChange={(e) =>
-                                        handleInputChange(row.id, 'expiryDate', e.target.value)
+                              <>
+                                <TableRow key={row.id}>
+                                  <TableCell>{row.id}</TableCell>
+                                  <TableCell>
+                                    <ComboBox
+                                      items={dropdownItems}
+                                      shouldFilterItem={filterItems}
+                                      selectedItem={row.drugName}
+                                      onChange={(selectedItem) =>
+                                        handleComboBoxChange(row.id, selectedItem)
                                       }
-                                      pattern={getDatePattern}
+                                      style={{ width: '270px' }}
                                     />
-                                  </DatePicker>
-                                </TableCell>
-                                <TableCell>
-                                  <TextInput
-                                    type='number'
-                                    id={`totalQuantity-${row.id}`}
-                                    min={0}
-                                    className={styles.totalQuantityInput}
-                                    value={row.totalQuantity}
-                                    invalid={isInvalid(row.id)}
-                                    invalidText='Value cannot be negative or 0'
-                                    onChange={(e) =>
-                                      handleInputChange(
-                                        row.id,
-                                        'totalQuantity',
-                                        e.target.valueAsNumber,
-                                      )
-                                    }
-                                  />
-                                </TableCell>
-                                <TableCell>
-                                  <Button
-                                    kind='danger--tertiary'
-                                    renderIcon={Subtract16}
-                                    className={styles.iconButton}
-                                    onClick={() => handleDeleteRow(row.id)}
-                                  />
-                                </TableCell>
-                              </TableRow>
+                                  </TableCell>
+                                  <TableCell>
+                                    <TextInput
+                                      id={`batchNo-${row.id}`}
+                                      className={styles.batchNumberInput}
+                                      value={row.batchNo}
+                                      onChange={(e) =>
+                                        handleInputChange(row.id, 'batchNo', e.target.value)
+                                      }
+                                    />
+                                  </TableCell>
+                                  <TableCell>
+                                    <DatePicker
+                                      datePickerType='single'
+                                      id={`expiryDate-${row.id}`}
+                                      dateFormat='d/m/Y'
+                                      value={row.expiryDate}
+                                      minDate={currentDate}
+                                      onChange={(date) =>
+                                        handleInputChange(row.id, 'expiryDate', date[0])
+                                      }
+                                    >
+                                      <DatePickerInput
+                                        value={row.expiryDate}
+                                        onChange={(e) =>
+                                          handleInputChange(row.id, 'expiryDate', e.target.value)
+                                        }
+                                        pattern={getDatePattern}
+                                      />
+                                    </DatePicker>
+                                  </TableCell>
+                                  <TableCell>
+                                    <TextInput
+                                      type='number'
+                                      id={`totalQuantity-${row.id}`}
+                                      min={0}
+                                      className={styles.totalQuantityInput}
+                                      value={row.totalQuantity}
+                                      invalid={isInvalid(row.id)}
+                                      onChange={(e) =>
+                                        handleInputChange(
+                                          row.id,
+                                          'totalQuantity',
+                                          e.target.valueAsNumber,
+                                        )
+                                      }
+                                    />
+                                  </TableCell>
+                                  <TableCell>
+                                    <Button
+                                      kind='danger--tertiary'
+                                      renderIcon={Subtract16}
+                                      className={styles.iconButton}
+                                      onClick={() => handleDeleteRow(row.id)}
+                                    />
+                                  </TableCell>
+                                </TableRow>
+                                {isInvalid(row.id) && (
+                                  <TableRow id="errorMessageWrapper">
+                                    <TableCell
+                                      colSpan={headers.length}
+                                      className="errorMessage"
+                                    >
+                                      Please enter value &lt;= to available quantity
+                                    </TableCell>
+                                  </TableRow>
+                                )}
+                              </>
                             ))}
                           </TableBody>
                         </Table>
@@ -521,6 +534,7 @@ const StockReceipt = (props) => {
                           </TableHead>
                           <TableBody>
                             {rows.map((row) => (
+                              <>
                               <TableRow {...getRowProps({ row })} key='stock-fetch'>
                                 {row.cells.map((cell) => {
                                   if (
@@ -535,9 +549,8 @@ const StockReceipt = (props) => {
                                           id={cell.id}
                                           value={cell.value}
                                           invalid={
-                                            isNaN(cell.value) || parseInt(cell.value,10) <= 0
+                                            isNaN(cell.value) || parseInt(cell.value, 10) <= 0
                                           }
-                                          invalidText='Value cannot be negative or 0'
                                           labelText={''}
                                           min={0}
                                           onChange={(e) =>
@@ -559,6 +572,17 @@ const StockReceipt = (props) => {
                                   );
                                 })}
                               </TableRow>
+                               {negativeError && (
+                                <TableRow id="errorMessageWrapper">
+                                  <TableCell
+                                    colSpan={headers.length}
+                                    className="errorMessage"
+                                  >
+                                    Value cannot be negative or 0
+                                  </TableCell>
+                                </TableRow>
+                              )}
+                              </>
                             ))}
                           </TableBody>
                         </Table>
