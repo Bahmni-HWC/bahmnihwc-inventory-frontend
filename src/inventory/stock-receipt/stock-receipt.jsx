@@ -49,7 +49,7 @@ import {
   getStockReceiptObj,
 } from './eaushadha-response-mapper';
 
-import "../../../index.scss"
+import '../../../index.scss';
 
 const StockReceipt = (props) => {
   const [items, setItems] = useState([]);
@@ -466,11 +466,8 @@ const StockReceipt = (props) => {
                                   </TableCell>
                                 </TableRow>
                                 {isInvalid(row.id) && (
-                                  <TableRow id="errorMessageWrapper">
-                                    <TableCell
-                                      colSpan={headers.length}
-                                      className="errorMessage"
-                                    >
+                                  <TableRow id='errorMessageWrapper'>
+                                    <TableCell colSpan={headers.length} className='errorMessage'>
                                       Please enter value &lt;= to available quantity
                                     </TableCell>
                                   </TableRow>
@@ -535,53 +532,50 @@ const StockReceipt = (props) => {
                           <TableBody>
                             {rows.map((row) => (
                               <>
-                              <TableRow {...getRowProps({ row })} key='stock-fetch'>
-                                {row.cells.map((cell) => {
-                                  if (
-                                    cell.id.includes('totalQuantity') ||
-                                    cell.id.includes('quantity')
-                                  ) {
+                                <TableRow {...getRowProps({ row })} key='stock-fetch'>
+                                  {row.cells.map((cell) => {
+                                    if (
+                                      cell.id.includes('totalQuantity') ||
+                                      cell.id.includes('quantity')
+                                    ) {
+                                      return (
+                                        <TableCell key={cell.id}>
+                                          <TextInput
+                                            type='number'
+                                            size='sm'
+                                            id={cell.id}
+                                            value={cell.value}
+                                            invalid={
+                                              isNaN(cell.value) || parseInt(cell.value, 10) <= 0
+                                            }
+                                            labelText={''}
+                                            min={0}
+                                            onChange={(e) =>
+                                              updateActualQuantity(e.target.value, row, cell.id)
+                                            }
+                                          />
+                                        </TableCell>
+                                      );
+                                    }
                                     return (
-                                      <TableCell key={cell.id}>
-                                        <TextInput
-                                          type='number'
-                                          size='sm'
-                                          id={cell.id}
-                                          value={cell.value}
-                                          invalid={
-                                            isNaN(cell.value) || parseInt(cell.value, 10) <= 0
-                                          }
-                                          labelText={''}
-                                          min={0}
-                                          onChange={(e) =>
-                                            updateActualQuantity(e.target.value, row, cell.id)
-                                          }
-                                        />
+                                      <TableCell
+                                        key={cell.id}
+                                        className={
+                                          cell.id.includes('item') ? styles.stickyColumn : ''
+                                        }
+                                      >
+                                        {cell.value}
                                       </TableCell>
                                     );
-                                  }
-                                  return (
-                                    <TableCell
-                                      key={cell.id}
-                                      className={
-                                        cell.id.includes('item') ? styles.stickyColumn : ''
-                                      }
-                                    >
-                                      {cell.value}
-                                    </TableCell>
-                                  );
-                                })}
-                              </TableRow>
-                               {negativeError && (
-                                <TableRow id="errorMessageWrapper">
-                                  <TableCell
-                                    colSpan={headers.length}
-                                    className="errorMessage"
-                                  >
-                                    Value cannot be negative or 0
-                                  </TableCell>
+                                  })}
                                 </TableRow>
-                              )}
+                                {negativeError && (
+                                  <TableRow id='errorMessageWrapper'>
+                                    <TableCell colSpan={headers.length} className='errorMessage'>
+                                      Value cannot be negative or 0
+                                    </TableCell>
+                                  </TableRow>
+                                )}
                               </>
                             ))}
                           </TableBody>
