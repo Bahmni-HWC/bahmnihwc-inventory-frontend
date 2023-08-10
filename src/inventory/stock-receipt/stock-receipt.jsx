@@ -241,7 +241,7 @@ const StockReceipt = () => {
   };
 
   const handleInputChange = (id, field, value) => {
-    (field === 'totalQuantity' && value < 0)? setNegativeError(true): setNegativeError(false);
+    (field === 'totalQuantity')?((value < 0)?setNegativeError(true):setNegativeError(false)):"";
     setRows((prevRows) =>
       prevRows.map((row) => (row.id === id ? { ...row, [field]: value } : row)),
     );
