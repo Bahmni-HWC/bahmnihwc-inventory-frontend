@@ -119,9 +119,9 @@ const DrugItemDetails = (props) => {
   const isSufficient = (value, row) => {
     const item = drugInfo.find((item) => item.id === row.id);
     if (item) {
-      if (item.avlQty > 0 && !item.dispensed)
-        return item.avlQty >= parseInt(value) && parseInt(value) > 0;
-      if (item.avlQty === 0) return item.avlQty >= parseInt(value);
+      if (item.avlQty >0 && !item.dispensed)
+        return item.avlQty >= parseInt(value) && parseInt(value) >0;
+      if (item.avlQty === 0 ) return item.avlQty >= parseInt(value) && parseInt(value) >=0
       return true;
     }
     return false;

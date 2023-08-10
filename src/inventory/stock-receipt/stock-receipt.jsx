@@ -296,7 +296,7 @@ const StockReceipt = (props) => {
 
   const isInvalid = (id) => {
     const row = rows.find((row) => row.id === id);
-    return row.invalid;
+    return row?row.invalid:false;
   };
 
   const handleInputChange = (id, field, value) => {
