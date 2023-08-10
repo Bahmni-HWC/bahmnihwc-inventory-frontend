@@ -33,7 +33,7 @@ const DrugItemDetails = (props) => {
     if (drugInfo && drugInfo.length > 0) {
       let invalid = false;
       drugInfo.forEach((item) => {
-        if (item.invalidQty > 0 && invalid === false) invalid = true;
+        if (item.invalidQty && invalid === false) invalid = true;
       });
       const dispensedDrugItem = drugInfo.filter((item) => item.dispensed === false);
       const modifiedData = drugInfo.filter(
@@ -73,7 +73,7 @@ const DrugItemDetails = (props) => {
             name: drugItem.drugName,
             avlQty: 0,
             prescribedQty: isDispensedDrug ? 0 : drugItem.quantity,
-            invalidQty: true,
+            invalidQty: !isDispensedDrug && 0 < drugItem.quantity,
             dispensed: isDispensedDrug,
           });
         }
@@ -119,9 +119,10 @@ const DrugItemDetails = (props) => {
   const isSufficient = (value, row) => {
     const item = drugInfo.find((item) => item.id === row.id);
     if (item) {
-      if (item.avlQty >0 && !item.dispensed)
-        return item.avlQty >= parseInt(value) && parseInt(value) >0;
-      if (item.avlQty === 0 ) return item.avlQty >= parseInt(value) && parseInt(value) >=0
+      if (item.avlQty > 0 && !item.dispensed) {
+        return item.avlQty >= parseInt(value) && parseInt(value) > 0;
+      }
+      if (item.avlQty === 0) return parseInt(value) === 0;
       return true;
     }
     return false;
