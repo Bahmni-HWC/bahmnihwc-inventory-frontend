@@ -499,7 +499,7 @@ const StockReceipt = (props) => {
               {ResponseNotification(
                 'info',
                 'info',
-                'No data is received for the outward number. Could you please retry?',
+                'No data is received for the outward number. Could you please retry?',setStockEmptyResonseMessage
               )}
             </div>
           )}
