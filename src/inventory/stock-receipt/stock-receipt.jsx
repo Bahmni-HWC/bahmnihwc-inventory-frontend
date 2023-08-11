@@ -49,6 +49,8 @@ import {
   getStockReceiptObj,
 } from './eaushadha-response-mapper';
 
+import '../../../index.scss';
+
 const StockReceipt = (props) => {
   const [items, setItems] = useState([]);
   const [addDrugItems, setAddDrugItems] = useState([]);
@@ -126,6 +128,18 @@ const StockReceipt = (props) => {
   }, [rows]);
 
   useEffect(() => {
+    if (items.length > 0) {
+      let negativeValue = false;
+      items.forEach((item) => {
+        if (item.invalid) {
+          negativeValue = true;
+        }
+      });
+      setNegativeError(negativeValue);
+    }
+  }, [items]);
+
+  useEffect(() => {
     if (outwardNumber.length > 0) {
       setIsLoadStockDisabled(true);
       setIsOutwardNumberDisabled(false);
@@ -151,8 +165,26 @@ const StockReceipt = (props) => {
       setIsOutwardNumberDisabled(true);
       setOutwardNumber('');
       setReloadData(false);
+      setAddDrugItems([]);
     }
   }, [onSuccesful]);
+
+  useEffect(() => {
+    if (!showModal) {
+      setAddDrugItems([]);
+      setRows([
+        {
+          id: 1,
+          drugName: '',
+          batchNo: '',
+          expiryDate: '',
+          quantity: 0,
+          totalQuantity: 0,
+          invalid: false,
+        },
+      ]);
+    }
+  }, [showModal]);
 
   const handleCancel = () => {
     setItems(getStockReceiptObj(receivedResponse));
@@ -165,12 +197,14 @@ const StockReceipt = (props) => {
           return {
             ...item,
             totalQuantity: parseInt(quantity),
+            invalid: parseInt(quantity) <= 0 || item.quantity <= 0,
           };
         } else {
           return {
             ...item,
             quantity: quantity,
             totalQuantity: getCalculatedQuantity(quantity, item.unitPack),
+            invalid: parseInt(quantity) <= 0,
           };
         }
       }
@@ -234,7 +268,14 @@ const StockReceipt = (props) => {
   const handleAddRow = () => {
     setRows((prevRows) => [
       ...prevRows,
-      { id: prevRows.length + 1, drugName: '', batchNo: '', expiryDate: '', totalQuantity: 0 },
+      {
+        id: prevRows.length + 1,
+        drugName: '',
+        batchNo: '',
+        expiryDate: '',
+        totalQuantity: 0,
+        invalid: false,
+      },
     ]);
   };
 
@@ -253,12 +294,22 @@ const StockReceipt = (props) => {
     );
   };
 
-  const handleInputChange = (id, field, value) => {
-    (field === 'totalQuantity')?((value < 0)?setNegativeError(true):setNegativeError(false)):"";
+  const isInvalid = (id) => {
+    const row = rows.find((row) => row.id === id);
+    return row?row.invalid:false;
+  };
 
-    setRows((prevRows) =>
-      prevRows.map((row) => (row.id === id ? { ...row, [field]: value } : row)),
-    );
+  const handleInputChange = (id, field, value) => {
+    if (field === 'totalQuantity') {
+      setRows((prevRows) =>
+        prevRows.map((row) =>
+          row.id === id ? { ...row, totalQuantity: value, invalid: value <= 0 } : row,
+        ),
+      );
+    } else
+      setRows((prevRows) =>
+        prevRows.map((row) => (row.id === id ? { ...row, [field]: value } : row)),
+      );
   };
 
   const filterItems = (menu) => menu?.item?.toLowerCase().includes(menu?.inputValue?.toLowerCase());
@@ -290,7 +341,7 @@ const StockReceipt = (props) => {
                 size={'md'}
                 kind='primary'
                 disabled={isFetchStockDisabled}
-                className={!isFetchStockDisabled ? styles.buttonColor : ''}
+                className={!isFetchStockDisabled ? styles.primaryButton : ''}
               >
                 Stock Fetch
               </Button>
@@ -303,12 +354,13 @@ const StockReceipt = (props) => {
                 size={'md'}
                 kind='primary'
                 disabled={isLoadStockDisabled}
-                className={!isLoadStockDisabled ? styles.buttonColor : ''}
+                className={!isLoadStockDisabled ? styles.primaryButton : ''}
               >
                 Load Stock
               </Button>
               {showModal && (
                 <Modal
+                  id={isSaveButtonDisabled ? '' : 'primaryButton'}
                   className='add-drug-modal'
                   open={showModal}
                   onRequestClose={handleCloseModal}
@@ -343,76 +395,84 @@ const StockReceipt = (props) => {
                           </TableHead>
                           <TableBody>
                             {rows.map((row) => (
-                              <TableRow key={row.id}>
-                                <TableCell>{row.id}</TableCell>
-                                <TableCell>
-                                  <ComboBox
-                                    items={dropdownItems}
-                                    shouldFilterItem={filterItems}
-                                    selectedItem={row.drugName}
-                                    onChange={(selectedItem) =>
-                                      handleComboBoxChange(row.id, selectedItem)
-                                    }
-                                    style={{ width: '270px' }}
-                                  />
-                                </TableCell>
-                                <TableCell>
-                                  <TextInput
-                                    id={`batchNo-${row.id}`}
-                                    className={styles.batchNumberInput}
-                                    value={row.batchNo}
-                                    onChange={(e) =>
-                                      handleInputChange(row.id, 'batchNo', e.target.value)
-                                    }
-                                  />
-                                </TableCell>
-                                <TableCell>
-                                  <DatePicker
-                                    datePickerType='single'
-                                    id={`expiryDate-${row.id}`}
-                                    dateFormat='d/m/Y'
-                                    value={row.expiryDate}
-                                    minDate={currentDate}
-                                    onChange={(date) =>
-                                      handleInputChange(row.id, 'expiryDate', date[0])
-                                    }
-                                  >
-                                    <DatePickerInput
-                                      value={row.expiryDate}
-                                      onChange={(e) =>
-                                        handleInputChange(row.id, 'expiryDate', e.target.value)
+                              <>
+                                <TableRow key={row.id}>
+                                  <TableCell>{row.id}</TableCell>
+                                  <TableCell>
+                                    <ComboBox
+                                      items={dropdownItems}
+                                      shouldFilterItem={filterItems}
+                                      selectedItem={row.drugName}
+                                      onChange={(selectedItem) =>
+                                        handleComboBoxChange(row.id, selectedItem)
                                       }
-                                      pattern={getDatePattern}
+                                      style={{ width: '270px' }}
                                     />
-                                  </DatePicker>
-                                </TableCell>
-                                <TableCell>
-                                  <TextInput
-                                    type='number'
-                                    id={`totalQuantity-${row.id}`}
-                                    className={styles.totalQuantityInput}
-                                    value={row.totalQuantity}
-                                    onChange={(e) =>
-                                      handleInputChange(
-                                        row.id,
-                                        'totalQuantity',
-                                        e.target.valueAsNumber,
-                                      )
-                                    }
-                                  />
-                                  {negativeError && (
-                                    <p style={{ color: 'red' }}>Value cannot be negative</p>
-                                  )}
-                                </TableCell>
-                                <TableCell>
-                                  <Button
-                                    kind='danger--tertiary'
-                                    renderIcon={Subtract16}
-                                    className={styles.iconButton}
-                                    onClick={() => handleDeleteRow(row.id)}
-                                  />
-                                </TableCell>
-                              </TableRow>
+                                  </TableCell>
+                                  <TableCell>
+                                    <TextInput
+                                      id={`batchNo-${row.id}`}
+                                      className={styles.batchNumberInput}
+                                      value={row.batchNo}
+                                      onChange={(e) =>
+                                        handleInputChange(row.id, 'batchNo', e.target.value)
+                                      }
+                                    />
+                                  </TableCell>
+                                  <TableCell>
+                                    <DatePicker
+                                      datePickerType='single'
+                                      id={`expiryDate-${row.id}`}
+                                      dateFormat='d/m/Y'
+                                      value={row.expiryDate}
+                                      minDate={currentDate}
+                                      onChange={(date) =>
+                                        handleInputChange(row.id, 'expiryDate', date[0])
+                                      }
+                                    >
+                                      <DatePickerInput
+                                        value={row.expiryDate}
+                                        onChange={(e) =>
+                                          handleInputChange(row.id, 'expiryDate', e.target.value)
+                                        }
+                                        pattern={getDatePattern}
+                                      />
+                                    </DatePicker>
+                                  </TableCell>
+                                  <TableCell>
+                                    <TextInput
+                                      type='number'
+                                      id={`totalQuantity-${row.id}`}
+                                      min={0}
+                                      className={styles.totalQuantityInput}
+                                      value={row.totalQuantity}
+                                      invalid={isInvalid(row.id)}
+                                      onChange={(e) =>
+                                        handleInputChange(
+                                          row.id,
+                                          'totalQuantity',
+                                          e.target.valueAsNumber,
+                                        )
+                                      }
+                                    />
+                                  </TableCell>
+                                  <TableCell>
+                                    <Button
+                                      kind='danger--tertiary'
+                                      renderIcon={Subtract16}
+                                      className={styles.iconButton}
+                                      onClick={() => handleDeleteRow(row.id)}
+                                    />
+                                  </TableCell>
+                                </TableRow>
+                                {isInvalid(row.id) && (
+                                  <TableRow id='errorMessageWrapper'>
+                                    <TableCell colSpan={headers.length} className='errorMessage'>
+                                      Please enter value &lt;= to available quantity
+                                    </TableCell>
+                                  </TableRow>
+                                )}
+                              </>
                             ))}
                           </TableBody>
                         </Table>
@@ -458,6 +518,7 @@ const StockReceipt = (props) => {
                             <TableRow>
                               {headers.map((header) => (
                                 <TableHeader
+                                  key={header.key}
                                   {...getHeaderProps({
                                     header,
                                   })}
@@ -470,28 +531,32 @@ const StockReceipt = (props) => {
                           </TableHead>
                           <TableBody>
                             {rows.map((row) => (
-                              <TableRow {...getRowProps({ row })}>
-                                {row.cells.map((cell) => {
-                                  if (
-                                    cell.id.includes('totalQuantity') ||
-                                    cell.id.includes('quantity')
-                                  ) {
-                                    return (
-                                      <TableCell key={cell.id}>
-                                        <TextInput
-                                          size='sm'
-                                          id={cell.id}
-                                          value={cell.value}
-                                          invalid={isNaN(cell.value)}
-                                          invalidText='Please enter a valid number'
-                                          labelText={''}
-                                          onChange={(e) =>
-                                            updateActualQuantity(e.target.value, row, cell.id)
-                                          }
-                                        />
-                                      </TableCell>
-                                    );
-                                  } else
+                              <>
+                                <TableRow {...getRowProps({ row })} key='stock-fetch'>
+                                  {row.cells.map((cell) => {
+                                    if (
+                                      cell.id.includes('totalQuantity') ||
+                                      cell.id.includes('quantity')
+                                    ) {
+                                      return (
+                                        <TableCell key={cell.id}>
+                                          <TextInput
+                                            type='number'
+                                            size='sm'
+                                            id={cell.id}
+                                            value={cell.value}
+                                            invalid={
+                                              isNaN(cell.value) || parseInt(cell.value, 10) <= 0
+                                            }
+                                            labelText={''}
+                                            min={0}
+                                            onChange={(e) =>
+                                              updateActualQuantity(e.target.value, row, cell.id)
+                                            }
+                                          />
+                                        </TableCell>
+                                      );
+                                    }
                                     return (
                                       <TableCell
                                         key={cell.id}
@@ -502,8 +567,16 @@ const StockReceipt = (props) => {
                                         {cell.value}
                                       </TableCell>
                                     );
-                                })}
-                              </TableRow>
+                                  })}
+                                </TableRow>
+                                {negativeError && (
+                                  <TableRow id='errorMessageWrapper'>
+                                    <TableCell colSpan={headers.length} className='errorMessage'>
+                                      Value cannot be negative or 0
+                                    </TableCell>
+                                  </TableRow>
+                                )}
+                              </>
                             ))}
                           </TableBody>
                         </Table>
@@ -520,7 +593,12 @@ const StockReceipt = (props) => {
               <Button kind='secondary' onClick={handleCancel}>
                 Cancel
               </Button>
-              <Button kind='primary' onClick={handleSave} className={styles.buttonColor}>
+              <Button
+                kind='primary'
+                onClick={handleSave}
+                className={!negativeError ? styles.primaryButton : styles.disabledButton}
+                disabled={negativeError}
+              >
                 Save
               </Button>
             </ButtonSet>

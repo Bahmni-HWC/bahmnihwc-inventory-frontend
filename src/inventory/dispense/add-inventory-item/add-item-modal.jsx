@@ -123,9 +123,10 @@ const AddItemModal = (props) => {
   const isSufficient = (value, row) => {
     const findRow = rows.find((oneRow) => oneRow.id === row.id);
     if (findRow) {
-      return findRow.avlQty > 0
-        ? findRow.avlQty >= parseInt(value, 10) && parseInt(value, 10) !== 0
-        : true;
+      if (findRow.avlQty > 0 && !findRow.dispensed)
+        return findRow.avlQty >= parseInt(value) && parseInt(value) > 0;
+      if (findRow.avlQty === 0) return findRow.avlQty >= parseInt(value);
+      return true;
     }
     return false;
   };
@@ -185,40 +186,48 @@ const AddItemModal = (props) => {
               </TableHead>
               <TableBody>
                 {rows.map((row) => (
-                  <TableRow key={row.id}>
-                    <TableCell>{row.id}</TableCell>
-                    <TableCell id='combo-box-drug-item'>
-                      <ComboBox
-                        id='combo-box-1'
-                        items={inventoryItem}
-                        itemToString={(item) => item?.drugName ?? ''}
-                        placeholder='Select Drug'
-                        shouldFilterItem={filterItems}
-                        selectedItem={row.drugName}
-                        onChange={(selectedItem) => handleComboBoxChange(row.id, selectedItem)}
-                        className={styles.drugItem}
+                  <>
+                    <TableRow key={row.id}>
+                      <TableCell>{row.id}</TableCell>
+                      <TableCell id='combo-box-drug-item'>
+                        <ComboBox
+                          id='combo-box-1'
+                          items={inventoryItem}
+                          itemToString={(item) => item?.drugName ?? ''}
+                          placeholder='Select Drug'
+                          shouldFilterItem={filterItems}
+                          selectedItem={row.drugName}
+                          onChange={(selectedItem) => handleComboBoxChange(row.id, selectedItem)}
+                          className={styles.drugItem}
+                        />
+                      </TableCell>
+                      <TableCell>{row.cells[2].value}</TableCell>
+                      <TableCell>
+                        <TextInput
+                          id={`dispQty-${row.id}`}
+                          value={isInvalid(row.cells[3].value) ? '' : row.cells[3].value}
+                          onChange={(e) => handleInputChange(row.id, e.target.value)}
+                          invalid={!isSufficient(row.cells[3].value, row) || row.invalid}
+                          labelText=''
+                          className={styles.dispQtyInput}
+                        />
+                      </TableCell>
+                      <Button
+                        kind='danger--tertiary'
+                        renderIcon={Subtract16}
+                        iconDescription='Delete'
+                        className={styles.iconButton}
+                        onClick={() => handleDeleteRow(row.id)}
                       />
-                    </TableCell>
-                    <TableCell>{row.cells[2].value}</TableCell>
-                    <TableCell>
-                      <TextInput
-                        id={`dispQty-${row.id}`}
-                        value={isInvalid(row.cells[3].value) ? '' : row.cells[3].value}
-                        onChange={(e) => handleInputChange(row.id, e.target.value)}
-                        invalid={!isSufficient(row.cells[3].value, row) || row.invalid}
-                        invalidText='Please enter value <= to available quantity'
-                        labelText=''
-                        className={styles.dispQtyInput}
-                      />
-                    </TableCell>
-                    <Button
-                      kind='danger--tertiary'
-                      renderIcon={Subtract16}
-                      iconDescription='Delete'
-                      className={styles.iconButton}
-                      onClick={() => handleDeleteRow(row.id)}
-                    />
-                  </TableRow>
+                    </TableRow>
+                    {(!isSufficient(row.cells[3].value, row) || row.invalid) && (
+                      <TableRow id='errorMessageWrapper'>
+                        <TableCell colSpan={headers.length} className='errorMessage'>
+                          Please enter value &lt;= to available quantity
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </>
                 ))}
               </TableBody>
             </Table>
