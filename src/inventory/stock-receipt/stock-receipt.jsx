@@ -82,7 +82,7 @@ const StockReceipt = (props) => {
   let totalInventoryItems = inventoryItems?.length;
 
   const { data: invItems, error: inventoryItemError } = useSWR(
-    invItemURL(totalInventoryItems),
+    totalInventoryItems !== undefined ? invItemURL(totalInventoryItems) : '',
     fetcher,
   );
 
