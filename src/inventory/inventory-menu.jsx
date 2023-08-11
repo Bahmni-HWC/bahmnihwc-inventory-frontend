@@ -33,13 +33,15 @@ const InventoryMenu = () => {
   totalInventoryItemsInStockroom = invItems?.length;
 
   const { data: items, error: inventoryItemError } = useSWR(
-    stockRoom ? invItemURLByStockroom(stockRoom.results[0].uuid) : '',
+    stockRoom && totalInventoryItemsInStockroom !== undefined
+      ? invItemURLByStockroom(stockRoom.results[0].uuid, totalInventoryItemsInStockroom)
+      : '',
     fetcher,
   );
 
   useEffect(() => {
     if (reloadData) {
-      mutate(invItemURLByStockroom(stockRoom.results[0].uuid));
+      mutate(invItemURLByStockroom(stockRoom.results[0].uuid, totalInventoryItemsInStockroom));
     }
   }, [reloadData]);
 

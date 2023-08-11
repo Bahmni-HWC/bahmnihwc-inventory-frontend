@@ -296,7 +296,7 @@ const StockReceipt = (props) => {
 
   const isInvalid = (id) => {
     const row = rows.find((row) => row.id === id);
-    return row?row.invalid:false;
+    return row ? row.invalid : false;
   };
 
   const handleInputChange = (id, field, value) => {
@@ -500,6 +500,7 @@ const StockReceipt = (props) => {
                 'info',
                 'info',
                 'No data is received for the outward number. Could you please retry?',
+                setStockEmptyResonseMessage,
               )}
             </div>
           )}
