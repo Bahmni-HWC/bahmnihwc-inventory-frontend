@@ -187,7 +187,8 @@ const StockReceipt = (props) => {
   }, [showModal]);
 
   const handleCancel = () => {
-    setItems(getStockReceiptObj(receivedResponse));
+    setOutwardNumber('');
+    setItems('');
   };
 
   const updateActualQuantity = (quantity, row, cell) => {
