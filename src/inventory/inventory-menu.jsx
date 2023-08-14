@@ -30,7 +30,7 @@ const InventoryMenu = () => {
     fetcher,
   );
 
-  totalInventoryItemsInStockroom = invItems?.length;
+  totalInventoryItemsInStockroom = invItems?.length ?? 1;
 
   const { data: items, error: inventoryItemError } = useSWR(
     stockRoom && totalInventoryItemsInStockroom !== undefined
