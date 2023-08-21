@@ -261,6 +261,12 @@ const StockReceipt = (props) => {
     setOnSuccesful(status);
     setOnFailure(status);
   };
+  const getTomorrowDate = () => {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow;
+  };
 
   const handleCloseModal = () => {
     setShowModal(false);
@@ -426,7 +432,8 @@ const StockReceipt = (props) => {
                                       id={`expiryDate-${row.id}`}
                                       dateFormat='d/m/Y'
                                       value={row.expiryDate}
-                                      minDate={currentDate}
+                                       minDate={getTomorrowDate()+1}
+
                                       onChange={(date) =>
                                         handleInputChange(row.id, 'expiryDate', date[0])
                                       }
