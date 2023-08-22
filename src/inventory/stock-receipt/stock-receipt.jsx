@@ -256,6 +256,12 @@ const StockReceipt = (props) => {
       return;
     }
   };
+   const getTomorrowDate = () => {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate()+1);
+      return tomorrow;
+    };
+
 
   useEffect(() => {
     const saveData = async () => {
@@ -445,7 +451,7 @@ const StockReceipt = (props) => {
                                       id={`expiryDate-${row.id}`}
                                       dateFormat='d/m/Y'
                                       value={row.expiryDate}
-                                      minDate={currentDate}
+                                      minDate={getTomorrowDate()+1}
                                       onChange={(date) =>
                                         handleInputChange(row.id, 'expiryDate', date[0])
                                       }
