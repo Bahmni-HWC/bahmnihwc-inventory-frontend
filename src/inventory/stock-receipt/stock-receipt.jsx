@@ -50,6 +50,7 @@ import {
 } from './eaushadha-response-mapper';
 
 import '../../../index.scss';
+import { useItemStockContext} from '../../context/item-stock-context';
 
 const StockReceipt = (props) => {
   const [items, setItems] = useState([]);
@@ -67,10 +68,12 @@ const StockReceipt = (props) => {
   const [negativeError, setNegativeError] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [isSaveButtonDisabled, setSaveButtonDisabled] = useState(true);
+  const [outwardNumberExists, setOutwardNumberExists] = useState(false);
   const [cookies] = useCookies();
   const currentDate = new Date();
   let dropdownItems = [];
   const { setReloadData } = props;
+  const { itemStock} = useItemStockContext();
 
   const { data: stockRoom, error: stockRoomError } = useSWR(
     stockRoomURL(cookies[locationCookieName]?.name.trim()),
@@ -85,7 +88,6 @@ const StockReceipt = (props) => {
     totalInventoryItems !== undefined ? invItemURL(totalInventoryItems) : '',
     fetcher,
   );
-
   if (invItems?.results?.length > 0) {
     for (let index = 0; index < invItems.results.length; index++) {
       dropdownItems.push(invItems.results[index].name);
@@ -94,9 +96,27 @@ const StockReceipt = (props) => {
   const [rows, setRows] = useState([
     { id: 1, drugName: '', batchNo: '', expiryDate: '', quantity: 0, totalQuantity: 0 },
   ]);
-
   useEffect(() => {
     if (stockIntakeButtonClick) {
+    let outwardMatch = false;
+     for (const result of itemStock) {
+     for(const stockOperation of result.details){
+       if (stockOperation.batchOperation.outwardId === outwardNumber) {
+            outwardMatch = true;
+            break;
+          }
+        }
+        if(outwardMatch){
+          break;
+        }
+      }
+          if(outwardMatch){
+          setOutwardNumberExists(true);
+          setStockIntakeButtonClick(false);
+          }
+          else{
+            setOutwardNumberExists(false);
+
       const fetchData = async () => {
         try {
           const response = await fetcherPost(stockReceiptURL(), { ouid: outwardNumber });
@@ -110,8 +130,8 @@ const StockReceipt = (props) => {
         }
         setStockIntakeButtonClick(false);
       };
-
       fetchData();
+    }
     }
   }, [stockIntakeButtonClick, outwardNumber]);
 
@@ -314,8 +334,7 @@ const StockReceipt = (props) => {
   };
 
   const filterItems = (menu) => menu?.item?.toLowerCase().includes(menu?.inputValue?.toLowerCase());
-
-  return (
+ return (
     <>
       <Grid style={{ paddingLeft: '0', margin: '0' }}>
         <Column lg={16}>
@@ -495,7 +514,8 @@ const StockReceipt = (props) => {
               {ResponseNotification('error', 'Error', 'Something went wrong while fetching URL')}
             </h3>
           )}
-          {stockEmptyResonseMessage && (
+
+          {stockEmptyResonseMessage &&  (
             <div style={{ paddingTop: '20px' }}>
               {ResponseNotification(
                 'info',
@@ -505,6 +525,15 @@ const StockReceipt = (props) => {
               )}
             </div>
           )}
+            {outwardNumberExists && (
+                      <h3 style={{ paddingTop: '1rem' }}>
+                        {ResponseNotification(
+                          'error',
+                          'Error',
+                          'Outward number already exists. Please enter a new outward number',setOutwardNumberExists
+                        )}
+                      </h3>
+                    )}
           {stockIntakeButtonClick && !receivedResponse && !stockReceiptError ? (
             <Loading />
           ) : (
@@ -612,3 +641,5 @@ const StockReceipt = (props) => {
 };
 
 export default StockReceipt;
+
+
