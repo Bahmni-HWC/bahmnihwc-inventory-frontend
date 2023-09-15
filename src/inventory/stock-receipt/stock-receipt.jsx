@@ -39,8 +39,6 @@ import {
   locationCookieName,
   stockReceiptHeaders,
   successMessage,
-  successMessageLoadStock,
-  failureMessageLoadStock,
 
 } from '../../../constants';
 import styles from './stock-receipt.module.scss';
@@ -67,8 +65,6 @@ const StockReceipt = (props) => {
   const [receivedResponse, setReceivedResponse] = useState();
   const [onSuccesful, setOnSuccesful] = useState(false);
   const [onFailure, setOnFailure] = useState(false);
-  const [onSuccesfulLoadStock, setOnSuccesfulLoadStock] = useState(false);
-  const [onFailureLoadStock, setOnFailureLoadStock] = useState(false);
   const [stockReceiptError, setStockReceiptError] = useState();
   const [stockEmptyResonseMessage, setStockEmptyResonseMessage] = useState(false);
   const [negativeError, setNegativeError] = useState(false);
@@ -217,6 +213,7 @@ const StockReceipt = (props) => {
     setItems('');
   };
 
+
   const updateActualQuantity = (quantity, row, cell) => {
     const updatedValue = items.map((item) => {
       if (item.id === row.id) {
@@ -262,12 +259,6 @@ const StockReceipt = (props) => {
       return;
     }
   };
-   const getTomorrowDate = () => {
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate()+1);
-      return tomorrow;
-    };
-
 
   useEffect(() => {
     const saveData = async () => {
@@ -275,12 +266,12 @@ const StockReceipt = (props) => {
         const response = await saveStockInitial(addDrugItems, outwardNumber, stockRoom.results[0]?.uuid);
         if (response && response.ok) {
           setReloadData(true);
-          setOnSuccesfulLoadStock(true);
+         setOnSuccesful(true);
         } else {
-          setOnFailureLoadStock(true);
+          setOnFailure(true);
         }
       } catch (error) {
-        console.error('An error occurred during saveReceipt:', error);
+        console.error('An error occurred during save:', error);
       }
     };
 
@@ -292,8 +283,7 @@ const StockReceipt = (props) => {
   const setOnSuccessAndFailure = (status) => {
     setOnSuccesful(status);
     setOnFailure(status);
-    setOnSuccesfulLoadStock(status);
-    setOnFailureLoadStock(status);
+
   };
 
   const handleCloseModal = () => {
@@ -334,19 +324,27 @@ const StockReceipt = (props) => {
     return row ? row.invalid : false;
   };
 
-  const handleInputChange = (id, field, value) => {
-    if (field === 'totalQuantity') {
-      setRows((prevRows) =>
-        prevRows.map((row) =>
-          row.id === id ? { ...row, totalQuantity: value, invalid: value <= 0 } : row,
-        ),
-      );
-    } else
-      setRows((prevRows) =>
-        prevRows.map((row) => (row.id === id ? { ...row, [field]: value } : row)),
-      );
-  };
+ const handleInputChange = (id, field, value) => {
+   if (field === 'totalQuantity') {
+     setRows((prevRows) =>
+       prevRows.map((row) =>
+         row.id === id ? { ...row, totalQuantity: value, invalid: value <= 0 } : row,
+       ),
+     );
+   } else if (field === 'expiryDate') {
 
+
+     setRows((prevRows) =>
+       prevRows.map((row) =>
+         row.id === id ? { ...row, expiryDate: value } : row,
+       ),
+     );
+   } else {
+     setRows((prevRows) =>
+       prevRows.map((row) => (row.id === id ? { ...row, [field]: value } : row)),
+     );
+   }
+ };
   const filterItems = (menu) => menu?.item?.toLowerCase().includes(menu?.inputValue?.toLowerCase());
  return (
     <>
@@ -355,13 +353,9 @@ const StockReceipt = (props) => {
           <Column lg={3}>
             {onSuccesful &&
               ResponseNotification('success', 'Success', successMessage, setOnSuccessAndFailure)}
-              {onSuccesfulLoadStock &&
-                            ResponseNotification('success', 'Success', successMessageLoadStock, setOnSuccessAndFailure)}
-            {onFailure &&
+                {onFailure &&
               ResponseNotification('error', 'Error', failureMessage, setOnSuccessAndFailure)}
-              {onFailureLoadStock &&
-                            ResponseNotification('error', 'Error', failureMessageLoadStock, setOnSuccessAndFailure)}
-          </Column>
+                   </Column>
           <Row>
             <Column sm={8} lg={4}>
               <TextInput
@@ -463,7 +457,8 @@ const StockReceipt = (props) => {
                                       id={`expiryDate-${row.id}`}
                                       dateFormat='d/m/Y'
                                       value={row.expiryDate}
-                                      minDate={getTomorrowDate()+1}
+                                      minDate={new Date(new Date().setDate(new Date().getDate() + 1)).toLocaleDateString('en-GB')}
+
                                       onChange={(date) =>
                                         handleInputChange(row.id, 'expiryDate', date[0])
                                       }
