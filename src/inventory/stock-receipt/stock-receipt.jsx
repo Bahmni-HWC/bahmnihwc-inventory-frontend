@@ -24,6 +24,7 @@ import React, { useEffect, useState } from 'react';
 import { useCookies } from 'react-cookie';
 import useSWR from 'swr';
 import saveReceipt from '../../service/save-receipt';
+import saveStockInitial from '../../service/save-initial';
 import {
   fetcher,
   fetcherPost,
@@ -38,6 +39,9 @@ import {
   locationCookieName,
   stockReceiptHeaders,
   successMessage,
+  successMessageLoadStock,
+  failureMessageLoadStock,
+
 } from '../../../constants';
 import styles from './stock-receipt.module.scss';
 
@@ -63,6 +67,8 @@ const StockReceipt = (props) => {
   const [receivedResponse, setReceivedResponse] = useState();
   const [onSuccesful, setOnSuccesful] = useState(false);
   const [onFailure, setOnFailure] = useState(false);
+  const [onSuccesfulLoadStock, setOnSuccesfulLoadStock] = useState(false);
+  const [onFailureLoadStock, setOnFailureLoadStock] = useState(false);
   const [stockReceiptError, setStockReceiptError] = useState();
   const [stockEmptyResonseMessage, setStockEmptyResonseMessage] = useState(false);
   const [negativeError, setNegativeError] = useState(false);
@@ -266,12 +272,12 @@ const StockReceipt = (props) => {
   useEffect(() => {
     const saveData = async () => {
       try {
-        const response = await saveReceipt(addDrugItems, outwardNumber, stockRoom.results[0]?.uuid);
+        const response = await saveStockInitial(addDrugItems, outwardNumber, stockRoom.results[0]?.uuid);
         if (response && response.ok) {
           setReloadData(true);
-          setOnSuccesful(true);
+          setOnSuccesfulLoadStock(true);
         } else {
-          setOnFailure(true);
+          setOnFailureLoadStock(true);
         }
       } catch (error) {
         console.error('An error occurred during saveReceipt:', error);
@@ -286,6 +292,8 @@ const StockReceipt = (props) => {
   const setOnSuccessAndFailure = (status) => {
     setOnSuccesful(status);
     setOnFailure(status);
+    setOnSuccesfulLoadStock(status);
+    setOnFailureLoadStock(status);
   };
 
   const handleCloseModal = () => {
@@ -347,8 +355,12 @@ const StockReceipt = (props) => {
           <Column lg={3}>
             {onSuccesful &&
               ResponseNotification('success', 'Success', successMessage, setOnSuccessAndFailure)}
+              {onSuccesfulLoadStock &&
+                            ResponseNotification('success', 'Success', successMessageLoadStock, setOnSuccessAndFailure)}
             {onFailure &&
               ResponseNotification('error', 'Error', failureMessage, setOnSuccessAndFailure)}
+              {onFailureLoadStock &&
+                            ResponseNotification('error', 'Error', failureMessageLoadStock, setOnSuccessAndFailure)}
           </Column>
           <Row>
             <Column sm={8} lg={4}>
