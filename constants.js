@@ -3,8 +3,10 @@ export const getLocationName = (name) => `Location: ${name}`;
 export const inventoryMenu = ["Inventory", "Dispense"];
 export const locationCookieName = "bahmni.user.location";
 export const activePatients = "Active Patients";
-export const successMessage = "Stock Receipt Saved Successfully";
-export const failureMessage = "Stock Receipt Failed to Save";
+export const successMessage = "Saved Successfully";
+export const failureMessage = "Failed to Save";
+
+
 
 export const inventoryHeaders = [
 	{
