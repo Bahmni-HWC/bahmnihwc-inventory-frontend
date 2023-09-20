@@ -26,17 +26,12 @@ import styles from './add-item-modal.module.scss';
 const AddItemModal = (props) => {
   const { itemStock } = useItemStockContext();
   const [cookies] = useCookies();
-
   const locationUuid = cookies[locationCookieName].uuid;
-
   const [inventoryItem, setInventoryItem] = useState([]);
-
-  const { data: allPatientList, error: allPatientListError } = useSWR(
-    getAllPatient(locationUuid),
-    fetcher,
-  );
-
   const [rows, setRows] = useState([{ id: 1, drugName: '', avlQty: 0, dispQty: 0 }]);
+  const [inputValue, setInputValue] = useState('');
+
+  const { data: allPatientList } = useSWR(inputValue.length > 1 ? getAllPatient(locationUuid, inputValue) : null, fetcher);
 
   useEffect(() => {
     if (itemStock) {
@@ -164,6 +159,9 @@ const AddItemModal = (props) => {
           shouldFilterItem={filterPatient}
           itemToString={(item) => getPatientName(item) ?? ''}
           onChange={(selectedItem) => props.setPatient(selectedItem?.selectedItem)}
+          onInputChange={(inputValue) => {
+            setInputValue(inputValue);
+           }}
           invalid={!props.patient}
           invalidText='Please select a patient'
           style={{ fontWeight: 'bolder' }}
