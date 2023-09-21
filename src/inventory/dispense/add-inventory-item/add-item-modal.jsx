@@ -155,7 +155,7 @@ const AddItemModal = (props) => {
         <ComboBox
           id='combo-box-select-patient'
           items={allPatientList?.pageOfResults ?? []}
-          placeholder='Select Patient'
+          placeholder='Search and select patient'
           shouldFilterItem={filterPatient}
           itemToString={(item) => getPatientName(item) ?? ''}
           onChange={(selectedItem) => props.setPatient(selectedItem?.selectedItem)}
