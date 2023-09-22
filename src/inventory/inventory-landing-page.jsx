@@ -18,8 +18,9 @@ import TableModal from '../components/BasicTableModal';
 import { useItemStockContext } from '../context/item-stock-context';
 import { exportToExcel } from './export-to-excel';
 import styles from './inventory.module.scss';
+import { LoadStock } from '../components/LoadStock';
 
-const InventoryLandingPage = () => {
+const InventoryLandingPage = (props) => {
   const { itemStock } = useItemStockContext();
 
   const [rows, setRows] = useState([]);
@@ -89,14 +90,16 @@ const InventoryLandingPage = () => {
       <DataTable rows={filteredRows} headers={inventoryHeaders}>
         {({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
           <>
+          <div className={styles.inventoryContentContainer}>
+            <LoadStock setReloadData={props.setReloadData}></LoadStock>
             <TableContainer>
               <TableToolbarContent className={styles.tableToolbarContent}>
-                <TableToolbarSearch value={searchText} onChange={handleSearch} />
-                {rows.length > 0 && (
-                  <Button onClick={handleExportToExcel} kind='tertiary' size='sm'>
-                    Export To Excel
-                  </Button>
-                )}
+                <TableToolbarSearch value={searchText} onChange={handleSearch}/>
+                  {rows.length > 0 && (
+                    <Button onClick={handleExportToExcel} kind='tertiary' size='sm'>
+                      Export To Excel
+                    </Button>
+                  )}
               </TableToolbarContent>
               <Table {...getTableProps()} useZebraStyles={true} className={styles.table}>
                 <TableHead>
@@ -147,6 +150,7 @@ const InventoryLandingPage = () => {
                 </TableBody>
               </Table>
             </TableContainer>
+          </div>
           </>
         )}
       </DataTable>

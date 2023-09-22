@@ -73,7 +73,7 @@ const InventoryMenu = () => {
       <h4>{getLocationName(cookies[locationCookieName]?.name)} </h4>
       <Tabs>
         <Tab label={inventoryMenu[0]}>
-          <InventoryLandingPage />
+          <InventoryLandingPage  setReloadData={setReloadData}/>
         </Tab>
         <Tab label='Stock Receipt'>
           <StockReceipt setReloadData={setReloadData} />

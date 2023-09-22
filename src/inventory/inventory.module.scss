@@ -28,3 +28,9 @@
 		width: 50%;
 	}
 }
+
+.inventoryContentContainer{
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+}
