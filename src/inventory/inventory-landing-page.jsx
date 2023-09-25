@@ -9,6 +9,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  TableToolbar,
   TableToolbarContent,
   TableToolbarSearch,
 } from 'carbon-components-react';
@@ -90,18 +91,19 @@ const InventoryLandingPage = (props) => {
       <DataTable rows={filteredRows} headers={inventoryHeaders}>
         {({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
           <>
-          <div className={styles.inventoryContentContainer}>
             <LoadStock setReloadData={props.setReloadData}></LoadStock>
-            <TableContainer>
-              <TableToolbarContent className={styles.tableToolbarContent}>
-                <TableToolbarSearch value={searchText} onChange={handleSearch}/>
-                  {rows.length > 0 && (
+            <TableContainer style={{width:'100%'}}>
+            <TableToolbar style={{ width: '100%', backgroundColor:"white"}}>
+                <TableToolbarContent style={{ justifyContent: 'flex-start', backgroundColor:"#f4f4f4" }}>
+                  <TableToolbarSearch value={searchText} onChange={handleSearch}/>
+                </TableToolbarContent>
+                {rows.length > 0 && (
                     <Button onClick={handleExportToExcel} kind='tertiary' size='sm'>
                       Export To Excel
                     </Button>
                   )}
-              </TableToolbarContent>
-              <Table {...getTableProps()} useZebraStyles={true} className={styles.table}>
+              </TableToolbar>
+              <Table {...getTableProps()} useZebraStyles={true}>
                 <TableHead>
                   <TableRow>
                     {headers.map((header) => (
@@ -150,7 +152,6 @@ const InventoryLandingPage = (props) => {
                 </TableBody>
               </Table>
             </TableContainer>
-          </div>
           </>
         )}
       </DataTable>
@@ -164,7 +165,7 @@ const InventoryLandingPage = (props) => {
           title={`Stock Details for ${selectedProductName}`}
         />
       )}
-    </div>
+         </div>
   );
 };
 
