@@ -18,7 +18,7 @@ import TableModal from '../components/BasicTableModal';
 import { useItemStockContext } from '../context/item-stock-context';
 import { exportToExcel } from './export-to-excel';
 import styles from './inventory.module.scss';
-import { LoadStock } from '../components/LoadStock';
+import { LoadStock } from '../components/LoadStock/loadStock';
 
 const InventoryLandingPage = (props) => {
   const { itemStock } = useItemStockContext();

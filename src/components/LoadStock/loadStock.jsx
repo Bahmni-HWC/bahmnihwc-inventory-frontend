@@ -81,14 +81,9 @@ export const LoadStock = (props) => {
 
 	useEffect(() => {
 		const saveData = async () => {
-			console.log("save data useEffect");
 			try {
-				console.log("addDrugItems", addDrugItems);
-				console.log("stockRoom", stockRoom.results[0]?.uuid);
 				const response = await saveStockInitial(addDrugItems, "", stockRoom.results[0]?.uuid);
-				console.log("response", response);
 				if (response && response.ok) {
-					console.log("responseeee", response.ok);
 					setReloadData(true);
 					setOnSuccessful(true);
 				} else {
@@ -111,8 +106,7 @@ export const LoadStock = (props) => {
 
 	const handleSaveDrugButtonClick = async () => {
 		try {
-			console.log("handleSaveDrugButtonClick", getLoadStockObj(rows));
-			await setAddDrugItems(getLoadStockObj(rows));
+			setAddDrugItems(getLoadStockObj(rows));
 			setShowModal(false);
 		} catch (error) {
 			console.error("An error occurred:", error);

@@ -75,7 +75,7 @@ const InventoryMenu = () => {
         <Tab label={inventoryMenu[0]}>
           <InventoryLandingPage  setReloadData={setReloadData}/>
         </Tab>
-        <Tab label='Stock Receipt'>
+        <Tab label='e-Aushadhi'>
           <StockReceipt setReloadData={setReloadData} />
         </Tab>
         <Tab label={inventoryMenu[1]}>
