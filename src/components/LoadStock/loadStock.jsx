@@ -21,7 +21,7 @@ import { useCookies } from "react-cookie";
 import useSWR from "swr";
 import { failureMessage, locationCookieName, successMessage } from "../../../constants";
 import "../../../index.scss";
-import { getLoadStockObj } from "../../inventory/stock-receipt/eaushadha-response-mapper";
+import { getLoadStockObj } from "../../inventory/aushada/eaushadha-response-mapper";
 import saveStockInitial from "../../service/save-initial";
 import { fetcher, invItemURL, inventoryItemURL, stockRoomURL } from "../../utils/api-utils";
 import { getDatePattern } from "../../utils/date-utils";

@@ -5,7 +5,7 @@ import useSWR, { mutate } from 'swr';
 import InventoryLandingPage from './inventory-landing-page';
 import { getLocationName, inventoryMenu, locationCookieName } from '../../constants';
 import DispensePage from './dispense/dispense-page';
-import StockReceipt from './stock-receipt/stock-receipt';
+import Aushada from './aushada/aushada';
 import { fetcher, invItemURLByStockroom, stockRoomURL } from '../utils/api-utils';
 import { useItemStockContext, useStockRoomContext } from '../context/item-stock-context';
 import { ResponseNotification } from '../components/notifications/response-notification';
@@ -75,8 +75,8 @@ const InventoryMenu = () => {
         <Tab label={inventoryMenu[0]}>
           <InventoryLandingPage  setReloadData={setReloadData}/>
         </Tab>
-        <Tab label='e-Aushadhi'>
-          <StockReceipt setReloadData={setReloadData} />
+        <Tab label='Aushada'>
+          <Aushada setReloadData={setReloadData} />
         </Tab>
         <Tab label={inventoryMenu[1]}>
           <DispensePage setReloadData={setReloadData} />

@@ -39,7 +39,7 @@ import {
 } from './eaushadha-response-mapper';
 import styles from './stock-receipt.module.scss';
 
-const StockReceipt = (props) => {
+const Aushada = (props) => {
   const [items, setItems] = useState([]);
   const [outwardNumber, setOutwardNumber] = useState('');
   const [stockIntakeButtonClick, setStockIntakeButtonClick] = useState(false);
@@ -349,6 +349,6 @@ const StockReceipt = (props) => {
   );
 };
 
-export default StockReceipt;
+export default Aushada;
 
 
