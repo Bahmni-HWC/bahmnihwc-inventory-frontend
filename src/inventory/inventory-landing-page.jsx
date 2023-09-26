@@ -53,26 +53,42 @@ const InventoryLandingPage = () => {
   const getItemDetails = (productName) => {
     if (itemStock?.length > 0) {
       const item = itemStock.find((itemObject) => itemObject.item.name === productName);
-      const updatedRows = item.details.map((detail, detailIndex) => {
-        const { expiration } = detail;
-        const expirationDate = new Date(expiration);
-        const formattedExpirationDate = `${expirationDate.getDate().toString().padStart(2, '0')}-${(
-          expirationDate.getMonth() + 1
-        )
-          .toString()
-          .padStart(2, '0')}-${expirationDate.getFullYear()}`;
-        return {
-          id: `${detail.batchNumber}-${detailIndex}`,
-          productName: item.item.name,
-          quantity: detail.quantity ?? 0,
-          expiration: expiration ? formattedExpirationDate : 'No Expiration Date',
-          batchNumber: detail.batchNumber ?? 'No Batch Number',
-        };
+      const groupedRows = {};
+  
+      item.details.forEach((detail, detailIndex) => {
+        const { expiration, batchNumber } = detail;
+        const id = `${expiration || 'No Expiration Date'}-${batchNumber || 'No Batch Number'}`;
+  
+        let formattedExpirationDate = 'No Expiration Date';
+
+        if (expiration) {
+          const expirationDate = new Date(expiration);
+
+          formattedExpirationDate = `${expirationDate.getDate().toString().padStart(2, '0')}-${(
+            expirationDate.getMonth() + 1
+          )
+            .toString()
+            .padStart(2, '0')}-${expirationDate.getFullYear()}`;
+        }
+
+        if (!groupedRows[id]) {
+          groupedRows[id] = {
+            id,
+            productName: item.item.name,
+            quantity: 0,
+            expiration: formattedExpirationDate || 'No Expiration Date',
+            batchNumber: batchNumber || 'No Batch Number',
+          };
+        }
+  
+        groupedRows[id].quantity += detail.quantity || 0;
       });
+  
+      const updatedRows = Object.values(groupedRows);
       return updatedRows;
     }
   };
-
+  
   const filteredRows = rows.filter((row) =>
     searchText !== '' ? row?.productName?.toLowerCase().includes(searchText?.toLowerCase()) : row,
   );
