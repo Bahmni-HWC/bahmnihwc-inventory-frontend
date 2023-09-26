@@ -93,7 +93,7 @@ const InventoryLandingPage = (props) => {
           <>
             <LoadStock setReloadData={props.setReloadData}></LoadStock>
             <TableContainer style={{width:'100%'}}>
-            <TableToolbar style={{ width: '100%', backgroundColor:"white"}}>
+            <TableToolbar style={{ backgroundColor:"white", paddingTop:"10px"}}>
                 <TableToolbarContent style={{ justifyContent: 'flex-start', backgroundColor:"#f4f4f4" }}>
                   <TableToolbarSearch value={searchText} onChange={handleSearch}/>
                 </TableToolbarContent>
