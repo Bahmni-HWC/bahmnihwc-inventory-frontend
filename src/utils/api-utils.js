@@ -9,7 +9,7 @@ export const fetcher = async (url) => {
 	if (!response.ok) {
 		throw new Error(`HTTP error! Status: ${response.status}`);
 	}
-	return await response.json();
+	return response.json();
 };
 
 const controller = new AbortController();
