@@ -37,7 +37,7 @@ import {
   getCalculatedQuantity,
   getStockReceiptObj,
 } from './eaushadha-response-mapper';
-import styles from './stock-receipt.module.scss';
+import styles from './aushada.module.scss';
 
 const Aushada = (props) => {
   const [items, setItems] = useState([]);
