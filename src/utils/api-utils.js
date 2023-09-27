@@ -4,13 +4,13 @@ export const inventoryItemURL=()=>`/openmrs/ws/rest/v2/inventory/item?limit=1&v=
 export const invItemURL=(limit)=>`/openmrs/ws/rest/v2/inventory/item?limit=${limit}&v=full`;
 export const activePatientWithDrugOrders = (locationUuid) =>
 	`/openmrs/ws/rest/v1/bahmnicore/sql?location_uuid=${locationUuid}&q=emrapi.sqlSearch.activePatientsWithDrugOrders&v=full`;
-export const fetcher = (url) =>
-	fetch(url).then((response) => {
-		if (!response.ok) {
-			throw new Error(`HTTP error! Status: ${response.status}`);
-		}
-		return response.json();
-	});
+export const fetcher = async (url) => {
+	const response = await fetch(url);
+	if (!response.ok) {
+		throw new Error(`HTTP error! Status: ${response.status}`);
+	}
+	return response.json();
+};
 
 const controller = new AbortController();
 const timeout = 150000;

@@ -1,0 +1,20 @@
+@import '~carbon-components/scss/globals/scss/styles.scss';
+.primaryButton{
+  background-color: #007d79 !important;
+  width: 10.76rem;
+  height: 3rem;
+}
+
+.iconButton {
+  padding: 1.3rem 1.5rem 1.3rem 1.5rem !important;
+  float: right;
+}
+
+.plusButton {
+  margin: 1rem 1rem auto auto !important;
+}
+
+.batchNumberInput,
+.totalQuantityInput {
+  min-width: 7rem;
+}

@@ -9,6 +9,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  TableToolbar,
   TableToolbarContent,
   TableToolbarSearch,
 } from 'carbon-components-react';
@@ -18,8 +19,9 @@ import TableModal from '../components/BasicTableModal';
 import { useItemStockContext } from '../context/item-stock-context';
 import { exportToExcel } from './export-to-excel';
 import styles from './inventory.module.scss';
+import { LoadStock } from '../components/LoadStock/loadStock';
 
-const InventoryLandingPage = () => {
+const InventoryLandingPage = (props) => {
   const { itemStock } = useItemStockContext();
 
   const [rows, setRows] = useState([]);
@@ -105,16 +107,19 @@ const InventoryLandingPage = () => {
       <DataTable rows={filteredRows} headers={inventoryHeaders}>
         {({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
           <>
-            <TableContainer>
-              <TableToolbarContent className={styles.tableToolbarContent}>
-                <TableToolbarSearch value={searchText} onChange={handleSearch} />
+            <LoadStock setReloadData={props.setReloadData}></LoadStock>
+            <TableContainer style={{width:'100%'}}>
+            <TableToolbar style={{ backgroundColor:"white", paddingTop:"10px"}}>
+                <TableToolbarContent style={{ justifyContent: 'flex-start', backgroundColor:"#f4f4f4" }}>
+                  <TableToolbarSearch value={searchText} onChange={handleSearch}/>
+                </TableToolbarContent>
                 {rows.length > 0 && (
-                  <Button onClick={handleExportToExcel} kind='tertiary' size='sm'>
-                    Export To Excel
-                  </Button>
-                )}
-              </TableToolbarContent>
-              <Table {...getTableProps()} useZebraStyles={true} className={styles.table}>
+                    <Button onClick={handleExportToExcel} kind='tertiary' size='sm'>
+                      Export To Excel
+                    </Button>
+                  )}
+              </TableToolbar>
+              <Table {...getTableProps()} useZebraStyles={true}>
                 <TableHead>
                   <TableRow>
                     {headers.map((header) => (
@@ -176,7 +181,7 @@ const InventoryLandingPage = () => {
           title={`Stock Details for ${selectedProductName}`}
         />
       )}
-    </div>
+         </div>
   );
 };
 
