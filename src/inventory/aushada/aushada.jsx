@@ -3,6 +3,8 @@ import {
   ButtonSet,
   Column,
   DataTable,
+  DatePicker,
+  DatePickerInput,
   Grid,
   Loading,
   Row,
@@ -30,11 +32,15 @@ import saveReceipt from '../../service/save-receipt';
 import {
   fetcher,
   fetcherPost,
+  getRequest,
+  globalPropertyUrl,
+  stockInwardURL,
   stockReceiptURL,
   stockRoomURL
 } from '../../utils/api-utils';
 import {
   getCalculatedQuantity,
+  getInwardStockReceiptObj,
   getStockReceiptObj,
 } from './eaushadha-response-mapper';
 import styles from './aushada.module.scss';
@@ -55,18 +61,30 @@ const Aushada = (props) => {
   const [cookies] = useCookies();
   const { setReloadData } = props;
   const { itemStock} = useItemStockContext();
+  const [institutionId, setInstitutionId] = useState('');
+  const [isDateSelected, setIsDateSelected] = useState(false);
+  const [isInstitutionIdDisabled, setInstitutionIdDisabled] = useState(true);
+  const [selectedDate, setSelectedDate] = useState('');
+  const [enableEaushadhaInwardApi, setEnableEaushadhaInwardApi] = useState('');
 
   const { data: stockRoom, error: stockRoomError } = useSWR(
     stockRoomURL(cookies[locationCookieName]?.name.trim()),
     fetcher,
   );
 
+  useEffect(async ()=>{
+    const response=await getRequest(globalPropertyUrl('eAushadha.inward'))
+    if(response==true){
+      setEnableEaushadhaInwardApi(true);
+    }
+  },[enableEaushadhaInwardApi])
+
   useEffect(() => {
     if (stockIntakeButtonClick) {
     let outwardMatch = false;
      for (const result of itemStock) {
      for(const stockOperation of result.details){
-       if (stockOperation.batchOperation.outwardId === outwardNumber) {
+       if (stockOperation.batchOperation.outwardId && stockOperation.batchOperation.outwardId === outwardNumber ) {
             outwardMatch = true;
             break;
           }
@@ -84,9 +102,19 @@ const Aushada = (props) => {
 
       const fetchData = async () => {
         try {
-          const response = await fetcherPost(stockReceiptURL(), { ouid: outwardNumber });
+          let url, requestBody;
+
+          if (enableEaushadhaInwardApi) {
+            url = stockInwardURL();
+            const formattedDate = new Date(new Date(selectedDate).setDate(new Date(selectedDate).getDate() + 1)).toISOString().split('T')[0];
+            requestBody = { "inwardDate":formattedDate, "instituteId":institutionId};
+          } else {
+            url = stockReceiptURL();
+            requestBody = { ouid: outwardNumber };
+          }
+          const response = await fetcherPost(url, requestBody);
           if (response) {
-            setItems(getStockReceiptObj(response));
+            setItems(enableEaushadhaInwardApi ? getInwardStockReceiptObj(response) : getStockReceiptObj(response));
             setReceivedResponse(response);
             setStockEmptyResonseMessage(response.length === 0);
           }
@@ -98,7 +126,7 @@ const Aushada = (props) => {
       fetchData();
     }
     }
-  }, [stockIntakeButtonClick, outwardNumber]);
+  }, [stockIntakeButtonClick, outwardNumber,selectedDate,institutionId,items]);
 
   useEffect(() => {
     if (items.length > 0) {
@@ -113,19 +141,21 @@ const Aushada = (props) => {
   }, [items]);
 
   useEffect(() => {
-    if (outwardNumber.length > 0) {
+    if (outwardNumber.length > 0 || (institutionId.length > 0 && isDateSelected)) {
       setIsOutwardNumberDisabled(false);
       setIsFetchStockDisabled(false);
+      setInstitutionIdDisabled(false)
     } else {
       setIsOutwardNumberDisabled(false);
       setIsFetchStockDisabled(true);
+      setInstitutionIdDisabled(false)
     }
 
     if (items.length > 0) {
       setIsOutwardNumberDisabled(true);
       setIsFetchStockDisabled(true);
     }
-  }, [items, outwardNumber]);
+  }, [items, outwardNumber, institutionId, isDateSelected]);
 
   useEffect(() => {
     if (onSuccesful) {
@@ -184,6 +214,11 @@ const Aushada = (props) => {
     setOnFailure(status);
 
   };
+  
+  const handleDateChange = (date) => {
+    setSelectedDate(date[0]);
+    setIsDateSelected(true);
+  };
 
  return (
     <>
@@ -196,16 +231,47 @@ const Aushada = (props) => {
               ResponseNotification('error', 'Error', failureMessage, setOnSuccessAndFailure)}
                    </Column>
           <Row>
-            <Column sm={8} lg={4}>
-              <TextInput
-                id='stock-receipt'
-                labelText='Outward Number'
-                value={outwardNumber}
-                style={{ width: '80%' }}
-                onChange={(e) => setOutwardNumber(e.target.value)}
-                disabled={isOutwardNumberDisabled}
-              />
-            </Column>
+          {enableEaushadhaInwardApi ? (
+              <>
+                <Column sm={8} lg={4}>
+                  <TextInput
+                    id='stock-receipt'
+                    labelText='Institution ID'
+                    value={institutionId}
+                    style={{ width: '80%' }}
+                    onChange={(e) => setInstitutionId(e.target.value)}
+                    disabled={isInstitutionIdDisabled}
+                  />
+                </Column>
+                <Column sm={8} lg={4}>
+                  <DatePicker
+                    datePickerType='single'
+                    dateFormat='y-m-d'
+                    value={selectedDate}
+                    onChange={handleDateChange}
+                  >
+                    <DatePickerInput
+                      id='myDatePicker'
+                      labelText='Select a date'
+                      placeholder='yyyy/mm/dd'
+                      pattern='d{1,2}/d{1,2}/d{4}'
+                    />
+                  </DatePicker>
+                </Column>
+              </>) : (
+              <>
+                <Column sm={8} lg={4}>
+                  <TextInput
+                    id='stock-receipt'
+                    labelText='Outward Number'
+                    value={outwardNumber}
+                    style={{ width: '80%' }}
+                    onChange={(e) => setOutwardNumber(e.target.value)}
+                    disabled={isOutwardNumberDisabled}
+                  />
+                </Column>
+              </>
+            )}
             <Column sm={8} lg={4} style={{ paddingTop: '1.5rem' }}>
               <Button
                 onClick={() => setStockIntakeButtonClick(true)}
