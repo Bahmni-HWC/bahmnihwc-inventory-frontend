@@ -22,6 +22,7 @@ const saveReceipt = async (items, outwardNumber, destinationUuid) => {
         expiration: item.expiration,
         batchNumber: item.batchNumber,
         calculatedExpiration: true,
+        inwardNo: item.inwardno,
       });
     }),
   );
@@ -39,7 +40,7 @@ const saveReceipt = async (items, outwardNumber, destinationUuid) => {
     department: '',
     outwardId: outwardNumber,
   };
-
+  
   return postRequest(stockOperationURL, requestBody);
 };
 export default saveReceipt;
