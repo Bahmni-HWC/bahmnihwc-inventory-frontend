@@ -47,15 +47,15 @@ export const getCalculatedQuantity = (quantity, unitPack) => {
 export const getInwardStockReceiptObj = (response) => {
 	const stockReceiptArray = [];
 	response?.forEach((element,index) => {
-		const dateString = element.exp_date;
+		const dateString = element.exp_Date;
 		const convertedDate = new Date(dateString.split("/").reverse().join("-"));
-		const itemName = element.drug_name.split(/\s+/).join(' ');
+		const itemName = element.drug_Name.split(/\s+/).join(' ');
 		const rowObj = {
-			id: `${element.drug_id}-${index}}`,
-			itemId: element.drug_id,
+			id: `${element.drug_Id}-${index}}`,
+			itemId: element.drug_Id,
 			item: itemName,
 			supplierName: element.supplier,
-			batchNumber: element.batch_number,
+			batchNumber: element.batch_Number,
 			expiration: convertedDate
 				.toLocaleDateString("en-GB")
 				.split("/")
@@ -64,7 +64,7 @@ export const getInwardStockReceiptObj = (response) => {
 			totalQuantity: element.quantity_In_Units,
 			unitPack: element.unitPack,
 			invalid: false,
-			inwardno: element.inwardno,
+			inwardNo: element.inwardNo,
 		};
 		stockReceiptArray.push(rowObj);
 	})
