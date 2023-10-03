@@ -34,6 +34,9 @@ const InventoryLandingPage = (props) => {
     setSearchText(event.target.value);
   };
   const handleExportToExcel = () => exportToExcel(filteredRows);
+  const refreshParent = () => {
+      props.setReloadData(true);
+    };
 
   useEffect(() => {
     if (itemStock?.length > 0) {
@@ -56,11 +59,11 @@ const InventoryLandingPage = (props) => {
     if (itemStock?.length > 0) {
       const item = itemStock.find((itemObject) => itemObject.item.name === productName);
       const groupedRows = {};
-  
+
       item.details.forEach((detail, detailIndex) => {
         const { expiration, batchNumber } = detail;
         const id = `${expiration || 'No Expiration Date'}-${batchNumber || 'No Batch Number'}`;
-  
+
         let formattedExpirationDate = 'No Expiration Date';
 
         if (expiration) {
@@ -82,15 +85,16 @@ const InventoryLandingPage = (props) => {
             batchNumber: batchNumber || 'No Batch Number',
           };
         }
-  
+
         groupedRows[id].quantity += detail.quantity || 0;
       });
-  
+
       const updatedRows = Object.values(groupedRows);
+      props.setReloadData(false);
       return updatedRows;
     }
   };
-  
+
   const filteredRows = rows.filter((row) =>
     searchText !== '' ? row?.productName?.toLowerCase().includes(searchText?.toLowerCase()) : row,
   );
@@ -100,6 +104,7 @@ const InventoryLandingPage = (props) => {
   const handleClick = (productName) => {
     setSelectedProductName(productName);
     setShowModal(true);
+    props.setReloadData(false);
   };
 
   return (
@@ -108,16 +113,16 @@ const InventoryLandingPage = (props) => {
         {({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
           <>
             <LoadStock setReloadData={props.setReloadData}></LoadStock>
-            <TableContainer style={{width:'100%'}}>
-            <TableToolbar style={{ backgroundColor:"white", paddingTop:"10px"}}>
-                <TableToolbarContent style={{ justifyContent: 'flex-start', backgroundColor:"#f4f4f4" }}>
-                  <TableToolbarSearch value={searchText} onChange={handleSearch}/>
+            <TableContainer style={{ width: '100%' }}>
+              <TableToolbar style={{ backgroundColor: "white", paddingTop: "10px" }}>
+                <TableToolbarContent style={{ justifyContent: 'flex-start', backgroundColor: "#f4f4f4" }}>
+                  <TableToolbarSearch value={searchText} onChange={handleSearch} />
                 </TableToolbarContent>
                 {rows.length > 0 && (
-                    <Button onClick={handleExportToExcel} kind='tertiary' size='sm'>
-                      Export To Excel
-                    </Button>
-                  )}
+                  <Button onClick={handleExportToExcel} kind='tertiary' size='sm'>
+                    Export To Excel
+                  </Button>
+                )}
               </TableToolbar>
               <Table {...getTableProps()} useZebraStyles={true}>
                 <TableHead>
@@ -150,8 +155,8 @@ const InventoryLandingPage = (props) => {
                             key={cell.id}
                             className={`${
                               cell.id.includes('productName') ? styles.stickyColumn : ''
-                            } 
-												}`}
+                            }
+                            `}
                           >
                             {cell.id.includes('productName') ? (
                               <Link href='#' onClick={() => handleClick(cell.value)}>
@@ -179,6 +184,7 @@ const InventoryLandingPage = (props) => {
           closeModal={() => setShowModal(false)}
           stickyColumnName={'productName'}
           title={`Stock Details for ${selectedProductName}`}
+          onChildSave={refreshParent}
         />
       )}
          </div>
