@@ -36,9 +36,9 @@ const TableModal = (props) => {
   const [editingRowId, setEditingRowId] = useState(null);
   const [cookies] = useCookies();
   const [saveClicked, setSaveClicked] = useState(false);
-  const [isEditing, setIsEditing] = useState(false); // Track editing mode
+  const [isEditing, setIsEditing] = useState(false);
   const editRowRef = useRef(null);
-  const [editedQuantity, setEditedQuantity] = useState({}); // State to track edited quantity values
+  const [editedQuantity, setEditedQuantity] = useState({});
 
   const { data: stockRoom, error: stockRoomError } = useSWR(
     stockRoomURL(cookies[locationCookieName]?.name.trim()),
@@ -70,13 +70,6 @@ useEffect(() => {
     };
   }, []);
 
-  const handleQuantityChange = (rowId, value) => {
-    // Update the edited quantity state when the quantity input changes
-    setEditedQuantity((prevEditedQuantity) => ({
-      ...prevEditedQuantity,
-      [rowId]: value,
-    }));
-  };
 
   const handleActualQuantityChange = (rowId, value) => {
     const updatedEditedRows = editedRows.map((row) => {
@@ -104,12 +97,11 @@ useEffect(() => {
       if (editedRow) {
         const { productName, quantity, actualQuantity, expiration, batchNumber } = editedRow;
 
-        // Use the edited quantity state if available, otherwise use the original quantity value
         const editedQuantityValue = editedQuantity[rowId] || quantity;
 
         const response = await saveEditedQuantity(
           productName,
-          editedQuantityValue, // Use the edited quantity value
+          quantity,
           actualQuantity,
           expiration,
           batchNumber,
@@ -200,7 +192,7 @@ useEffect(() => {
 
                                          onKeyDown={(e) => {
                                             if (e.key === '-' || e.key === 'e') {
-                                              e.preventDefault(); // Prevent typing "-" and "e"
+                                              e.preventDefault();
                                             }
                                           }}
 

@@ -15,7 +15,7 @@ const saveReceipt = async (items, outwardNumber, destinationUuid) => {
       const itemName = encodeURIComponent(item.item);
       const response = await getRequest(`/openmrs/ws/rest/v2/inventory/item?v=full&q=${itemName}`);
       const itemUuid = response.results[0]?.uuid;
-      // Add the item to the requestBody.items array with all corresponding properties
+
       itemsArray.push({
         item: itemUuid,
         quantity: item.totalQuantity,
