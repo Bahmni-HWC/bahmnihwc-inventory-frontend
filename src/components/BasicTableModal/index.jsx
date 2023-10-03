@@ -38,7 +38,6 @@ const TableModal = (props) => {
   const [saveClicked, setSaveClicked] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const editRowRef = useRef(null);
-  const [editedQuantity, setEditedQuantity] = useState({});
 
   const { data: stockRoom, error: stockRoomError } = useSWR(
     stockRoomURL(cookies[locationCookieName]?.name.trim()),
@@ -87,7 +86,7 @@ useEffect(() => {
   const startEditingRow = (rowId) => {
     setEditingRowId(rowId);
 
-    setIsEditing(true); // Enter editing mode
+    setIsEditing(true);
   };
 
   const handleSaveClick = async (rowId) => {
@@ -96,8 +95,6 @@ useEffect(() => {
 
       if (editedRow) {
         const { productName, quantity, actualQuantity, expiration, batchNumber } = editedRow;
-
-        const editedQuantityValue = editedQuantity[rowId] || quantity;
 
         const response = await saveEditedQuantity(
           productName,
@@ -177,7 +174,7 @@ useEffect(() => {
                                   ref={editRowRef}
                                 >
                                 <div style={{ paddingRight:'50px' }}>
-                                  {editedQuantity[row.id] || cell.value}
+                                  {cell.value}
                                 </div>
                                   {isEditing && (
                                     <>
