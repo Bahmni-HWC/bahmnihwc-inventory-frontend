@@ -44,6 +44,8 @@ import {
   getStockReceiptObj,
 } from './eaushadha-response-mapper';
 import styles from './aushada.module.scss';
+import inwardSaveReceipt from '../../service/save-receipt';
+import { convertToDateTimeFormat } from '../../utils/date-utils';
 
 const Aushada = (props) => {
   const [items, setItems] = useState([]);
@@ -58,6 +60,7 @@ const Aushada = (props) => {
   const [stockEmptyResonseMessage, setStockEmptyResonseMessage] = useState(false);
   const [negativeError, setNegativeError] = useState(false);
   const [outwardNumberExists, setOutwardNumberExists] = useState(false);
+  const [inwardNumberExists, setInwardNumberExists] = useState(false);
   const [cookies] = useCookies();
   const { setReloadData } = props;
   const { itemStock} = useItemStockContext();
@@ -81,49 +84,54 @@ const Aushada = (props) => {
 
   useEffect(() => {
     if (stockIntakeButtonClick) {
-    let outwardMatch = false;
-     for (const result of itemStock) {
-     for(const stockOperation of result.details){
-       if (stockOperation.batchOperation.outwardId && stockOperation.batchOperation.outwardId === outwardNumber ) {
-            outwardMatch = true;
-            break;
+      let outwardMatch = false;
+      let inwardNumberMatch = false;
+      
+      for (const result of itemStock) {
+          for (const stockOperation of result.details) {
+            const formattedDate2 = convertToDateTimeFormat(selectedDate);
+              if (stockOperation.batchOperation.instituteId === institutionId && stockOperation.batchOperation.inwardDate === formattedDate2) {
+                  inwardNumberMatch = true;
+                  break;
+              }
+              if (stockOperation.batchOperation.outwardId === outwardNumber) {
+                  outwardMatch = true;
+                  break;
+              }
           }
-        }
-        if(outwardMatch){
-          break;
-        }
+          if (inwardNumberMatch || outwardMatch) break;
       }
-          if(outwardMatch){
-          setOutwardNumberExists(true);
-          setStockIntakeButtonClick(false);
-          }
-          else{
-            setOutwardNumberExists(false);
 
-      const fetchData = async () => {
-        try {
-          let url, requestBody;
+    setInwardNumberExists(inwardNumberMatch);
+    setOutwardNumberExists(outwardMatch);
+    setStockIntakeButtonClick(false);
 
-          if (enableEaushadhaInwardApi) {
-            url = stockInwardURL();
-            const formattedDate = new Date(new Date(selectedDate).setDate(new Date(selectedDate).getDate() + 1)).toISOString().split('T')[0];
-            requestBody = { "inwardDate":formattedDate, "instituteId":institutionId};
-          } else {
-            url = stockReceiptURL();
-            requestBody = { ouid: outwardNumber };
-          }
-          const response = await fetcherPost(url, requestBody);
-          if (response) {
-            setItems(enableEaushadhaInwardApi ? getInwardStockReceiptObj(response) : getStockReceiptObj(response));
-            setReceivedResponse(response);
-            setStockEmptyResonseMessage(response.length === 0);
-          }
-        } catch (error) {
-          setStockReceiptError(error);
-        }
-        setStockIntakeButtonClick(false);
-      };
-      fetchData();
+    if(!inwardNumberMatch && !outwardMatch)
+        {
+            const fetchData = async () => {
+              try {
+                let url, requestBody;
+
+                if (enableEaushadhaInwardApi) {
+                  url = stockInwardURL();
+                  const formattedDate= convertToDateTimeFormat(selectedDate);
+                  requestBody = { "inwardDate":formattedDate, "instituteId":institutionId};
+                } else {
+                  url = stockReceiptURL();
+                  requestBody = { ouid: outwardNumber };
+                }
+                const response = await fetcherPost(url, requestBody);
+                if (response) {
+                  setItems(enableEaushadhaInwardApi ? getInwardStockReceiptObj(response) : getStockReceiptObj(response));
+                  setReceivedResponse(response);
+                  setStockEmptyResonseMessage(response.length === 0);
+                }
+              } catch (error) {
+                setStockReceiptError(error);
+              }
+              setStockIntakeButtonClick(false);
+             };
+           fetchData();
     }
     }
   }, [stockIntakeButtonClick, outwardNumber,selectedDate,institutionId,items]);
@@ -197,7 +205,8 @@ const Aushada = (props) => {
   };
   const handleSave = async () => {
     try {
-      const response = await saveReceipt(items, outwardNumber, stockRoom.results[0]?.uuid);
+      const formattedDate = convertToDateTimeFormat(selectedDate);
+      const response = await inwardSaveReceipt(items, institutionId,formattedDate, stockRoom.results[0]?.uuid);
       if (response && response.ok) {
         setReloadData(true);
         setOnSuccesful(true);
@@ -300,6 +309,15 @@ const Aushada = (props) => {
               )}
             </div>
           )}
+            {inwardNumberExists && (
+              <h3 style={{ paddingTop: '1rem' }}>
+                {ResponseNotification(
+                  'error',
+                  'Error',
+                  'Institution Id with this Date already fetched. Please enter a new institute id and date',setInwardNumberExists
+                )}
+              </h3>
+            )}
             {outwardNumberExists && (
                       <h3 style={{ paddingTop: '1rem' }}>
                         {ResponseNotification(
