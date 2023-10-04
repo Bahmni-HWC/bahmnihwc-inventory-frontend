@@ -255,14 +255,14 @@ const Aushada = (props) => {
                 <Column sm={8} lg={4}>
                   <DatePicker
                     datePickerType='single'
-                    dateFormat='y-m-d'
+                    dateFormat='d-m-Y'
                     value={selectedDate}
                     onChange={handleDateChange}
                   >
                     <DatePickerInput
                       id='myDatePicker'
                       labelText='Select a date'
-                      placeholder='yyyy/mm/dd'
+                      placeholder='dd/mm/yyyy'
                       pattern='d{1,2}/d{1,2}/d{4}'
                     />
                   </DatePicker>
@@ -354,10 +354,17 @@ const Aushada = (props) => {
                             </TableRow>
                           </TableHead>
                           <TableBody>
-                            {rows.map((row) => (
+                            {rows.map((row,index) => (
                               <>
                                 <TableRow {...getRowProps({ row })} key='stock-fetch'>
                                   {row.cells.map((cell) => {
+                                    if(cell.id.includes('serialNo')){
+                                      return(
+                                        <TableCell key={cell.id}>
+                                          {++index}
+                                        </TableCell>
+                                      )
+                                    }
                                     if (
                                       cell.id.includes('totalQuantity') ||
                                       cell.id.includes('quantity')
