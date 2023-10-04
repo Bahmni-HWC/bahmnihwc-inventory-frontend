@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Tabs, Tab, Loading } from 'carbon-components-react';
 import { useCookies } from 'react-cookie';
 import useSWR, { mutate } from 'swr';
@@ -15,13 +15,12 @@ const InventoryMenu = () => {
   const { setItemStock, setItemStockError } = useItemStockContext();
   const { setStockRoom, setStockRoomError } = useStockRoomContext();
   const [reloadData, setReloadData] = React.useState(false);
+  const [totalInventoryItemsInStockroom, setTotalInventoryItemsInStockroom] = useState(1);
 
   const { data: stockRoom, error: stockRoomError } = useSWR(
     stockRoomURL(cookies[locationCookieName]?.name.trim()),
     fetcher,
   );
-
-  let totalInventoryItemsInStockroom = 1;
 
   const { data: invItems, error: inventoryItemsError } = useSWR(
     stockRoom
@@ -30,14 +29,16 @@ const InventoryMenu = () => {
     fetcher,
   );
 
-  totalInventoryItemsInStockroom = invItems?.length ?? 1;
-
   const { data: items, error: inventoryItemError } = useSWR(
     stockRoom && totalInventoryItemsInStockroom !== undefined
       ? invItemURLByStockroom(stockRoom.results[0].uuid, totalInventoryItemsInStockroom)
       : '',
     fetcher,
   );
+
+  useEffect(() => {
+    setTotalInventoryItemsInStockroom(invItems?.length ? invItems.length : 1);
+  }, [invItems]);
 
   useEffect(() => {
     if (reloadData) {
