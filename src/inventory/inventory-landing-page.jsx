@@ -20,6 +20,7 @@ import { useItemStockContext } from '../context/item-stock-context';
 import { exportToExcel } from './export-to-excel';
 import styles from './inventory.module.scss';
 import { LoadStock } from '../components/LoadStock/loadStock';
+import { ResponseNotification } from '../components/notifications/response-notification';
 
 const InventoryLandingPage = (props) => {
   const { itemStock } = useItemStockContext();
@@ -33,10 +34,14 @@ const InventoryLandingPage = (props) => {
   const handleSearch = (event) => {
     setSearchText(event.target.value);
   };
+
+
+   const refreshParent = () => {
+        props.setReloadData(true);
+
+      };
+
   const handleExportToExcel = () => exportToExcel(filteredRows);
-  const refreshParent = () => {
-      props.setReloadData(true);
-    };
 
   useEffect(() => {
     if (itemStock?.length > 0) {
@@ -104,7 +109,6 @@ const InventoryLandingPage = (props) => {
   const handleClick = (productName) => {
     setSelectedProductName(productName);
     setShowModal(true);
-    props.setReloadData(false);
   };
 
   return (
@@ -184,6 +188,7 @@ const InventoryLandingPage = (props) => {
           closeModal={() => setShowModal(false)}
           stickyColumnName={'productName'}
           title={`Stock Details for ${selectedProductName}`}
+          setReloadData={props.setReloadData}
           onChildSave={refreshParent}
         />
       )}
