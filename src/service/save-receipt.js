@@ -99,4 +99,4 @@ const inwardSaveReceipt = async (items, institutionId, inwardDate, destinationUu
   return postRequest(stockOperationURL, requestBody);
 };
 
-export default inwardSaveReceipt;
+export { saveReceipt, inwardSaveReceipt };

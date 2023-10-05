@@ -28,7 +28,6 @@ import {
 import '../../../index.scss';
 import { ResponseNotification } from '../../components/notifications/response-notification';
 import { useItemStockContext } from '../../context/item-stock-context';
-import saveReceipt from '../../service/save-receipt';
 import {
   fetcher,
   fetcherPost,
@@ -44,8 +43,8 @@ import {
   getStockReceiptObj,
 } from './eaushadha-response-mapper';
 import styles from './aushada.module.scss';
-import inwardSaveReceipt from '../../service/save-receipt';
 import { convertToDateTimeFormat } from '../../utils/date-utils';
+import { inwardSaveReceipt, saveReceipt } from '../../service/save-receipt';
 
 const Aushada = (props) => {
   const [items, setItems] = useState([]);
@@ -206,7 +205,7 @@ const Aushada = (props) => {
   const handleSave = async () => {
     try {
       const formattedDate = convertToDateTimeFormat(selectedDate);
-      const response = await inwardSaveReceipt(items, institutionId,formattedDate, stockRoom.results[0]?.uuid);
+      const response = await(enableEaushadhaInwardApi ? inwardSaveReceipt(items, institutionId,formattedDate, stockRoom.results[0]?.uuid) : saveReceipt(items, outwardNumber, stockRoom.results[0]?.uuid));
       if (response && response.ok) {
         setReloadData(true);
         setOnSuccesful(true);
