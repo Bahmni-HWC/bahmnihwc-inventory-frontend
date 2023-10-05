@@ -217,6 +217,7 @@ useEffect(() => {
                                         onChange={(e) => handleActualQuantityChange(row.id, e.target.value)}
                                          className={`${styles.smallerInput} ${isEditing ? styles.smallerInputActive : ''}`}
                                         style={{ width: '50px' }}
+                                        min="0"
                                       />
                                       <Button
                                         kind="ghost"
