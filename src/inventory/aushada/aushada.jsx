@@ -81,23 +81,22 @@ const Aushada = (props) => {
     if(response==true){
       setEnableEaushadhaInwardApi(true);
     }
+    const fetchInstituteIdByLocation = async () => {
+      const response = await getRequest(getLocationAttributes(locationUuid));
+      response?.results?.forEach((result) => {
+        if (result?.attributeType?.display === "Institute Id" && result?.value) {
+          setInstituteId(result?.value);
+          setInstituteIdExists(true)
+          return;
+        }
+        else{
+          setInstituteId("Contact Admin to set Institute Id")
+        }
+      });
+    };
+  
+    fetchInstituteIdByLocation();
   },[enableEaushadhaInwardApi])
-
-  const fetchInstituteIdByLocation = async () => {
-    const response = await getRequest(getLocationAttributes(locationUuid));
-    response?.results?.forEach((result) => {
-      if (result?.attributeType?.display === "institutionId" && result?.value) {
-        setInstituteId(result?.value);
-        setInstituteIdExists(true)
-        return;
-      }
-      else{
-        setInstituteId("Contact Admin to set Institution Id")
-      }
-    });
-  };
-
-  fetchInstituteIdByLocation();
 
   useEffect(() => {
     if (stockIntakeButtonClick) {
@@ -259,7 +258,7 @@ const Aushada = (props) => {
               <>
                 <Column sm={8} lg={4}>
                 <h4 style={{ paddingTop: '1.7rem', fontSize: '1.2rem', color: '#333' }}>
-                  Institution ID: {instituteId}
+                  Institute ID: {instituteId}
                 </h4>
                 </Column>
                 <Column sm={8} lg={4}>
@@ -325,7 +324,7 @@ const Aushada = (props) => {
                 {ResponseNotification(
                   'error',
                   'Error',
-                  'Institution Id with this Date already fetched. Please enter a new institute id and date',setInwardNumberExists
+                  'Institute Id with this Date already fetched. Please enter a new institute id and date',setInwardNumberExists
                 )}
               </h3>
             )}

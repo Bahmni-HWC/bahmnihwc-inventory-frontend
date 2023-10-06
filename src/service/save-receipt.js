@@ -44,7 +44,7 @@ const saveReceipt = async (items, outwardNumber, destinationUuid) => {
   return postRequest(stockOperationURL, requestBody);
 };
 
-const inwardSaveReceipt = async (items, institutionId, inwardDate, destinationUuid) => {
+const inwardSaveReceipt = async (items, institutionId, stockInwardDate, destinationUuid) => {
   const instanceTypeResponse = await getRequest(stockOperationTypeURL('Receipt'));
   const instanceTypeUuids = instanceTypeResponse.results[0].uuid;
   const itemsArray = [];
@@ -67,25 +67,7 @@ const inwardSaveReceipt = async (items, institutionId, inwardDate, destinationUu
   const requestBody = {
     status: 'NEW',
     attributes: [],
-    // items: itemsArray,
-   items: [
-      {
-          item: "37d4b9c8-635c-4de8-8929-805d3101232b",
-          quantity: 2,
-          expiration: "30-11-2024",
-          batchNumber: "A361",
-          calculatedExpiration: true,
-          inwardNumber: "INW-0000004"
-      },
-      {
-        item: "3093c9da-b362-473f-b699-05e7fdb52506",
-        quantity: 5,
-        expiration: "31-07-2025",
-        batchNumber: "EM981",
-        calculatedExpiration: true,
-        inwardNumber: "INW-0000005"
-      }
-    ],
+    items: itemsArray,
     operationNumber: '',
     instanceType: instanceTypeUuids,
     operationDate: getFormattedDate(),
@@ -93,7 +75,7 @@ const inwardSaveReceipt = async (items, institutionId, inwardDate, destinationUu
     destination: destinationUuid,
     institution: '',
     department: '',
-    inwardDate: inwardDate,
+    inwardDate: stockInwardDate,
     instituteId: institutionId,
   };
   return postRequest(stockOperationURL, requestBody);
