@@ -14,30 +14,27 @@ import {
 } from 'carbon-components-react';
 import { Edit16, Save16 } from '@carbon/icons-react';
 import styles from './BasicTableModal.module.scss';
-import saveEditedQuantity from '../../service/save-quantity';
+import adjustQuantity from '../../service/save-quantity';
 import useSWR from 'swr';
 import { fetcher, stockRoomURL, stockTakeURL } from '../../utils/api-utils';
-import { locationCookieName } from '../../../constants';
+import { locationCookieName, successMessage, failureMessage } from '../../../constants';
 import { useCookies } from 'react-cookie';
+import { ResponseNotification } from '../../components/notifications/response-notification';
+
+
 
 const TableModal = (props) => {
-  const {
-    showModal,
-    headers,
-    rows,
-    closeModal,
-    stickyColumnName,
-    title,
-    onChildSave,
-
-  } = props;
-
+  const { showModal, headers, rows, closeModal, stickyColumnName, title, onChildSave } = props;
   const [editedRows, setEditedRows] = useState([...rows]);
   const [editingRowId, setEditingRowId] = useState(null);
   const [cookies] = useCookies();
   const [saveClicked, setSaveClicked] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const editRowRef = useRef(null);
+  const [quantityDifference, setQuantityDifference] = useState({});
+  const [onSuccesful, setOnSuccesful] = useState(false);
+  const [onFailure, setOnFailure] = useState(false);
+  const [isSaveButtonDisabled, setIsSaveButtonDisabled] = useState(true);
 
   const { data: stockRoom, error: stockRoomError } = useSWR(
     stockRoomURL(cookies[locationCookieName]?.name.trim()),
@@ -69,6 +66,18 @@ useEffect(() => {
     };
   }, []);
 
+  const handleQuantityChange = (rowId, value) => {
+    const updatedEditedRows = editedRows.map((row) => {
+      if (row.id === rowId) {
+        return {
+          ...row,
+          quantity: value,
+        };
+      }
+      return row;
+    });
+    setEditedRows(updatedEditedRows);
+  };
 
   const handleActualQuantityChange = (rowId, value) => {
     const updatedEditedRows = editedRows.map((row) => {
@@ -80,7 +89,17 @@ useEffect(() => {
       }
       return row;
     });
+
     setEditedRows(updatedEditedRows);
+  const quantity = parseInt(updatedEditedRows.find((row) => row.id === rowId)?.quantity, 10);
+    const actualValue = parseInt(value, 10);
+
+    if (!isNaN(quantity) && !isNaN(actualValue) && quantity === actualValue) {
+      setIsSaveButtonDisabled(true);
+    } else {
+
+      setIsSaveButtonDisabled(false);
+    }
   };
 
   const startEditingRow = (rowId) => {
@@ -91,24 +110,36 @@ useEffect(() => {
 
   const handleSaveClick = async (rowId) => {
     try {
-      const editedRow = editedRows.find((row) => row.id === rowId);
+      const editedRowIndex = editedRows.findIndex((row) => row.id === rowId);
 
-      if (editedRow) {
-        const { productName, quantity, actualQuantity, expiration, batchNumber } = editedRow;
+          if (editedRowIndex !== -1) {
+            const editedRow = { ...editedRows[editedRowIndex] };
+            const { productName, quantity, expiration, batchNumber, actualQuantity } = editedRow;
 
-        const response = await saveEditedQuantity(
-          productName,
-          quantity,
-          actualQuantity,
-          expiration,
-          batchNumber,
-          stockRoom.results[0]?.uuid
-        );
+            const quantityDiff = parseInt(actualQuantity, 10) - parseInt(quantity, 10)  ;
 
-        if (response && response.ok) {
-          setSaveClicked(true);
+
+            editedRow.quantity = quantityDiff.toString();
+
+
+            const updatedRows = [...editedRows];
+            updatedRows[editedRowIndex] = editedRow;
+
+            const response = await adjustQuantity(
+              productName,
+              editedRow.quantity,
+              expiration,
+              batchNumber,
+              stockRoom.results[0]?.uuid
+            );
+    if (response && response.ok) {
+        setEditedRows(updatedRows);
+        setOnSuccesful(true);
+        setSaveClicked(true);
+
           console.log('Successfully saved:', editedRow);
         } else {
+           setOnFailure(true);
           console.error('Failed to save:', editedRow);
         }
       } else {
@@ -121,14 +152,22 @@ useEffect(() => {
     setEditingRowId(null);
     setIsEditing(false);
   };
+ const setOnSuccessAndFailure = (status) => {
+      setOnSuccesful(status);
+      setOnFailure(status);
 
-  return (
-    <ComposedModal open={showModal} onClose={() => closeModal(false)}>
-      <ModalHeader>
-        <h4>{title}</h4>
+    };
+    return (
+    <ComposedModal open={showModal} onClose={() => closeModal(false)} >
+      <ModalHeader >
+        <h4>{title}
+            </h4>
       </ModalHeader>
-      <TableContainer id="modal-table-container">
-        <DataTable rows={editedRows} headers={headers}>
+  <TableContainer id="modal-table-container" style={{ paddingTop: '2rem' }} >
+   {onSuccesful && ResponseNotification('success', 'Success', successMessage, setOnSuccessAndFailure)}
+   {onFailure && ResponseNotification('error', 'Error', failureMessage, setOnSuccessAndFailure)}
+
+       <DataTable rows={editedRows} headers={headers}>
           {({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
             <Table {...getTableProps()} useZebraStyles={true}>
               <TableHead>
@@ -173,34 +212,30 @@ useEffect(() => {
                                   }}
                                   ref={editRowRef}
                                 >
-                                <div style={{ paddingRight:'50px' }}>
-                                  {cell.value}
-                                </div>
+                                  <div style={{ paddingRight:'50px' }}>
+                                                                  {cell.value}
+                                                                </div>
+
                                   {isEditing && (
                                     <>
-                                      <label htmlFor={`actual-quantity-${row.id}`}>Actual Qty:</label>
+                                      <label htmlFor={`actual-quantity-${row.id}`}>Actual Quantity:</label>
                                       <input
                                         id={`actual-quantity-${row.id}`}
                                         type="number"
                                         value={editedRows.find((r) => r.id === row.id)?.actualQuantity}
                                         onChange={(e) => handleActualQuantityChange(row.id, e.target.value)}
+                                         className={`${styles.smallerInput} ${isEditing ? styles.smallerInputActive : ''}`}
+                                        style={{ width: '50px' }}
                                         min="0"
-                                        className={`${styles.smallerInput} ${isEditing ? styles.smallerInputActive : ''}`}
-
-                                         onKeyDown={(e) => {
-                                            if (e.key === '-' || e.key === 'e') {
-                                              e.preventDefault();
-                                            }
-                                          }}
-
-                                         style={{ width: '50px' }}
                                       />
                                       <Button
                                         kind="ghost"
                                         size="small"
                                         onClick={() => handleSaveClick(row.id)}
                                         renderIcon={Save16}
+                                         disabled={isSaveButtonDisabled}
                                       >
+
                                       </Button>
                                     </>
                                   )}
@@ -210,9 +245,7 @@ useEffect(() => {
                                   {cell.value}
                                   {!isEditing ? (
                                     <Button
-                                      style={{
-                                          float: 'right',
-                                        }}
+                                     style={{float: 'right',}}
                                       kind="ghost"
                                       size="small"
                                       onClick={() => startEditingRow(row.id)}
@@ -239,7 +272,7 @@ useEffect(() => {
                                         type="number"
                                         value={editedRows.find((r) => r.id === row.id)?.actualQuantity}
                                         onChange={(e) => handleActualQuantityChange(row.id, e.target.value)}
-                                    />
+                                      />
                                       {isEditing && (
                                         <Button
                                           kind="ghost"

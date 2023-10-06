@@ -20,6 +20,7 @@ import { useItemStockContext } from '../context/item-stock-context';
 import { exportToExcel } from './export-to-excel';
 import styles from './inventory.module.scss';
 import { LoadStock } from '../components/LoadStock/loadStock';
+import { ResponseNotification } from '../components/notifications/response-notification';
 
 const InventoryLandingPage = (props) => {
   const { itemStock } = useItemStockContext();
@@ -33,10 +34,14 @@ const InventoryLandingPage = (props) => {
   const handleSearch = (event) => {
     setSearchText(event.target.value);
   };
+
+
+   const refreshParent = () => {
+        props.setReloadData(true);
+
+      };
+
   const handleExportToExcel = () => exportToExcel(filteredRows);
-  const refreshParent = () => {
-      props.setReloadData(true);
-    };
 
   useEffect(() => {
     if (itemStock?.length > 0) {
@@ -55,44 +60,48 @@ const InventoryLandingPage = (props) => {
     }
   }, [itemStock]);
 
-  const getItemDetails = (productName) => {
+ const getItemDetails = (productName) => {
     if (itemStock?.length > 0) {
       const item = itemStock.find((itemObject) => itemObject.item.name === productName);
-      const groupedRows = {};
+      if (item) {
+        const groupedRows = {};
 
-      item.details.forEach((detail, detailIndex) => {
-        const { expiration, batchNumber } = detail;
-        const id = `${expiration || 'No Expiration Date'}-${batchNumber || 'No Batch Number'}`;
+        item.details.forEach((detail, detailIndex) => {
+          const { expiration, batchNumber } = detail;
+          const id = `${expiration || 'No Expiration Date'}-${batchNumber || 'No Batch Number'}`;
 
-        let formattedExpirationDate = 'No Expiration Date';
+          let formattedExpirationDate = 'No Expiration Date';
 
-        if (expiration) {
-          const expirationDate = new Date(expiration);
+          if (expiration) {
+            const expirationDate = new Date(expiration);
 
-          formattedExpirationDate = `${expirationDate.getDate().toString().padStart(2, '0')}-${(
-            expirationDate.getMonth() + 1
-          )
-            .toString()
-            .padStart(2, '0')}-${expirationDate.getFullYear()}`;
-        }
+            formattedExpirationDate = `${expirationDate.getDate().toString().padStart(2, '0')}-${(
+              expirationDate.getMonth() + 1
+            )
+              .toString()
+              .padStart(2, '0')}-${expirationDate.getFullYear()}`;
+          }
 
-        if (!groupedRows[id]) {
-          groupedRows[id] = {
-            id,
-            productName: item.item.name,
-            quantity: 0,
-            expiration: formattedExpirationDate || 'No Expiration Date',
-            batchNumber: batchNumber || 'No Batch Number',
-          };
-        }
+          if (!groupedRows[id]) {
+            groupedRows[id] = {
+              id,
+              productName: item.item.name,
+              quantity: 0,
+              expiration: formattedExpirationDate || 'No Expiration Date',
+              batchNumber: batchNumber || 'No Batch Number',
+            };
+          }
 
-        groupedRows[id].quantity += detail.quantity || 0;
-      });
+          groupedRows[id].quantity += detail.quantity || 0;
+        });
 
-      const updatedRows = Object.values(groupedRows);
-      props.setReloadData(false);
-      return updatedRows;
+        const updatedRows = Object.values(groupedRows);
+        props.setReloadData(false);
+        return updatedRows;
+      }
     }
+
+    return [];
   };
 
   const filteredRows = rows.filter((row) =>
@@ -104,7 +113,6 @@ const InventoryLandingPage = (props) => {
   const handleClick = (productName) => {
     setSelectedProductName(productName);
     setShowModal(true);
-    props.setReloadData(false);
   };
 
   return (
@@ -184,6 +192,7 @@ const InventoryLandingPage = (props) => {
           closeModal={() => setShowModal(false)}
           stickyColumnName={'productName'}
           title={`Stock Details for ${selectedProductName}`}
+          setReloadData={props.setReloadData}
           onChildSave={refreshParent}
         />
       )}
