@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Tabs, Tab, Loading } from 'carbon-components-react';
 import { useCookies } from 'react-cookie';
-import useSWR, { mutate } from 'swr';
+import useSWR from 'swr';
 import InventoryLandingPage from './inventory-landing-page';
 import { getLocationName, inventoryMenu, locationCookieName } from '../../constants';
 import DispensePage from './dispense/dispense-page';
 import Aushada from './aushada/aushada';
-import { fetcher, invItemURLByStockroom, stockRoomURL } from '../utils/api-utils';
+import { fetcher, getRequest, invItemURLByStockroom, stockRoomURL } from '../utils/api-utils';
 import { useItemStockContext, useStockRoomContext } from '../context/item-stock-context';
 import { ResponseNotification } from '../components/notifications/response-notification';
 
@@ -14,46 +14,14 @@ const InventoryMenu = () => {
   const [cookies] = useCookies();
   const { setItemStock, setItemStockError } = useItemStockContext();
   const { setStockRoom, setStockRoomError } = useStockRoomContext();
+  const { itemStock ,itemStockError} = useItemStockContext();
   const [reloadData, setReloadData] = React.useState(false);
-  const [totalInventoryItemsInStockroom, setTotalInventoryItemsInStockroom] = useState(1);
-
+  const totalInventoryItemsInStockroom = React.useRef(null);
+  
   const { data: stockRoom, error: stockRoomError } = useSWR(
-    stockRoomURL(cookies[locationCookieName]?.name.trim()),
-    fetcher,
+    cookies[locationCookieName]?.name.trim() ? stockRoomURL(cookies[locationCookieName]?.name.trim()) : null,
+    fetcher
   );
-
-  const { data: invItems, error: inventoryItemsError } = useSWR(
-    stockRoom
-      ? invItemURLByStockroom(stockRoom.results[0].uuid, totalInventoryItemsInStockroom)
-      : '',
-    fetcher,
-  );
-
-  const { data: items, error: inventoryItemError } = useSWR(
-    stockRoom && totalInventoryItemsInStockroom !== undefined
-      ? invItemURLByStockroom(stockRoom.results[0].uuid, totalInventoryItemsInStockroom)
-      : '',
-    fetcher,
-  );
-
-  useEffect(() => {
-    setTotalInventoryItemsInStockroom(invItems?.length ? invItems.length : 1);
-  }, [invItems]);
-
-  useEffect(() => {
-    if (reloadData) {
-      mutate(invItemURLByStockroom(stockRoom.results[0].uuid, totalInventoryItemsInStockroom));
-    }
-  }, [reloadData]);
-
-  useEffect(() => {
-    if (items) {
-      setItemStock(items.results);
-    }
-    if (inventoryItemError) {
-      setItemStockError(inventoryItemError);
-    }
-  }, [items, inventoryItemError]);
 
   useEffect(() => {
     if (stockRoom) {
@@ -64,10 +32,27 @@ const InventoryMenu = () => {
     }
   }, [stockRoom, stockRoomError]);
 
-  if ((items === undefined && inventoryItemError === undefined) || (!stockRoom && !stockRoomError))
+  useEffect(() => {
+    const fetchInventoryItems = async () => {
+      try {
+        if (stockRoom) {
+          const response = await getRequest(invItemURLByStockroom(stockRoom.results[0].uuid, totalInventoryItemsInStockroom.current));
+          setItemStock(response.results);
+          if (response.length !== totalInventoryItemsInStockroom.current) {
+            totalInventoryItemsInStockroom.current = response.length;
+          }
+        }
+      } catch (error) {
+        setItemStockError(error);
+      }
+    };
+    fetchInventoryItems();
+  }, [reloadData,stockRoom,totalInventoryItemsInStockroom.current]);
+
+  if ((itemStock === undefined && itemStockError === undefined) || (!stockRoom && !stockRoomError))
     return <Loading />;
 
-  return inventoryItemError ? (
+  return itemStockError ? (
     <div>{ResponseNotification('error', 'Error', 'Something went wrong while fetching URL')}</div>
   ) : (
     <div style={{ paddingTop: '2rem' }}>
