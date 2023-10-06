@@ -78,3 +78,5 @@ export const sessionURL = '/openmrs/ws/rest/v1/session?v=custom:(uuid)'
 export const getAllPatient = (locationUuid,inputValue) => `/openmrs/ws/rest/v1/bahmni/search/patient/lucene?filterOnAllIdentifiers=true&identifier=${inputValue}&loginLocationUuid=${locationUuid}&q=${inputValue}`
 export const globalPropertyUrl= (propertyName) => `/openmrs/ws/rest/v1/bahmnicore/sql/globalproperty?property=${propertyName}`;
 export const getLocationAttributes=(locationUuid) => `/openmrs/ws/rest/v1/location/${locationUuid}/attribute`;
+export const stockTakeURL = '/openmrs/ws/rest/v2/inventory/inventoryStockTake'
+
