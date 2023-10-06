@@ -6,7 +6,7 @@ import {
 } from '../utils/api-utils';
 import { getFormattedDate } from '../utils/date-utils';
 
-const saveEditedQuantity = async (
+const adjustQuantity = async (
   productName,
   quantity,
   expiration,
@@ -52,5 +52,5 @@ const saveEditedQuantity = async (
   }
 };
 
-export default saveEditedQuantity;
+export default adjustQuantity;
 
