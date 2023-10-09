@@ -106,14 +106,16 @@ const Aushada = (props) => {
       for (const result of itemStock) {
           for (const stockOperation of result.details) {
             const formattedDate = convertToDateTimeFormat(selectedDate);
-              if (stockOperation.batchOperation.inwardDate === formattedDate) {
-                  inwardNumberMatch = true;
-                  break;
-              }
-              if (stockOperation.batchOperation.outwardId === outwardNumber) {
-                  outwardMatch = true;
-                  break;
-              }
+            if (enableEaushadhaInwardApi && (stockOperation.batchOperation.inwardDate === formattedDate)) {
+                inwardNumberMatch = true;
+                break;
+            }
+            else{
+              if ( outwardNumber && stockOperation.batchOperation.outwardId === outwardNumber) {
+                outwardMatch = true;
+                break;
+            }
+            }
           }
           if (inwardNumberMatch || outwardMatch) break;
       }
