@@ -49,6 +49,7 @@ export const dispenseHeaders = [
 ];
 
 export const stockReceiptHeaders = [
+	{ key: "serialNo", header: "S.No"},
 	{ key: "itemId", header: "Item Id" },
 	{ key: "item", header: "Item" },
 	{ key: "supplierName", header: "Supplier Name" },

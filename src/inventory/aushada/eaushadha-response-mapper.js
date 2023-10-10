@@ -44,3 +44,29 @@ export const getCalculatedQuantity = (quantity, unitPack) => {
 	});
 	return parseInt(unitPackQuantity * quantity, 10);
 };
+export const getInwardStockReceiptObj = (response) => {
+	const stockReceiptArray = [];
+	response?.forEach((element,index) => {
+		const dateString = element.exp_Date;
+		const convertedDate = new Date(dateString.split("/").reverse().join("-"));
+		const itemName = element.drug_Name.split(/\s+/).join(' ');
+		const rowObj = {
+			id: `${element.drug_Id}-${index}}`,
+			itemId: element.drug_Id,
+			item: itemName,
+			supplierName: element.supplier,
+			batchNumber: element.batch_Number,
+			expiration: convertedDate
+				.toLocaleDateString("en-GB")
+				.split("/")
+				.join("-"),
+			quantity: element.quantity_In_Pack,
+			totalQuantity: element.quantity_In_Units,
+			unitPack: element.unitPack,
+			invalid: false,
+			inwardNo: element.inwardNo,
+		};
+		stockReceiptArray.push(rowObj);
+	})
+	return stockReceiptArray;
+}

@@ -3,6 +3,8 @@ import {
   ButtonSet,
   Column,
   DataTable,
+  DatePicker,
+  DatePickerInput,
   Grid,
   Loading,
   Row,
@@ -26,18 +28,24 @@ import {
 import '../../../index.scss';
 import { ResponseNotification } from '../../components/notifications/response-notification';
 import { useItemStockContext } from '../../context/item-stock-context';
-import saveReceipt from '../../service/save-receipt';
 import {
   fetcher,
   fetcherPost,
+  getLocationAttributes,
+  getRequest,
+  globalPropertyUrl,
+  stockInwardURL,
   stockReceiptURL,
   stockRoomURL
 } from '../../utils/api-utils';
 import {
   getCalculatedQuantity,
+  getInwardStockReceiptObj,
   getStockReceiptObj,
 } from './eaushadha-response-mapper';
 import styles from './aushada.module.scss';
+import { convertToDateTimeFormat } from '../../utils/date-utils';
+import { inwardSaveReceipt, saveReceipt } from '../../service/save-receipt';
 
 const Aushada = (props) => {
   const [items, setItems] = useState([]);
@@ -52,53 +60,99 @@ const Aushada = (props) => {
   const [stockEmptyResonseMessage, setStockEmptyResonseMessage] = useState(false);
   const [negativeError, setNegativeError] = useState(false);
   const [outwardNumberExists, setOutwardNumberExists] = useState(false);
+  const [inwardNumberExists, setInwardNumberExists] = useState(false);
   const [cookies] = useCookies();
   const { setReloadData } = props;
   const { itemStock} = useItemStockContext();
+  const [isDateSelected, setIsDateSelected] = useState(false);
+  const [selectedDate, setSelectedDate] = useState('');
+  const [enableEaushadhaInwardApi, setEnableEaushadhaInwardApi] = useState('');
+  const [instituteId, setInstituteId] = useState([]);
+  const [instituteIdExists, setInstituteIdExists] = useState(false);
+  const locationUuid = cookies[locationCookieName].uuid;
 
   const { data: stockRoom, error: stockRoomError } = useSWR(
     stockRoomURL(cookies[locationCookieName]?.name.trim()),
     fetcher,
   );
 
+  useEffect(async ()=>{
+    const isAushadhaInwardAPI=await getRequest(globalPropertyUrl('eAushadha.inward'))
+    if(isAushadhaInwardAPI){
+      setEnableEaushadhaInwardApi(true);
+    }
+    const fetchInstituteIdByLocation = async () => {
+      const response = await getRequest(getLocationAttributes(locationUuid));
+      response?.results?.forEach((result) => {
+        if (result?.attributeType?.display === "Institute Id" && result?.value) {
+          setInstituteId(result?.value);
+          setInstituteIdExists(true)
+          return;
+        }
+        else{
+          setInstituteId("Contact Admin to set Institute Id")
+        }
+      });
+    };
+  
+    fetchInstituteIdByLocation();
+  },[enableEaushadhaInwardApi])
+
   useEffect(() => {
     if (stockIntakeButtonClick) {
-    let outwardMatch = false;
-     for (const result of itemStock) {
-     for(const stockOperation of result.details){
-       if (stockOperation.batchOperation.outwardId === outwardNumber) {
-            outwardMatch = true;
-            break;
+      let outwardMatch = false;
+      let inwardNumberMatch = false;
+      
+      for (const result of itemStock) {
+          for (const stockOperation of result.details) {
+            const formattedDate = convertToDateTimeFormat(selectedDate);
+            if (enableEaushadhaInwardApi && (stockOperation.batchOperation.inwardDate === formattedDate)) {
+                inwardNumberMatch = true;
+                break;
+            }
+            else{
+              if ( outwardNumber && stockOperation.batchOperation.outwardId === outwardNumber) {
+                outwardMatch = true;
+                break;
+            }
+            }
           }
-        }
-        if(outwardMatch){
-          break;
-        }
+          if (inwardNumberMatch || outwardMatch) break;
       }
-          if(outwardMatch){
-          setOutwardNumberExists(true);
-          setStockIntakeButtonClick(false);
-          }
-          else{
-            setOutwardNumberExists(false);
 
-      const fetchData = async () => {
-        try {
-          const response = await fetcherPost(stockReceiptURL(), { ouid: outwardNumber });
-          if (response) {
-            setItems(getStockReceiptObj(response));
-            setReceivedResponse(response);
-            setStockEmptyResonseMessage(response.length === 0);
-          }
-        } catch (error) {
-          setStockReceiptError(error);
-        }
-        setStockIntakeButtonClick(false);
-      };
-      fetchData();
+    setInwardNumberExists(inwardNumberMatch);
+    setOutwardNumberExists(outwardMatch);
+    setStockIntakeButtonClick(false);
+
+    if(!inwardNumberMatch && !outwardMatch)
+        {
+            const fetchData = async () => {
+              try {
+                let url, requestBody;
+
+                if (enableEaushadhaInwardApi) {
+                  url = stockInwardURL();
+                  const formattedDate= convertToDateTimeFormat(selectedDate);
+                  requestBody = { "inwardDate":formattedDate, "instituteId":instituteId};
+                } else {
+                  url = stockReceiptURL();
+                  requestBody = { ouid: outwardNumber };
+                }
+                const response = await fetcherPost(url, requestBody);
+                if (response) {
+                  setItems(enableEaushadhaInwardApi ? getInwardStockReceiptObj(response) : getStockReceiptObj(response));
+                  setReceivedResponse(response);
+                  setStockEmptyResonseMessage(response.length === 0);
+                }
+              } catch (error) {
+                setStockReceiptError(error);
+              }
+              setStockIntakeButtonClick(false);
+             };
+           fetchData();
     }
     }
-  }, [stockIntakeButtonClick, outwardNumber]);
+  }, [stockIntakeButtonClick, outwardNumber,selectedDate,instituteId,items]);
 
   useEffect(() => {
     if (items.length > 0) {
@@ -113,7 +167,7 @@ const Aushada = (props) => {
   }, [items]);
 
   useEffect(() => {
-    if (outwardNumber.length > 0) {
+    if (outwardNumber.length > 0 || (isDateSelected && instituteIdExists)) {
       setIsOutwardNumberDisabled(false);
       setIsFetchStockDisabled(false);
     } else {
@@ -125,7 +179,7 @@ const Aushada = (props) => {
       setIsOutwardNumberDisabled(true);
       setIsFetchStockDisabled(true);
     }
-  }, [items, outwardNumber]);
+  }, [items, outwardNumber, isDateSelected,instituteIdExists]);
 
   useEffect(() => {
     if (onSuccesful) {
@@ -167,7 +221,8 @@ const Aushada = (props) => {
   };
   const handleSave = async () => {
     try {
-      const response = await saveReceipt(items, outwardNumber, stockRoom.results[0]?.uuid);
+      const formattedDate = convertToDateTimeFormat(selectedDate);
+      const response = await(enableEaushadhaInwardApi ? inwardSaveReceipt(items, instituteId,formattedDate, stockRoom.results[0]?.uuid) : saveReceipt(items, outwardNumber, stockRoom.results[0]?.uuid));
       if (response && response.ok) {
         setReloadData(true);
         setOnSuccesful(true);
@@ -184,6 +239,11 @@ const Aushada = (props) => {
     setOnFailure(status);
 
   };
+  
+  const handleDateChange = (date) => {
+    setSelectedDate(date[0]);
+    setIsDateSelected(true);
+  };
 
  return (
     <>
@@ -196,16 +256,43 @@ const Aushada = (props) => {
               ResponseNotification('error', 'Error', failureMessage, setOnSuccessAndFailure)}
                    </Column>
           <Row>
-            <Column sm={8} lg={4}>
-              <TextInput
-                id='stock-receipt'
-                labelText='Outward Number'
-                value={outwardNumber}
-                style={{ width: '80%' }}
-                onChange={(e) => setOutwardNumber(e.target.value)}
-                disabled={isOutwardNumberDisabled}
-              />
-            </Column>
+          {enableEaushadhaInwardApi ? (
+              <>
+                <Column sm={8} lg={4}>
+                <h4 style={{ paddingTop: '1.7rem', fontSize: '1.2rem', color: '#333' }}>
+                  Institute ID: {instituteId}
+                </h4>
+                </Column>
+                <Column sm={8} lg={4}>
+                  <DatePicker
+                    datePickerType='single'
+                    dateFormat='d-m-Y'
+                    value={selectedDate}
+                    onChange={handleDateChange}
+                  >
+                    <DatePickerInput
+                      id='myDatePicker'
+                      labelText='Select a date'
+                      placeholder='dd/mm/yyyy'
+                      pattern='d{1,2}/d{1,2}/d{4}'
+                      disabled={!instituteIdExists}
+                    />
+                  </DatePicker>
+                </Column>
+              </>) : (
+              <>
+                <Column sm={8} lg={4}>
+                  <TextInput
+                    id='stock-receipt'
+                    labelText='Outward Number'
+                    value={outwardNumber}
+                    style={{ width: '80%' }}
+                    onChange={(e) => setOutwardNumber(e.target.value)}
+                    disabled={isOutwardNumberDisabled}
+                  />
+                </Column>
+              </>
+            )}
             <Column sm={8} lg={4} style={{ paddingTop: '1.5rem' }}>
               <Button
                 onClick={() => setStockIntakeButtonClick(true)}
@@ -234,6 +321,15 @@ const Aushada = (props) => {
               )}
             </div>
           )}
+            {inwardNumberExists && (
+              <h3 style={{ paddingTop: '1rem' }}>
+                {ResponseNotification(
+                  'error',
+                  'Error',
+                  'Institute Id with this Date already fetched. Please enter a new institute id and date',setInwardNumberExists
+                )}
+              </h3>
+            )}
             {outwardNumberExists && (
                       <h3 style={{ paddingTop: '1rem' }}>
                         {ResponseNotification(
@@ -270,10 +366,17 @@ const Aushada = (props) => {
                             </TableRow>
                           </TableHead>
                           <TableBody>
-                            {rows.map((row) => (
+                            {rows.map((row,index) => (
                               <>
                                 <TableRow {...getRowProps({ row })} key='stock-fetch'>
                                   {row.cells.map((cell) => {
+                                    if(cell.id.includes('serialNo')){
+                                      return(
+                                        <TableCell key={cell.id}>
+                                          {++index}
+                                        </TableCell>
+                                      )
+                                    }
                                     if (
                                       cell.id.includes('totalQuantity') ||
                                       cell.id.includes('quantity')

@@ -3,6 +3,22 @@
 .stockReceiptTable {
   max-height: calc(100vh - 500px);
   overflow-y: scroll;
+  border: 1px solid #ccc;
+
+  &::-webkit-scrollbar {
+    width: 12px;
+    border-width: 1px;
+    border-radius: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: darkgray;
+    border-radius: 6px; 
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: lightgray;
+  }
 }
 
 .buttonSet {
