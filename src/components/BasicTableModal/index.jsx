@@ -88,6 +88,20 @@ useEffect(() => {
 
     setIsEditing(true);
   };
+   const preventMinus = (e) => {
+        if (e.code === 'Minus') {
+            e.preventDefault();
+        }
+    };
+      const preventPasteNegative = (e) => {
+          const clipboardData = e.clipboardData || window.clipboardData;
+          const pastedData = parseFloat(clipboardData.getData('text'));
+
+          if (pastedData < 0) {
+              e.preventDefault();
+          }
+      };
+
 
   const handleSaveClick = async (rowId) => {
     try {
@@ -186,13 +200,13 @@ useEffect(() => {
                                         onChange={(e) => handleActualQuantityChange(row.id, e.target.value)}
                                         min="0"
                                         className={`${styles.smallerInput} ${isEditing ? styles.smallerInputActive : ''}`}
-
+                                        onPaste={preventPasteNegative}
+                                        onKeyPress={preventMinus}
                                          onKeyDown={(e) => {
                                             if (e.key === '-' || e.key === 'e') {
                                               e.preventDefault();
                                             }
                                           }}
-
                                          style={{ width: '50px' }}
                                       />
                                       <Button
