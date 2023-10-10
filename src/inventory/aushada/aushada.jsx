@@ -77,8 +77,8 @@ const Aushada = (props) => {
   );
 
   useEffect(async ()=>{
-    const response=await getRequest(globalPropertyUrl('eAushadha.inward'))
-    if(response==true){
+    const isAushadhaInwardAPI=await getRequest(globalPropertyUrl('eAushadha.inward'))
+    if(isAushadhaInwardAPI){
       setEnableEaushadhaInwardApi(true);
     }
     const fetchInstituteIdByLocation = async () => {
