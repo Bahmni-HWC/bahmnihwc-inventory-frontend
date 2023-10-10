@@ -40,6 +40,18 @@ const TableModal = (props) => {
     stockRoomURL(cookies[locationCookieName]?.name.trim()),
     fetcher,
   );
+  const preventMinus = (e) => {
+          if (e.code === 'Minus') {
+              e.preventDefault();
+          }
+      };
+  const preventPasteNegative = (e) => {
+            const clipboardData = e.clipboardData || window.clipboardData;
+            const pastedData = parseFloat(clipboardData.getData('text'));
+            if (pastedData < 0) {
+                e.preventDefault();
+            }
+        };
 
   useEffect(() => {
     if (saveClicked) {
@@ -66,18 +78,6 @@ useEffect(() => {
     };
   }, []);
 
-  const handleQuantityChange = (rowId, value) => {
-    const updatedEditedRows = editedRows.map((row) => {
-      if (row.id === rowId) {
-        return {
-          ...row,
-          quantity: value,
-        };
-      }
-      return row;
-    });
-    setEditedRows(updatedEditedRows);
-  };
 
   const handleActualQuantityChange = (rowId, value) => {
     const updatedEditedRows = editedRows.map((row) => {
@@ -227,6 +227,8 @@ useEffect(() => {
                                          className={`${styles.smallerInput} ${isEditing ? styles.smallerInputActive : ''}`}
                                         style={{ width: '50px' }}
                                         min="0"
+                                        onPaste={preventPasteNegative}
+                                        onKeyPress={preventMinus}
                                       />
                                       <Button
                                         kind="ghost"
