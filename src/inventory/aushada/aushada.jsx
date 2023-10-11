@@ -70,6 +70,7 @@ const Aushada = (props) => {
   const [instituteId, setInstituteId] = useState([]);
   const [instituteIdExists, setInstituteIdExists] = useState(false);
   const locationUuid = cookies[locationCookieName].uuid;
+  const [isTableVisible, setIsTableVisible] = useState(false);
 
   const { data: stockRoom, error: stockRoomError } = useSWR(
     stockRoomURL(cookies[locationCookieName]?.name.trim()),
@@ -151,6 +152,7 @@ const Aushada = (props) => {
              };
            fetchData();
     }
+    setIsTableVisible(true);
     }
   }, [stockIntakeButtonClick, outwardNumber,selectedDate,instituteId,items]);
 
@@ -177,7 +179,6 @@ const Aushada = (props) => {
 
     if (items.length > 0) {
       setIsOutwardNumberDisabled(true);
-      setIsFetchStockDisabled(true);
     }
   }, [items, outwardNumber, isDateSelected,instituteIdExists]);
 
@@ -243,7 +244,19 @@ const Aushada = (props) => {
   const handleDateChange = (date) => {
     setSelectedDate(date[0]);
     setIsDateSelected(true);
+    setStockIntakeButtonClick(false);
   };
+  useEffect(() => {
+    setIsTableVisible(false);
+    setItems([]);
+    if(selectedDate==null){
+      setIsDateSelected(false);
+    }
+  }, [selectedDate]);
+
+  const notificationMessage = enableEaushadhaInwardApi
+  ? 'No data is received for given inward date in this location. Could you please retry?'
+  : 'No data is received for the outward number. Could you please retry?';
 
  return (
     <>
@@ -306,35 +319,30 @@ const Aushada = (props) => {
             </Column>
           </Row>
           {stockReceiptError && (
-            <h3 style={{ paddingTop: '1rem' }}>
+            <h3 className={styles.notification}>
               {ResponseNotification('error', 'Error', 'Something went wrong while fetching URL')}
             </h3>
           )}
 
-          {stockEmptyResonseMessage &&  (
-            <div style={{ paddingTop: '20px' }}>
-              {ResponseNotification(
-                'info',
-                'info',
-                'No data is received for the outward number. Could you please retry?',
-                setStockEmptyResonseMessage,
-              )}
-            </div>
-          )}
+            {stockEmptyResonseMessage && (
+              <div className={styles.notification}>
+                {ResponseNotification('info', 'Info', notificationMessage, setStockEmptyResonseMessage)}
+              </div>
+            )}
             {inwardNumberExists && (
-              <h3 style={{ paddingTop: '1rem' }}>
+              <h3 className={styles.notification}>
                 {ResponseNotification(
-                  'error',
-                  'Error',
-                  'Institute Id with this Date already fetched. Please enter a new institute id and date',setInwardNumberExists
+                  'info',
+                  'Info',
+                  'Institute Id with this Date already fetched. Please enter a new inward date',setInwardNumberExists
                 )}
               </h3>
             )}
             {outwardNumberExists && (
-                      <h3 style={{ paddingTop: '1rem' }}>
+                      <h3 className={styles.notification}>
                         {ResponseNotification(
-                          'error',
-                          'Error',
+                          'info',
+                          'Info',
                           'Outward number already exists. Please enter a new outward number',setOutwardNumberExists
                         )}
                       </h3>
@@ -342,7 +350,7 @@ const Aushada = (props) => {
           {stockIntakeButtonClick && !receivedResponse && !stockReceiptError ? (
             <Loading />
           ) : (
-            items &&
+            isTableVisible && items &&
             items.length > 0 && (
               <Column sm={16} style={{ paddingTop: '1rem' }}>
                 <div className={styles.stockReceiptTable}>
@@ -431,7 +439,7 @@ const Aushada = (props) => {
             )
           )}
 
-          {items && items.length > 0 && (
+          {isTableVisible && items && items.length > 0 && (
             <ButtonSet className={styles.buttonSet}>
               <Button kind='secondary' onClick={handleCancel}>
                 Cancel
