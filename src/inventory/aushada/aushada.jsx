@@ -258,10 +258,6 @@ const Aushada = (props) => {
   ? 'No data is received for given inward date in this location. Could you please retry?'
   : 'No data is received for the outward number. Could you please retry?';
 
-  const notificationAction = enableEaushadhaInwardApi
-    ? setStockEmptyResonseMessage
-    : setStockEmptyResonseMessage;
-
  return (
     <>
       <Grid style={{ paddingLeft: '0', margin: '0' }}>
@@ -323,18 +319,18 @@ const Aushada = (props) => {
             </Column>
           </Row>
           {stockReceiptError && (
-            <h3 style={{ paddingTop: '1rem' }}>
+            <h3 className={styles.notification}>
               {ResponseNotification('error', 'Error', 'Something went wrong while fetching URL')}
             </h3>
           )}
 
             {stockEmptyResonseMessage && (
-              <div style={{ paddingTop: '20px' }}>
-                {ResponseNotification('info', 'Info', notificationMessage, notificationAction)}
+              <div className={styles.notification}>
+                {ResponseNotification('info', 'Info', notificationMessage, setStockEmptyResonseMessage)}
               </div>
             )}
             {inwardNumberExists && (
-              <h3 style={{ paddingTop: '1rem' }}>
+              <h3 className={styles.notification}>
                 {ResponseNotification(
                   'info',
                   'Info',
@@ -343,7 +339,7 @@ const Aushada = (props) => {
               </h3>
             )}
             {outwardNumberExists && (
-                      <h3 style={{ paddingTop: '1rem' }}>
+                      <h3 className={styles.notification}>
                         {ResponseNotification(
                           'info',
                           'Info',
