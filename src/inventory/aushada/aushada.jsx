@@ -249,6 +249,9 @@ const Aushada = (props) => {
   useEffect(() => {
     setIsTableVisible(false);
     setItems([]);
+    if(selectedDate==null){
+      setIsDateSelected(false);
+    }
   }, [selectedDate]);
 
   const notificationMessage = enableEaushadhaInwardApi
