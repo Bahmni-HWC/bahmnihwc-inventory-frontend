@@ -16,7 +16,7 @@ const InventoryMenu = () => {
   const { setStockRoom, setStockRoomError } = useStockRoomContext();
   const { itemStock ,itemStockError} = useItemStockContext();
   const [reloadData, setReloadData] = React.useState(false);
-  const totalInventoryItemsInStockroom = React.useRef(null);
+  const [totalInventoryItemsInStockroom, setTotalInventoryItemsInStockroom] = React.useState(null);
   
   const { data: stockRoom, error: stockRoomError } = useSWR(
     cookies[locationCookieName]?.name.trim() ? stockRoomURL(cookies[locationCookieName]?.name.trim()) : null,
@@ -36,10 +36,10 @@ const InventoryMenu = () => {
     const fetchInventoryItems = async () => {
       try {
         if (stockRoom) {
-          const response = await getRequest(invItemURLByStockroom(stockRoom.results[0].uuid, totalInventoryItemsInStockroom.current));
+          const response = await getRequest(invItemURLByStockroom(stockRoom.results[0].uuid, totalInventoryItemsInStockroom));
           setItemStock(response.results);
-          if (response.length !== totalInventoryItemsInStockroom.current) {
-            totalInventoryItemsInStockroom.current = response.length;
+          if (response.length !== totalInventoryItemsInStockroom) {
+            setTotalInventoryItemsInStockroom(response.length);
           }
         }
       } catch (error) {
@@ -47,7 +47,7 @@ const InventoryMenu = () => {
       }
     };
     fetchInventoryItems();
-  }, [reloadData,stockRoom,totalInventoryItemsInStockroom.current]);
+  }, [reloadData,stockRoom,totalInventoryItemsInStockroom]);
 
   if ((itemStock === undefined && itemStockError === undefined) || (!stockRoom && !stockRoomError))
     return <Loading />;
