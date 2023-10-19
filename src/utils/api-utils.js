@@ -74,6 +74,7 @@ export const dispenseConceptURL = '/openmrs/ws/rest/v1/concept?q=Dispensed&limit
 export const stockOperationURL = "/openmrs/ws/rest/v2/inventory/stockOperation"
 export const stockOperationTypeURL = (stockOperationType) => `/openmrs/ws/rest/v2/inventory/stockOperationType?v=full&q=${stockOperationType}`
 export const inventoryItemByNameURL = (itemName) => `/openmrs/ws/rest/v2/inventory/item?v=full&q=${itemName}`
+export const inventoryItemByDrugIdURL = (drugId) => `/openmrs/ws/rest/v2/inventory/item?v=full&drugId=${drugId}`
 export const sessionURL = '/openmrs/ws/rest/v1/session?v=custom:(uuid)'
 export const stockTakeURL = '/openmrs/ws/rest/v2/inventory/inventoryStockTake'
 export const getAllPatient = (locationUuid,inputValue) => `/openmrs/ws/rest/v1/bahmni/search/patient/lucene?filterOnAllIdentifiers=true&identifier=${inputValue}&loginLocationUuid=${locationUuid}&q=${inputValue}`

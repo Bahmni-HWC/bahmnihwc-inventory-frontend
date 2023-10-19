@@ -3,6 +3,7 @@ import {
   getRequest,
   stockOperationURL,
   stockOperationTypeURL,
+  inventoryItemByDrugIdURL,
 } from '../utils/api-utils';
 import { getFormattedDate } from '../utils/date-utils';
 
@@ -12,8 +13,7 @@ const saveReceipt = async (items, outwardNumber, destinationUuid) => {
   const itemsArray = [];
   await Promise.all(
     items.map(async (item) => {
-      const itemName = encodeURIComponent(item.item);
-      const response = await getRequest(`/openmrs/ws/rest/v2/inventory/item?v=full&q=${itemName}`);
+      const response = await getRequest(inventoryItemByDrugIdURL(item.itemId));
       const itemUuid = response.results[0]?.uuid;
 
       itemsArray.push({
@@ -50,8 +50,7 @@ const inwardSaveReceipt = async (items, institutionId, stockInwardDate, destinat
   const itemsArray = [];
   await Promise.all(
     items.map(async (item) => {
-      const itemName = encodeURIComponent(item.item);
-      const response = await getRequest(`/openmrs/ws/rest/v2/inventory/item?v=full&q=${itemName}`);
+      const response = await getRequest(inventoryItemByDrugIdURL(item.itemId));
       const itemUuid = response.results[0]?.uuid;
       itemsArray.push({
         item: itemUuid,
