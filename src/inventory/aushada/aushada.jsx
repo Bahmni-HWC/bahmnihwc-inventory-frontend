@@ -107,12 +107,12 @@ const Aushada = (props) => {
       for (const result of itemStock) {
           for (const stockOperation of result.details) {
             const formattedDate = convertToDateTimeFormat(selectedDate);
-            if (enableEaushadhaInwardApi && (stockOperation.batchOperation.inwardDate === formattedDate)) {
+            if (enableEaushadhaInwardApi && (stockOperation?.batchOperation?.inwardDate === formattedDate)) {
                 inwardNumberMatch = true;
                 break;
             }
             else{
-              if ( outwardNumber && stockOperation.batchOperation.outwardId === outwardNumber) {
+              if ( outwardNumber && stockOperation?.batchOperation?.outwardId === outwardNumber) {
                 outwardMatch = true;
                 break;
             }
